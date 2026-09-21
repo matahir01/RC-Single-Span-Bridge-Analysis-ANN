@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import pairwise
 
 import numpy as np
 from scipy.optimize import minimize_scalar
@@ -99,7 +100,7 @@ def _deflection_m(
     unit_left_reaction = (span_m - x_m) / span_m
     integral = 0.0
 
-    for left, right in zip(ordered, ordered[1:], strict=True):
+    for left, right in pairwise(ordered):
         if right <= left:
             continue
         midpoint = 0.5 * (left + right)
@@ -202,9 +203,12 @@ def run_construction_stage_analysis(
         all_loads = tuple(load for item in items for load in _distributed(item.loads))
         combined = simple_span_distributed_load_response(span, all_loads)
 
-        def cumulative_deflection(x_m: float) -> float:
+        def cumulative_deflection(
+            x_m: float,
+            stage_items: tuple[ConstructionStageGirderResult, ...] = items,
+        ) -> float:
             total = 0.0
-            for item in items:
+            for item in stage_items:
                 stage_loads = _distributed(item.loads)
                 ei = item.elastic_modulus_mpa * 1000.0 * item.section.iy_m4
                 total += _deflection_m(
