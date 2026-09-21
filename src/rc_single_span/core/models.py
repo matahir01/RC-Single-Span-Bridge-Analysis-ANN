@@ -44,7 +44,7 @@ class TGirderProfile(BaseModel):
     total_depth_m: PositiveFloat
 
     @model_validator(mode="after")
-    def validate_profile(self) -> "TGirderProfile":
+    def validate_profile(self) -> TGirderProfile:
         if self.flange_thickness_m >= self.total_depth_m:
             raise ValueError("T-girder flange thickness must be smaller than total depth.")
         if self.web_width_m > self.flange_width_m:
@@ -74,7 +74,7 @@ class IGirderProfile(BaseModel):
     bottom_flange_thickness_m: PositiveFloat
 
     @model_validator(mode="after")
-    def validate_profile(self) -> "IGirderProfile":
+    def validate_profile(self) -> IGirderProfile:
         if self.web_width_m > max(
             self.top_flange_width_m,
             self.bottom_flange_width_m,
@@ -136,7 +136,7 @@ class MaterialProperties(BaseModel):
     elastic_modulus_mpa: PositiveFloat | None = None
 
     @model_validator(mode="after")
-    def require_concrete_strength(self) -> "MaterialProperties":
+    def require_concrete_strength(self) -> MaterialProperties:
         if self.fck_mpa is None and self.fcu_mpa is None:
             raise ValueError("At least one characteristic concrete strength is required.")
         return self
@@ -183,7 +183,7 @@ class SingleSpanBridgeGeometry(BaseModel):
     deck: DeckConstruction = Field(default_factory=DeckConstruction)
 
     @model_validator(mode="after")
-    def validate_geometry(self) -> "SingleSpanBridgeGeometry":
+    def validate_geometry(self) -> SingleSpanBridgeGeometry:
         if self.girder_count < 2:
             raise ValueError("At least two longitudinal girders are required.")
         if self.carriageway_width_m > self.deck_width_m:
@@ -219,7 +219,7 @@ class BridgeProject(BaseModel):
     provided_longitudinal_reinforcement: LongitudinalReinforcement | None = None
 
     @model_validator(mode="after")
-    def validate_name(self) -> "BridgeProject":
+    def validate_name(self) -> BridgeProject:
         if not self.name.strip():
             raise ValueError("Project name cannot be empty.")
         return self
