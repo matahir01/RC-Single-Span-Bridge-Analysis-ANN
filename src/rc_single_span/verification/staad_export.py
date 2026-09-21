@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from rc_single_span.analysis.structural_model import StructuralModel, Support
+from rc_single_span.analysis.structural_model import StructuralModel
 
 
 @dataclass(frozen=True)
