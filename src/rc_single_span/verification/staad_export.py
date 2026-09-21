@@ -243,13 +243,13 @@ def export_staad_std(model: StructuralModel) -> str:
                 if active:
                     lines.append(f"{load.node_id} {active}")
 
-    lines.extend(
-        (
-            "PERFORM ANALYSIS",
-            "PRINT SUPPORT REACTION ALL",
-            "PRINT MEMBER FORCES GLOBAL ALL",
-            "PRINT JOINT DISPLACEMENTS ALL",
-            "FINISH",
+    lines.extend(("PERFORM ANALYSIS", "PRINT SUPPORT REACTION ALL"))
+    member_ids = [beam.member_id for beam in model.beams]
+    for start in range(0, len(member_ids), 24):
+        chunk = member_ids[start : start + 24]
+        lines.append(
+            "PRINT MEMBER FORCES GLOBAL LIST "
+            + " ".join(str(value) for value in chunk)
         )
-    )
+    lines.extend(("PRINT JOINT DISPLACEMENTS ALL", "FINISH"))
     return "\n".join(lines) + "\n"
