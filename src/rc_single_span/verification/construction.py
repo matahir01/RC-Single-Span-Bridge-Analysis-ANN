@@ -256,9 +256,13 @@ def _stage_structural_model(
         materials=(material,),
         sections=(model_section,),
         beams=tuple(beams),
-        supports=(
-            Support(nodes[0].node_id, uz=True, rx=True),
-            Support(nodes[-1].node_id, uz=True),
+        supports=tuple(
+            Support(
+                node.node_id,
+                uz=node.node_id in {nodes[0].node_id, nodes[-1].node_id},
+                rx=True,
+            )
+            for node in nodes
         ),
         load_cases=(load_case,),
     )
@@ -523,8 +527,9 @@ def build_construction_verification_suite(
                         "girder and construction stage"
                     ),
                     "native_torsion_stabilization": (
-                        "RX restrained at left support only; no torsional loads are "
-                        "present in the one-girder construction verification model"
+                        "RX restrained at every 1D verification station to remove the "
+                        "unused torsional DOF chain; vertical UZ is restrained only at "
+                        "the two bearings and no torsional loads are present"
                     ),
                 },
             )
