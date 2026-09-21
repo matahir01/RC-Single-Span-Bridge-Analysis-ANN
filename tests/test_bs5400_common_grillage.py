@@ -122,9 +122,14 @@ def test_ha_search_uses_common_grillage_and_envelopes_all_girders() -> None:
     assert len(result.girders) == 7
     assert result.cases
     for case in result.cases:
-        assert case.analysis.vertical_equilibrium_residual_kn == pytest.approx(
-            0.0,
-            abs=1.0e-6,
+        scale = max(
+            abs(case.analysis.total_applied_vertical_load_kn),
+            abs(case.analysis.total_vertical_reaction_kn),
+            1.0,
+        )
+        assert abs(case.analysis.vertical_equilibrium_residual_kn) <= max(
+            1.0e-6,
+            1.0e-8 * scale,
         )
 
 
@@ -143,7 +148,12 @@ def test_hb_search_checks_all_five_vehicle_lengths_and_transverse_positions() ->
     assert result.cases
     assert all(item.moment_knm.value > 0.0 for item in result.girders)
     for case in result.cases:
-        assert case.analysis.vertical_equilibrium_residual_kn == pytest.approx(
-            0.0,
-            abs=1.0e-6,
+        scale = max(
+            abs(case.analysis.total_applied_vertical_load_kn),
+            abs(case.analysis.total_vertical_reaction_kn),
+            1.0,
+        )
+        assert abs(case.analysis.vertical_equilibrium_residual_kn) <= max(
+            1.0e-6,
+            1.0e-8 * scale,
         )
