@@ -128,12 +128,18 @@ def _shared_stations_for_girder(
     cumulative: CumulativeGirderResult,
     longitudinal_divisions: int,
 ) -> tuple[float, ...]:
-    if longitudinal_divisions < 8:
-        raise ValueError("Construction verification requires at least 8 divisions.")
+    if not 0 <= longitudinal_divisions <= 16:
+        raise ValueError(
+            "Construction verification supplemental divisions must lie between 0 and 16."
+        )
 
-    base = tuple(
-        span_m * index / longitudinal_divisions
-        for index in range(longitudinal_divisions + 1)
+    base = (
+        ()
+        if longitudinal_divisions == 0
+        else tuple(
+            span_m * index / longitudinal_divisions
+            for index in range(longitudinal_divisions + 1)
+        )
     )
     load_boundaries = tuple(
         coordinate
@@ -459,7 +465,7 @@ def _cumulative_comparisons(
 def build_construction_verification_suite(
     project: BridgeProject,
     *,
-    longitudinal_divisions: int = 48,
+    longitudinal_divisions: int = 8,
 ) -> ConstructionVerificationSuite:
     """Cross-check and package every construction/permanent-action stage.
 
@@ -469,8 +475,12 @@ def build_construction_verification_suite(
     mechanics: same load segments, same stage section A/J/Iy/Iz and same E.
 
     The second solver is the repository's beam-FE kernel, used here as an
-    independent implementation cross-check. Each solved stage is also exported
-    as a STAAD package for genuine external verification.
+    independent implementation cross-check. Exact load boundaries and analytical
+    governing response stations are always inserted as nodes, so only a small
+    number of supplemental divisions is needed; excessive subdivision is avoided
+    because it needlessly degrades the conditioning of the verification stiffness
+    matrix. Each solved stage is also exported as a STAAD package for genuine
+    external verification.
     """
 
     construction = run_construction_stage_analysis(project)
