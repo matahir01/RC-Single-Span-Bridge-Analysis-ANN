@@ -113,7 +113,7 @@ def _distributed(
 def _merge_stations(
     values: tuple[float, ...],
     *,
-    tolerance: float = 1.0e-6,
+    tolerance: float = 1.0e-3,
 ) -> tuple[float, ...]:
     result: list[float] = []
     for value in sorted(float(item) for item in values):
@@ -286,7 +286,7 @@ def _node_at_x(
         (
             item
             for item in model.nodes
-            if abs(item.x_m - x_m) <= 1.0e-6
+            if abs(item.x_m - x_m) <= 1.0e-3
         ),
         None,
     )
@@ -306,7 +306,7 @@ def _moment_magnitude_at_x(
     for row in native_global_member_end_forces(model, analysis):
         beam = beam_by_id[row.member_id]
         node_id = beam.node_i if row.end == "i" else beam.node_j
-        if abs(nodes[node_id].x_m - x_m) <= 1.0e-6:
+        if abs(nodes[node_id].x_m - x_m) <= 1.0e-3:
             candidates.append(abs(row.my_knm))
     if not candidates:
         raise ValueError(f"No member-end moment exists at x={x_m:.12g} m.")
@@ -478,7 +478,8 @@ def build_construction_verification_suite(
     The second solver is a dedicated Stage-8 bending-only Euler-Bernoulli beam
     FE implementation, deliberately separate from both the production simple-span
     equations and the 3-DOF traffic grillage solver. Exact load boundaries and analytical
-    governing response stations are always inserted as nodes, so only a small
+    governing response stations are inserted as nodes, with numerically equivalent
+    stations within 1 mm coalesced to prevent meaningless sliver elements, so only a small
     number of supplemental divisions is needed; excessive subdivision is avoided
     because it needlessly degrades the conditioning of the verification stiffness
     matrix. Each solved stage is also exported as a STAAD package for genuine
