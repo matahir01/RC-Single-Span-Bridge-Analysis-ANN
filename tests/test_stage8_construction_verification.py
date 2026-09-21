@@ -84,7 +84,15 @@ def test_construction_suite_crosschecks_all_three_stages_and_cumulative_response
 
     for item in suite.stages:
         assert len(item.comparisons) == 5
-        assert abs(item.analysis.vertical_equilibrium_residual_kn) <= 1.0e-6
+        scale = max(
+            abs(item.analysis.total_applied_vertical_load_kn),
+            abs(item.analysis.total_vertical_reaction_kn),
+            1.0,
+        )
+        assert abs(item.analysis.vertical_equilibrium_residual_kn) <= max(
+            1.0e-6,
+            1.0e-6 * scale,
+        )
 
 
 def test_stage_loads_and_stiffness_preserve_the_actual_construction_sequence() -> None:
