@@ -209,11 +209,18 @@ def deck_construction_girder_properties(
     )
 
 
-def final_composite_girder_properties(
+def final_composite_concrete_layers(
     geometry: SingleSpanBridgeGeometry,
     *,
     girder_index: int,
-) -> SectionProperties:
+) -> tuple[ConcreteLayer, ...]:
+    """Return the actual participating final-state concrete bands for one girder.
+
+    Non-participating construction layers retain their physical offset through
+    the girder top coordinate but contribute no concrete area. This is the
+    geometry used by layered ULS/SLS design checks.
+    """
+
     if not 1 <= girder_index <= int(geometry.girder_count):
         raise ValueError("girder_index is outside the bridge layout.")
     width = girder_tributary_widths_m(geometry)[girder_index - 1]
@@ -241,8 +248,19 @@ def final_composite_girder_properties(
             top_m=float(deck.physical_depth_m),
         )
     )
+    return tuple(layers)
+
+
+def final_composite_girder_properties(
+    geometry: SingleSpanBridgeGeometry,
+    *,
+    girder_index: int,
+) -> SectionProperties:
     return _properties(
-        tuple(layers),
+        final_composite_concrete_layers(
+            geometry,
+            girder_index=girder_index,
+        ),
         basis="final composite girder with explicitly participating deck layers",
     )
 
@@ -285,3 +303,17 @@ def station_tributary_widths_m(stations_m: tuple[float, ...]) -> tuple[float, ..
             width = 0.5 * (stations_m[index + 1] - stations_m[index - 1])
         widths.append(width)
     return tuple(widths)
+
+
+
+def girder_web_width_m(geometry: SingleSpanBridgeGeometry) -> float:
+    """Return the physical web width governing longitudinal shear."""
+
+    profile = geometry.girder_profile
+    if isinstance(profile, RectangularGirderProfile):
+        return float(profile.width_m)
+    if isinstance(profile, TGirderProfile):
+        return float(profile.web_width_m)
+    if isinstance(profile, IGirderProfile):
+        return float(profile.web_width_m)
+    raise TypeError("Unsupported girder profile.")
