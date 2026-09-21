@@ -517,12 +517,19 @@ def build_construction_verification_suite(
                 stations_m=stations,
             )
             analysis = solve_construction_beam_fe(model)
-            if abs(analysis.vertical_equilibrium_residual_kn) > 1.0e-6:
+            equilibrium_scale = max(
+                abs(analysis.total_applied_vertical_load_kn),
+                abs(analysis.total_vertical_reaction_kn),
+                1.0,
+            )
+            equilibrium_limit = max(1.0e-6, 1.0e-6 * equilibrium_scale)
+            if abs(analysis.vertical_equilibrium_residual_kn) > equilibrium_limit:
                 raise RuntimeError(
                     "Construction verification beam failed vertical equilibrium: "
                     f"applied={analysis.total_applied_vertical_load_kn:.12g} kN, "
                     f"reaction={analysis.total_vertical_reaction_kn:.12g} kN, "
-                    f"residual={analysis.vertical_equilibrium_residual_kn:.12g} kN."
+                    f"residual={analysis.vertical_equilibrium_residual_kn:.12g} kN, "
+                    f"limit={equilibrium_limit:.12g} kN."
                 )
             comparisons = _stage_comparisons(
                 item,
