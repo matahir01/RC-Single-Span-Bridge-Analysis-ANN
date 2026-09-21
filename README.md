@@ -61,7 +61,7 @@ The repository currently contains the first common foundation:
 - CI, linting and regression tests;
 - a 15 m reference bridge with 7 girders at 1.70 m spacing, 400 x 950 mm precast girders, 75 + 175 mm deck build-up and four layers of four Y32 bars.
 
-This is not yet a completed design application. The common full-width grillage, permanent-action/construction-stage backbone, Eurocode LM1, BD 37/01 HA/HB nominal traffic, BD 37/01 HA+HB coexistence/application mechanics, code-specific ULS/SLS combinations, and the focused EC2/BS 5400 longitudinal-girder design layer are now implemented. The next milestone is practical reinforcement/constructability handling and the independent verification/reporting campaign.
+This is not yet a completed design application. The common full-width grillage, permanent-action/construction-stage backbone, Eurocode LM1, BD 37/01 HA/HB nominal traffic, BD 37/01 HA+HB coexistence/application mechanics, code-specific ULS/SLS combinations, and the focused EC2/BS 5400 longitudinal-girder design layer are now implemented. The practical reinforcement/constructability layer is now implemented for the focused V1 girder path. The next milestone is the independent verification and calculation-reporting campaign.
 
 ## Migration policy
 
@@ -75,7 +75,7 @@ Stable code is migrated selectively from matahir01/RC-Bridge-Analysis-ANN. Gener
 4. BS 5400 / BD 37/01 HA and HB adapters on the same grillage. **Implemented, including nominal HA-alone, HB-alone and HA+HB coexistence/application under 6.4.2.**
 5. Code-specific ULS/SLS combinations. **Implemented for Eurocode persistent ULS plus characteristic/frequent/quasi-permanent SLS, and for BS 5400 primary highway combinations 1-3 with separate structural-dead, surfacing and other-superimposed permanent factors and component-wise HA/HB/HA+HB governing envelopes.** BS combinations 4-5 remain outside the current primary-action set because they require secondary/accidental actions not yet modelled.
 6. EC2 and BS 5400 flexure/shear/cracking/deflection. **Implemented for the focused single-span longitudinal-girder path.** ULS flexure and shear consume the actual code-specific combined effects; cracking uses the actual layered composite section with non-participating false-slab gaps retained; deflection combines stage-aware permanent displacement with the common-grillage traffic displacement at the same traffic-governing station. A final all-case combined-deflection re-search remains an explicit verification item rather than a hidden approximation. Out-of-scope singly-reinforced flexure states are reported per girder instead of aborting the whole bridge run.
-7. Practical reinforcement and constructability checks. **Next.**
-8. Independent verification campaign and calculation reports.
+7. Practical reinforcement and constructability checks. **Implemented for the focused single-span girder path.** Required longitudinal steel is solved from the layered ULS section; discrete unbundled bar and closed-link arrangements are selected against explicit area/spacing limits; provided cages can be audited from stored layer counts/diameters without inventing missing vertical spacing. EC2 and BS detailing limits remain separate, and BS Grade 410 is never silently remapped to Grade 460—the adopted minimum-main-steel ratio must be supplied explicitly when the legacy default does not apply. Anchorage/lap geometry, fatigue-specific detailing zones and drawing-level local congestion remain explicit later verification/detail-drawing items.
+8. Independent verification campaign and calculation reports. **Next.**
 9. Deterministic dataset generation.
 10. ANN surrogate validation, reliability analysis and RBDO.

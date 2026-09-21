@@ -280,3 +280,121 @@ def check_crack_width_ec2(
         effective_reinforcement_ratio=rho,
         close_spacing=close_spacing,
     )
+
+
+
+def required_steel_area_layered_ec2(
+    *,
+    med_knm: float,
+    layers: tuple[ConcreteLayer, ...],
+    effective_depth_m: float,
+    fck_mpa: float,
+    fyk_mpa: float,
+    maximum_neutral_axis_ratio: float,
+    tolerance_knm: float = 0.01,
+) -> float:
+    """Solve the least tension-steel area meeting M_Ed within the configured x/d limit."""
+
+    if med_knm < 0.0:
+        raise ValueError("med_knm cannot be negative.")
+    if med_knm == 0.0:
+        return 0.0
+    if not 0.0 < maximum_neutral_axis_ratio <= 1.0:
+        raise ValueError("maximum_neutral_axis_ratio must lie in (0, 1].")
+
+    lower = 1.0
+    upper = 1000.0
+    last_valid_area = lower
+    last_valid_resistance = 0.0
+    failed_upper: float | None = None
+
+    for _ in range(40):
+        try:
+            result = check_layered_flexure_ec2(
+                med_knm=med_knm,
+                layers=layers,
+                effective_depth_m=effective_depth_m,
+                steel_area_mm2=upper,
+                fck_mpa=fck_mpa,
+                fyk_mpa=fyk_mpa,
+                maximum_neutral_axis_ratio=maximum_neutral_axis_ratio,
+            )
+        except ValueError as exc:
+            if (
+                "Neutral axis exceeds" in str(exc)
+                or "compression force exceeds" in str(exc)
+            ):
+                failed_upper = upper
+                break
+            raise
+        last_valid_area = upper
+        last_valid_resistance = result.resistance_knm
+        if result.resistance_knm >= med_knm:
+            break
+        lower = upper
+        upper *= 2.0
+    else:
+        raise ValueError("Unable to bracket required EC2 layered-section steel area.")
+
+    if failed_upper is not None:
+        low = last_valid_area
+        high = failed_upper
+        best_area = last_valid_area
+        best_resistance = last_valid_resistance
+        for _ in range(100):
+            mid = 0.5 * (low + high)
+            try:
+                result = check_layered_flexure_ec2(
+                    med_knm=med_knm,
+                    layers=layers,
+                    effective_depth_m=effective_depth_m,
+                    steel_area_mm2=mid,
+                    fck_mpa=fck_mpa,
+                    fyk_mpa=fyk_mpa,
+                    maximum_neutral_axis_ratio=maximum_neutral_axis_ratio,
+                )
+            except ValueError as exc:
+                if (
+                    "Neutral axis exceeds" in str(exc)
+                    or "compression force exceeds" in str(exc)
+                ):
+                    high = mid
+                    continue
+                raise
+            best_area = mid
+            best_resistance = result.resistance_knm
+            low = mid
+        if best_resistance + tolerance_knm < med_knm:
+            raise ValueError(
+                "EC2 design moment exceeds the configured singly reinforced layered-section capacity."
+            )
+        upper = best_area
+        lower = 1.0
+
+    for _ in range(100):
+        mid = 0.5 * (lower + upper)
+        try:
+            result = check_layered_flexure_ec2(
+                med_knm=med_knm,
+                layers=layers,
+                effective_depth_m=effective_depth_m,
+                steel_area_mm2=mid,
+                fck_mpa=fck_mpa,
+                fyk_mpa=fyk_mpa,
+                maximum_neutral_axis_ratio=maximum_neutral_axis_ratio,
+            )
+        except ValueError as exc:
+            if (
+                "Neutral axis exceeds" in str(exc)
+                or "compression force exceeds" in str(exc)
+            ):
+                upper = mid
+                continue
+            raise
+        if abs(result.resistance_knm - med_knm) <= tolerance_knm:
+            return mid
+        if result.resistance_knm < med_knm:
+            lower = mid
+        else:
+            upper = mid
+    return upper
