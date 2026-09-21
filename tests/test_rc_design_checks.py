@@ -281,18 +281,25 @@ def test_bs5400_project_design_keeps_governing_case_provenance() -> None:
     )
 
     assert len(result) == 7
-    first = result[0]
-    assert "HB" in first.flexure_case.upper()
-    assert "HA_HB" in first.shear_case
-    assert first.flexure.design_moment_knm > 0.0
-    assert first.shear.design_shear_kn > 0.0
-    assert first.cracking.crack_width_mm >= 0.0
-    assert first.deflection.total_deflection_mm > 0.0
+    exterior = result[0]
+    assert "HB" in exterior.flexure_case.upper()
+    assert "HA_HB" in exterior.shear_case
+    assert exterior.flexure is None
+    assert exterior.flexure_issue is not None
+    assert "Neutral axis exceeds" in exterior.flexure_issue
+    assert exterior.shear.design_shear_kn > 0.0
+    assert exterior.cracking.crack_width_mm >= 0.0
+    assert exterior.deflection.total_deflection_mm > 0.0
     assert any(
-        source in first.deflection.status
+        source in exterior.deflection.status
         for source in (
             BS5400PrimaryTraffic.HA.value,
             BS5400PrimaryTraffic.HB.value,
             BS5400PrimaryTraffic.HA_HB.value,
         )
     )
+
+    interior = result[3]
+    assert interior.flexure is not None
+    assert interior.flexure_issue is None
+    assert interior.flexure.design_moment_knm > 0.0
