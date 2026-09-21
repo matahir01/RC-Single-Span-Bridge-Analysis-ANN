@@ -61,7 +61,7 @@ The repository currently contains the first common foundation:
 - CI, linting and regression tests;
 - a 15 m reference bridge with 7 girders at 1.70 m spacing, 400 x 950 mm precast girders, 75 + 175 mm deck build-up and four layers of four Y32 bars.
 
-This is not yet a completed design application. The common full-width grillage, permanent-action/construction-stage backbone, Eurocode LM1, BD 37/01 HA/HB nominal traffic, and BD 37/01 HA+HB coexistence/application mechanics are now implemented. The next milestone is the ULS/SLS combination engine and the RC design checks.
+This is not yet a completed design application. The common full-width grillage, permanent-action/construction-stage backbone, Eurocode LM1, BD 37/01 HA/HB nominal traffic, BD 37/01 HA+HB coexistence/application mechanics, and the first code-specific ULS/SLS combination engine are now implemented. The next milestone is the EC2 and BS 5400 RC design checks.
 
 ## Migration policy
 
@@ -73,8 +73,8 @@ Stable code is migrated selectively from matahir01/RC-Bridge-Analysis-ANN. Gener
 2. Common full-width grillage, permanent actions and essential three-stage construction analysis.
 3. Eurocode LM1 adapter and convergence-controlled search. **Implemented.**
 4. BS 5400 / BD 37/01 HA and HB adapters on the same grillage. **Implemented, including nominal HA-alone, HB-alone and HA+HB coexistence/application under 6.4.2.**
-5. Code-specific ULS/SLS combinations. **Next:** consume the existing traffic envelopes and the exposed coexistent HA/HB gamma_fL factors.
-6. EC2 and BS 5400 flexure/shear/cracking/deflection.
+5. Code-specific ULS/SLS combinations. **Implemented for Eurocode persistent ULS plus characteristic/frequent/quasi-permanent SLS, and for BS 5400 primary highway combinations 1-3 with separate structural-dead, surfacing and other-superimposed permanent factors and component-wise HA/HB/HA+HB governing envelopes.** BS combinations 4-5 remain outside the current primary-action set because they require secondary/accidental actions not yet modelled.
+6. EC2 and BS 5400 flexure/shear/cracking/deflection. **Next.**
 7. Practical reinforcement and constructability checks.
 8. Independent verification campaign and calculation reports.
 9. Deterministic dataset generation.
