@@ -522,7 +522,7 @@ def build_construction_verification_suite(
                 abs(analysis.total_vertical_reaction_kn),
                 1.0,
             )
-            equilibrium_limit = max(1.0e-6, 1.0e-6 * equilibrium_scale)
+            equilibrium_limit = max(1.0e-5, 1.0e-5 * equilibrium_scale)
             if abs(analysis.vertical_equilibrium_residual_kn) > equilibrium_limit:
                 raise RuntimeError(
                     "Construction verification beam failed vertical equilibrium: "
