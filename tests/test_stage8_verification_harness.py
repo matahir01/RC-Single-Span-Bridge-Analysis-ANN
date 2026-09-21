@@ -107,7 +107,7 @@ def test_acceptance_matrix_does_not_promote_internal_tests_to_verified() -> None
     assert "common_grillage" in matrix.v1_gate.blockers
     structural = matrix.by_domain(VerificationDomain.STRUCTURAL_ANALYSIS)
     assert structural
-    assert all(not item.state.value == "accepted" for item in structural)
+    assert all(item.state.value != "accepted" for item in structural)
 
 
 def test_calculation_report_forces_formula_substitution_result_and_reference() -> None:
