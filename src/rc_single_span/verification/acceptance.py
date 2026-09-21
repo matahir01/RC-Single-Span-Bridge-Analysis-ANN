@@ -95,10 +95,20 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 state=EvidenceState.INTERNAL_TESTED,
                 evidence=(
                     "Precast, deck-construction and final-composite stiffness/load stages "
-                    "have deterministic regression tests."
+                    "have deterministic regression tests. Stage 8 now rebuilds every "
+                    "girder/stage as a separate beam-FE model with the same load segments "
+                    "and stage A/J/Iy/Iz, cross-checks reactions/M/V/deflection, and emits "
+                    "an exact STAAD verification package for each stage."
                 ),
-                boundary="No independent stage-by-stage external solver comparison is recorded yet.",
-                next_evidence="Run matching stage models externally and compare stage increments.",
+                boundary=(
+                    "The second in-repository beam-FE implementation is an internal "
+                    "cross-check, not independent external evidence. Genuine STAAD "
+                    "stage results have not yet been returned and compared."
+                ),
+                next_evidence=(
+                    "Run the emitted precast, wet-deck and final/superimposed stage "
+                    "models in STAAD and compare reactions, M, V and displacement."
+                ),
             ),
             AcceptanceItem(
                 key="eurocode_lm1",

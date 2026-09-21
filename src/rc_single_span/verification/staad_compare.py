@@ -93,7 +93,7 @@ def _expected(
     analysis: GrillageAnalysisResult,
 ) -> dict[tuple[str, int, str, str], tuple[float, str]]:
     result: dict[tuple[str, int, str, str], tuple[float, str]] = {}
-    support_ids = {item.node_id for item in model.supports}
+    support_ids = {item.node_id for item in model.supports if item.uz}
 
     for node in analysis.nodes:
         result[("node_displacement", node.node_id, "", "DZ")] = (
