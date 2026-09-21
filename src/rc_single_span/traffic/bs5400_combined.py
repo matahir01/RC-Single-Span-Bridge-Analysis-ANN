@@ -30,7 +30,6 @@ from rc_single_span.codes.bs5400.traffic import (
 )
 from rc_single_span.core.models import BridgeProject
 from rc_single_span.traffic.bs5400 import (
-    BS5400CaseResult,
     BS5400ConvergenceResult,
     BS5400ConvergenceStep,
     BS5400GirderGoverningEnvelope,
