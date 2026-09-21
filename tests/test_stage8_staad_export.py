@@ -1,5 +1,5 @@
-from dataclasses import replace
 import json
+from dataclasses import replace
 
 from rc_single_span.analysis.grillage import build_final_composite_grillage
 from rc_single_span.analysis.plan_loads import PlanPointLoad, build_plan_load_case
