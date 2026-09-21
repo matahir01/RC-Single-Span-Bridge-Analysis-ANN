@@ -108,7 +108,7 @@ class HBSearchResult:
 class BS5400NominalTrafficSuite:
     ha: HASearchResult
     hb: HBSearchResult
-    ha_hb: "HAHBCombinedSearchResult"
+    ha_hb: HAHBCombinedSearchResult
     application_status: str
 
 
@@ -125,7 +125,7 @@ class BS5400ConvergenceStep:
 
 @dataclass(frozen=True)
 class BS5400ConvergenceResult:
-    result: "HASearchResult | HBSearchResult | HAHBCombinedSearchResult"
+    result: HASearchResult | HBSearchResult | HAHBCombinedSearchResult
     refinements: tuple[BS5400ConvergenceStep, ...]
     relative_tolerance: float
 
