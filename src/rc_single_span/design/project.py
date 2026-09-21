@@ -90,7 +90,8 @@ class EurocodeGirderDesignResult:
     girder_index: int
     uls_combination_name: str
     sls_combination_name: str
-    flexure: EC2FlexureResult
+    flexure: EC2FlexureResult | None
+    flexure_issue: str | None
     shear: EC2ShearResult
     cracking: EC2CrackWidthResult
     deflection: ResponseDeflectionResult
@@ -102,7 +103,8 @@ class BS5400GirderDesignResult:
     flexure_case: str
     shear_case: str
     cracking_case: str
-    flexure: BS5400FlexureResult
+    flexure: BS5400FlexureResult | None
+    flexure_issue: str | None
     shear: BS5400ShearResult
     cracking: BS5400CrackWidthResult
     deflection: ResponseDeflectionResult
@@ -179,15 +181,26 @@ def run_eurocode_project_design(
         uls = item.combinations.persistent_uls
         sls = _select_eurocode_sls(item, inputs.sls_basis)
 
-        flexure = check_layered_flexure_ec2(
-            med_knm=uls.effects.moment_knm,
-            layers=layers,
-            effective_depth_m=inputs.effective_depth_m,
-            steel_area_mm2=steel_area,
-            fck_mpa=fck,
-            fyk_mpa=fyk,
-            maximum_neutral_axis_ratio=inputs.maximum_neutral_axis_ratio,
-        )
+        flexure_issue: str | None = None
+        try:
+            flexure = check_layered_flexure_ec2(
+                med_knm=uls.effects.moment_knm,
+                layers=layers,
+                effective_depth_m=inputs.effective_depth_m,
+                steel_area_mm2=steel_area,
+                fck_mpa=fck,
+                fyk_mpa=fyk,
+                maximum_neutral_axis_ratio=inputs.maximum_neutral_axis_ratio,
+            )
+        except ValueError as exc:
+            message = str(exc)
+            if (
+                "Neutral axis exceeds" not in message
+                and "compression force exceeds" not in message
+            ):
+                raise
+            flexure = None
+            flexure_issue = message
         shear = check_shear_ec2(
             ved_kn=uls.effects.shear_kn,
             web_width_m=girder_web_width_m(project.geometry),
@@ -237,6 +250,7 @@ def run_eurocode_project_design(
                 uls_combination_name=uls.name,
                 sls_combination_name=sls.name,
                 flexure=flexure,
+                flexure_issue=flexure_issue,
                 shear=shear,
                 cracking=cracking,
                 deflection=deflection,
@@ -336,14 +350,25 @@ def run_bs5400_project_design(
             key=lambda case: case.result.effects.moment_knm,
         )
 
-        flexure = check_layered_flexure_bs5400(
-            med_knm=flexure_case.result.effects.moment_knm,
-            layers=layers,
-            effective_depth_m=inputs.effective_depth_m,
-            steel_area_mm2=steel_area,
-            fcu_mpa=fcu,
-            fy_mpa=fy,
-        )
+        flexure_issue: str | None = None
+        try:
+            flexure = check_layered_flexure_bs5400(
+                med_knm=flexure_case.result.effects.moment_knm,
+                layers=layers,
+                effective_depth_m=inputs.effective_depth_m,
+                steel_area_mm2=steel_area,
+                fcu_mpa=fcu,
+                fy_mpa=fy,
+            )
+        except ValueError as exc:
+            message = str(exc)
+            if (
+                "Neutral axis exceeds" not in message
+                and "compression force exceeds" not in message
+            ):
+                raise
+            flexure = None
+            flexure_issue = message
         shear = check_shear_bs5400(
             ved_kn=shear_case.result.effects.shear_kn,
             web_width_m=girder_web_width_m(project.geometry),
@@ -418,6 +443,7 @@ def run_bs5400_project_design(
                 shear_case=_case_label(shear_case),
                 cracking_case=_case_label(crack_case),
                 flexure=flexure,
+                flexure_issue=flexure_issue,
                 shear=shear,
                 cracking=cracking,
                 deflection=deflection,
