@@ -131,8 +131,7 @@ def _default_tolerance(
     if result_type == "support_reaction":
         return ComparisonTolerance(relative=0.001, absolute=0.1)
     if result_type == "member_end_force":
-        absolute = 0.1 if component == "FZ" else 0.1
-        return ComparisonTolerance(relative=0.001, absolute=absolute)
+        return ComparisonTolerance(relative=0.001, absolute=0.1)
     return ComparisonTolerance()
 
 
