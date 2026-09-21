@@ -37,6 +37,9 @@ on:
         default: "1.35"
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   export:
     runs-on: ubuntu-latest
@@ -71,3 +74,27 @@ jobs:
           name: full-seven-girder-staad-bundle
           path: generated_full_bridge_staad_bundle
           if-no-files-found: error
+      - name: Commit reference verification snapshot
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          rm -rf full_bridge_staad_bundle
+          mkdir -p full_bridge_staad_bundle
+          cp generated_full_bridge_staad_bundle/README.md full_bridge_staad_bundle/
+          cp generated_full_bridge_staad_bundle/bundle_index.json full_bridge_staad_bundle/
+          cp generated_full_bridge_staad_bundle/combination_rules.csv full_bridge_staad_bundle/
+          cp generated_full_bridge_staad_bundle/combination_envelopes.csv full_bridge_staad_bundle/
+          cp generated_full_bridge_staad_bundle/combination_application_matrix.csv full_bridge_staad_bundle/
+          cp generated_full_bridge_staad_bundle/combination_application_matrix.json full_bridge_staad_bundle/
+          while IFS= read -r file; do
+            rel="${file#generated_full_bridge_staad_bundle/}"
+            mkdir -p "full_bridge_staad_bundle/$(dirname "$rel")"
+            cp "$file" "full_bridge_staad_bundle/$rel"
+          done < <(find generated_full_bridge_staad_bundle -type f \( -name '*.std' -o -name '*_manifest.json' \) -print)
+          (cd generated_full_bridge_staad_bundle && zip -qr ../full_bridge_staad_bundle/full-seven-girder-staad-bundle.zip .)
+          sha256sum full_bridge_staad_bundle/full-seven-girder-staad-bundle.zip > full_bridge_staad_bundle/full-seven-girder-staad-bundle.zip.sha256
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add full_bridge_staad_bundle
+          git commit -m "Batch 23: commit generated full seven-girder STAAD evidence"
+          git push
