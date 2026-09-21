@@ -26,6 +26,7 @@ The target V1 application is intentionally narrow:
 - composite reinforced-concrete deck;
 - editable span, deck/carriageway width, girder count/spacing and physical sections;
 - geometry-derived self-weight and permanent actions;
+- targeted construction-stage analysis for precast girder, deck-construction and final-composite states;
 - full-width grillage analysis with transverse distribution;
 - Eurocode EN 1990 / EN 1991-2 / EN 1992-2 profile;
 - BS 5400 / BD 37 profile;
@@ -37,7 +38,7 @@ The target V1 application is intentionally narrow:
 
 ## Explicitly outside V1
 
-Continuous spans, prestressing, curved bridges, substructure/foundation design, broad construction-stage analysis, general local-deck design, arbitrary bridge systems and unrelated advanced features are excluded. They belong in the broader RC-Bridge-Analysis-ANN project if pursued later.
+Continuous spans, prestressing, curved bridges, substructure/foundation design, general local-deck design, arbitrary bridge systems and unrelated advanced features are excluded. The V1 construction-stage scope is deliberately limited to the essential unpropped single-span sequence with unchanged supports: precast girder stage, deck-construction stage, and final hardened-composite stage. General propping/removal, changing support systems, staged continuity, creep/shrinkage redistribution and advanced time-dependent construction modelling remain outside V1. They belong in the broader RC-Bridge-Analysis-ANN project if pursued later.
 
 ## Reliability rule
 
@@ -68,7 +69,7 @@ Stable code is migrated selectively from matahir01/RC-Bridge-Analysis-ANN. Gener
 ## Development sequence
 
 1. Common physical model and simple-span mechanics.
-2. Common full-width grillage and permanent actions.
+2. Common full-width grillage, permanent actions and essential three-stage construction analysis.
 3. Eurocode LM1 adapter and convergence-controlled search.
 4. BS 5400 HA/HB adapter on the same grillage.
 5. Code-specific ULS/SLS combinations.
