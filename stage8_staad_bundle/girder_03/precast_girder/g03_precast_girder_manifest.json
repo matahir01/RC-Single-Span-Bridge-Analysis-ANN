@@ -1,0 +1,67 @@
+{
+  "comparison_scope": {
+    "direct_global_components": [
+      "support FZ reactions",
+      "joint vertical DZ displacements",
+      "member-end global FZ",
+      "member-end global MX",
+      "member-end global MY"
+    ],
+    "first_external_run_note": "Confirm STAAD's reported member-end action sign convention on the first benchmark before promoting structural-analysis acceptance.",
+    "member_mapping_basis": "Native local bending/torsion are transformed with the same direction cosines used by the solver; stored bending sign is explicitly reversed back to the force-dual convention before global projection."
+  },
+  "equilibrium": {
+    "applied_vertical_load_kn": -182.7,
+    "residual_kn": 1.1084466677857563e-12,
+    "vertical_reaction_kn": 182.7000000000011
+  },
+  "external_solver": "STAAD SPACE",
+  "files": {
+    "expected_results_csv": {
+      "extension": ".csv",
+      "sha256": "00413f7b87639f6b56cfe098cc7f949ee4f0dd799df1af19cd9a920b9aead6ed"
+    },
+    "external_results_template_csv": {
+      "extension": ".csv",
+      "sha256": "3bccd834024a15b0ed43055959ac31a885a60f1787e53034fcee3d8b068742b1"
+    },
+    "staad_std": {
+      "extension": ".std",
+      "sha256": "1a8092e15ffca67375600109c842ed07f48a20c64b77ff4cd30de1a101c6ef5e"
+    }
+  },
+  "load_case_id": 301,
+  "load_case_name": "G3 precast_girder",
+  "member_count": 8,
+  "model_name": "15 m single-span RC girder reference - construction stage precast_girder - girder 3",
+  "native_solver": "vertical grillage: w, rx, ry DOFs",
+  "node_count": 9,
+  "provenance": {
+    "girder_index": "3",
+    "load_basis": "exact automatic_permanent_loads segments assigned to this girder and construction stage",
+    "native_torsion_stabilization": "RX restrained at every 1D verification station to remove the unused torsional DOF chain; vertical UZ is restrained only at the two bearings and no torsional loads are present",
+    "repository": "RC-Single-Span-Bridge-Analysis-ANN",
+    "section_basis": "gross physical precast girder",
+    "stage": "precast_girder",
+    "verification_domain": "construction_stage_response"
+  },
+  "schema_version": 1,
+  "section_count": 1,
+  "staad_stabilization": {
+    "claim": "These added in-plane restraints are stabilization only and must not be interpreted as physical bearing restraints.",
+    "reason": "STAAD carries in-plane rigid-body DOFs absent from the native vertical-only grillage solver.",
+    "ux_restrained_nodes": [
+      1
+    ],
+    "uy_restrained_nodes": [
+      1
+    ],
+    "vertical_restraints": "copied from the native support set"
+  },
+  "units": {
+    "force": "kN",
+    "length": "m",
+    "moment": "kNm"
+  },
+  "verification_note": "The package exports the exact structural model already solved by the internal engine. It is evidence infrastructure, not independent verification by itself. Acceptance state changes only after genuine external results are returned and compared."
+}

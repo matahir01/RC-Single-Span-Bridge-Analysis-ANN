@@ -4,8 +4,11 @@ from rc_single_span.core.models import (
     DeckConstruction,
     LongitudinalReinforcement,
     MaterialProperties,
+    PermanentActionModel,
+    PermanentLineAction,
     RectangularGirderProfile,
     SingleSpanBridgeGeometry,
+    SurfacingLayer,
 )
 
 
@@ -34,6 +37,46 @@ def reference_bridge_15m() -> BridgeProject:
             fcu_mpa=30.0,
             fyk_mpa=410.0,
             concrete_density_kn_m3=24.0,
+        ),
+        # Explicit Stage-8 verification-benchmark actions. These values are
+        # representative assumptions, not project test or as-built data.
+        permanent_actions=PermanentActionModel(
+            surfacing_layers=[
+                SurfacingLayer(
+                    name="reference carriageway surfacing (benchmark assumption)",
+                    thickness_m=0.080,
+                    density_kn_m3=22.0,
+                    y_start_m=-3.5,
+                    y_end_m=3.5,
+                    x_end_m=15.0,
+                )
+            ],
+            line_actions=[
+                PermanentLineAction(
+                    name="left safety barrier (benchmark assumption)",
+                    magnitude_kn_m=10.0,
+                    y_m=-5.5,
+                    x_end_m=15.0,
+                ),
+                PermanentLineAction(
+                    name="right safety barrier (benchmark assumption)",
+                    magnitude_kn_m=10.0,
+                    y_m=5.5,
+                    x_end_m=15.0,
+                ),
+                PermanentLineAction(
+                    name="left services (benchmark assumption)",
+                    magnitude_kn_m=2.0,
+                    y_m=-4.8,
+                    x_end_m=15.0,
+                ),
+                PermanentLineAction(
+                    name="right services (benchmark assumption)",
+                    magnitude_kn_m=2.0,
+                    y_m=4.8,
+                    x_end_m=15.0,
+                ),
+            ],
         ),
         provided_longitudinal_reinforcement=LongitudinalReinforcement(
             layers=[BarLayer(count=4, diameter_mm=32.0) for _ in range(4)]

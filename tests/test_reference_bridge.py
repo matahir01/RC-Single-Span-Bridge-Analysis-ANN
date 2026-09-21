@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from rc_single_span.core.models import DesignStandard
+from rc_single_span.core.models import DesignStandard, PermanentActionStage
 
 
 def _load_reference():
@@ -28,3 +28,23 @@ def test_reference_bridge_is_dual_code_ready_without_hidden_conversion() -> None
     assert bridge.materials.fck_mpa == pytest.approx(25.0)
     assert bridge.materials.fcu_mpa == pytest.approx(30.0)
     assert bridge.materials.fyk_mpa == pytest.approx(410.0)
+
+
+def test_reference_bridge_has_explicit_superimposed_benchmark_actions() -> None:
+    bridge = _load_reference()
+    layers = bridge.permanent_actions.surfacing_layers
+    lines = bridge.permanent_actions.line_actions
+
+    assert len(layers) == 1
+    assert layers[0].thickness_m == pytest.approx(0.080)
+    assert layers[0].density_kn_m3 == pytest.approx(22.0)
+    assert layers[0].y_start_m == pytest.approx(-3.5)
+    assert layers[0].y_end_m == pytest.approx(3.5)
+    assert layers[0].stage is PermanentActionStage.SUPERIMPOSED
+
+    assert len(lines) == 4
+    assert [item.magnitude_kn_m for item in lines] == pytest.approx(
+        [10.0, 10.0, 2.0, 2.0]
+    )
+    assert [item.y_m for item in lines] == pytest.approx([-5.5, 5.5, -4.8, 4.8])
+    assert all(item.stage is PermanentActionStage.SUPERIMPOSED for item in lines)

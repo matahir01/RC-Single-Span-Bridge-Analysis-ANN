@@ -1,0 +1,332 @@
+{
+  "elastic_modulus_basis": "EN 1992-1-1:2004+A1:2014 Table 3.1; normal-weight C25/30 default mean secant modulus Ecm = 31 GPa; verification assumption, not project test data",
+  "elastic_modulus_mpa": 31000.0,
+  "external_verification_note": "These files are prepared evidence inputs only. Run the .std models in STAAD.Pro, populate the external-results templates from genuine STAAD output, and compare those returns before promoting acceptance.",
+  "external_verification_status": "pending",
+  "girder_count": 7,
+  "internal_crosscheck_csv": "internal_crosscheck.csv",
+  "internal_crosscheck_passed": true,
+  "longitudinal_verification_divisions": 8,
+  "project_name": "15 m single-span RC girder reference",
+  "repository_sha": "28a4f7e3d6af3dd6108b355a642df8f6a8f48dc5",
+  "schema_version": 1,
+  "span_m": 15.0,
+  "stage_model_count": 21,
+  "stage_models": [
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_01/precast_girder/g01_precast_girder.std",
+        "girder_01/precast_girder/g01_precast_girder_manifest.json",
+        "girder_01/precast_girder/g01_precast_girder_expected_results.csv",
+        "girder_01/precast_girder/g01_precast_girder_external_results_template.csv"
+      ],
+      "girder_index": 1,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 101,
+      "load_case_name": "G1 precast_girder",
+      "section_basis": "gross physical precast girder",
+      "stage": "precast_girder"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_01/deck_construction/g01_deck_construction.std",
+        "girder_01/deck_construction/g01_deck_construction_manifest.json",
+        "girder_01/deck_construction/g01_deck_construction_expected_results.csv",
+        "girder_01/deck_construction/g01_deck_construction_external_results_template.csv"
+      ],
+      "girder_index": 1,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 102,
+      "load_case_name": "G1 deck_construction",
+      "section_basis": "gross physical precast girder",
+      "stage": "deck_construction"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_01/superimposed/g01_superimposed.std",
+        "girder_01/superimposed/g01_superimposed_manifest.json",
+        "girder_01/superimposed/g01_superimposed_expected_results.csv",
+        "girder_01/superimposed/g01_superimposed_external_results_template.csv"
+      ],
+      "girder_index": 1,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 103,
+      "load_case_name": "G1 superimposed",
+      "section_basis": "final composite girder with explicitly participating deck layers",
+      "stage": "superimposed"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_02/precast_girder/g02_precast_girder.std",
+        "girder_02/precast_girder/g02_precast_girder_manifest.json",
+        "girder_02/precast_girder/g02_precast_girder_expected_results.csv",
+        "girder_02/precast_girder/g02_precast_girder_external_results_template.csv"
+      ],
+      "girder_index": 2,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 201,
+      "load_case_name": "G2 precast_girder",
+      "section_basis": "gross physical precast girder",
+      "stage": "precast_girder"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_02/deck_construction/g02_deck_construction.std",
+        "girder_02/deck_construction/g02_deck_construction_manifest.json",
+        "girder_02/deck_construction/g02_deck_construction_expected_results.csv",
+        "girder_02/deck_construction/g02_deck_construction_external_results_template.csv"
+      ],
+      "girder_index": 2,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 202,
+      "load_case_name": "G2 deck_construction",
+      "section_basis": "gross physical precast girder",
+      "stage": "deck_construction"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_02/superimposed/g02_superimposed.std",
+        "girder_02/superimposed/g02_superimposed_manifest.json",
+        "girder_02/superimposed/g02_superimposed_expected_results.csv",
+        "girder_02/superimposed/g02_superimposed_external_results_template.csv"
+      ],
+      "girder_index": 2,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 203,
+      "load_case_name": "G2 superimposed",
+      "section_basis": "final composite girder with explicitly participating deck layers",
+      "stage": "superimposed"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_03/precast_girder/g03_precast_girder.std",
+        "girder_03/precast_girder/g03_precast_girder_manifest.json",
+        "girder_03/precast_girder/g03_precast_girder_expected_results.csv",
+        "girder_03/precast_girder/g03_precast_girder_external_results_template.csv"
+      ],
+      "girder_index": 3,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 301,
+      "load_case_name": "G3 precast_girder",
+      "section_basis": "gross physical precast girder",
+      "stage": "precast_girder"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_03/deck_construction/g03_deck_construction.std",
+        "girder_03/deck_construction/g03_deck_construction_manifest.json",
+        "girder_03/deck_construction/g03_deck_construction_expected_results.csv",
+        "girder_03/deck_construction/g03_deck_construction_external_results_template.csv"
+      ],
+      "girder_index": 3,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 302,
+      "load_case_name": "G3 deck_construction",
+      "section_basis": "gross physical precast girder",
+      "stage": "deck_construction"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_03/superimposed/g03_superimposed.std",
+        "girder_03/superimposed/g03_superimposed_manifest.json",
+        "girder_03/superimposed/g03_superimposed_expected_results.csv",
+        "girder_03/superimposed/g03_superimposed_external_results_template.csv"
+      ],
+      "girder_index": 3,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 303,
+      "load_case_name": "G3 superimposed",
+      "section_basis": "final composite girder with explicitly participating deck layers",
+      "stage": "superimposed"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_04/precast_girder/g04_precast_girder.std",
+        "girder_04/precast_girder/g04_precast_girder_manifest.json",
+        "girder_04/precast_girder/g04_precast_girder_expected_results.csv",
+        "girder_04/precast_girder/g04_precast_girder_external_results_template.csv"
+      ],
+      "girder_index": 4,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 401,
+      "load_case_name": "G4 precast_girder",
+      "section_basis": "gross physical precast girder",
+      "stage": "precast_girder"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_04/deck_construction/g04_deck_construction.std",
+        "girder_04/deck_construction/g04_deck_construction_manifest.json",
+        "girder_04/deck_construction/g04_deck_construction_expected_results.csv",
+        "girder_04/deck_construction/g04_deck_construction_external_results_template.csv"
+      ],
+      "girder_index": 4,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 402,
+      "load_case_name": "G4 deck_construction",
+      "section_basis": "gross physical precast girder",
+      "stage": "deck_construction"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_04/superimposed/g04_superimposed.std",
+        "girder_04/superimposed/g04_superimposed_manifest.json",
+        "girder_04/superimposed/g04_superimposed_expected_results.csv",
+        "girder_04/superimposed/g04_superimposed_external_results_template.csv"
+      ],
+      "girder_index": 4,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 403,
+      "load_case_name": "G4 superimposed",
+      "section_basis": "final composite girder with explicitly participating deck layers",
+      "stage": "superimposed"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_05/precast_girder/g05_precast_girder.std",
+        "girder_05/precast_girder/g05_precast_girder_manifest.json",
+        "girder_05/precast_girder/g05_precast_girder_expected_results.csv",
+        "girder_05/precast_girder/g05_precast_girder_external_results_template.csv"
+      ],
+      "girder_index": 5,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 501,
+      "load_case_name": "G5 precast_girder",
+      "section_basis": "gross physical precast girder",
+      "stage": "precast_girder"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_05/deck_construction/g05_deck_construction.std",
+        "girder_05/deck_construction/g05_deck_construction_manifest.json",
+        "girder_05/deck_construction/g05_deck_construction_expected_results.csv",
+        "girder_05/deck_construction/g05_deck_construction_external_results_template.csv"
+      ],
+      "girder_index": 5,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 502,
+      "load_case_name": "G5 deck_construction",
+      "section_basis": "gross physical precast girder",
+      "stage": "deck_construction"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_05/superimposed/g05_superimposed.std",
+        "girder_05/superimposed/g05_superimposed_manifest.json",
+        "girder_05/superimposed/g05_superimposed_expected_results.csv",
+        "girder_05/superimposed/g05_superimposed_external_results_template.csv"
+      ],
+      "girder_index": 5,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 503,
+      "load_case_name": "G5 superimposed",
+      "section_basis": "final composite girder with explicitly participating deck layers",
+      "stage": "superimposed"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_06/precast_girder/g06_precast_girder.std",
+        "girder_06/precast_girder/g06_precast_girder_manifest.json",
+        "girder_06/precast_girder/g06_precast_girder_expected_results.csv",
+        "girder_06/precast_girder/g06_precast_girder_external_results_template.csv"
+      ],
+      "girder_index": 6,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 601,
+      "load_case_name": "G6 precast_girder",
+      "section_basis": "gross physical precast girder",
+      "stage": "precast_girder"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_06/deck_construction/g06_deck_construction.std",
+        "girder_06/deck_construction/g06_deck_construction_manifest.json",
+        "girder_06/deck_construction/g06_deck_construction_expected_results.csv",
+        "girder_06/deck_construction/g06_deck_construction_external_results_template.csv"
+      ],
+      "girder_index": 6,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 602,
+      "load_case_name": "G6 deck_construction",
+      "section_basis": "gross physical precast girder",
+      "stage": "deck_construction"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_06/superimposed/g06_superimposed.std",
+        "girder_06/superimposed/g06_superimposed_manifest.json",
+        "girder_06/superimposed/g06_superimposed_expected_results.csv",
+        "girder_06/superimposed/g06_superimposed_external_results_template.csv"
+      ],
+      "girder_index": 6,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 603,
+      "load_case_name": "G6 superimposed",
+      "section_basis": "final composite girder with explicitly participating deck layers",
+      "stage": "superimposed"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_07/precast_girder/g07_precast_girder.std",
+        "girder_07/precast_girder/g07_precast_girder_manifest.json",
+        "girder_07/precast_girder/g07_precast_girder_expected_results.csv",
+        "girder_07/precast_girder/g07_precast_girder_external_results_template.csv"
+      ],
+      "girder_index": 7,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 701,
+      "load_case_name": "G7 precast_girder",
+      "section_basis": "gross physical precast girder",
+      "stage": "precast_girder"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_07/deck_construction/g07_deck_construction.std",
+        "girder_07/deck_construction/g07_deck_construction_manifest.json",
+        "girder_07/deck_construction/g07_deck_construction_expected_results.csv",
+        "girder_07/deck_construction/g07_deck_construction_external_results_template.csv"
+      ],
+      "girder_index": 7,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 702,
+      "load_case_name": "G7 deck_construction",
+      "section_basis": "gross physical precast girder",
+      "stage": "deck_construction"
+    },
+    {
+      "elastic_modulus_mpa": 31000.0,
+      "files": [
+        "girder_07/superimposed/g07_superimposed.std",
+        "girder_07/superimposed/g07_superimposed_manifest.json",
+        "girder_07/superimposed/g07_superimposed_expected_results.csv",
+        "girder_07/superimposed/g07_superimposed_external_results_template.csv"
+      ],
+      "girder_index": 7,
+      "internal_crosscheck_passed": true,
+      "load_case_id": 703,
+      "load_case_name": "G7 superimposed",
+      "section_basis": "final composite girder with explicitly participating deck layers",
+      "stage": "superimposed"
+    }
+  ]
+}
