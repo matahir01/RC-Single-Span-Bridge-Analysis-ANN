@@ -62,7 +62,7 @@ def _expected_results_csv(
             "comparison_status",
         )
     )
-    support_ids = {item.node_id for item in model.supports}
+    support_ids = {item.node_id for item in model.supports if item.uz}
     for node in analysis.nodes:
         writer.writerow(
             (
