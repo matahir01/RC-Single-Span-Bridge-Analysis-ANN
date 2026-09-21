@@ -147,7 +147,7 @@ def layered_compression_resistance(
         raise ValueError("Calculated lever arm is non-positive.")
 
     return LayeredCompressionResistance(
-        resistance_knm=steel_force_n * lever_arm / 1.0e6,
+        resistance_knm=steel_force_n * lever_arm / 1000.0,
         neutral_axis_from_top_m=neutral_axis,
         compression_block_depth_m=block_depth,
         compression_centroid_from_top_m=centroid,
