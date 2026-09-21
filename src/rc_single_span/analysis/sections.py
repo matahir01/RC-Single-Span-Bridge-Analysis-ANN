@@ -303,3 +303,17 @@ def station_tributary_widths_m(stations_m: tuple[float, ...]) -> tuple[float, ..
             width = 0.5 * (stations_m[index + 1] - stations_m[index - 1])
         widths.append(width)
     return tuple(widths)
+
+
+
+def girder_web_width_m(geometry: SingleSpanBridgeGeometry) -> float:
+    """Return the physical web width governing longitudinal shear."""
+
+    profile = geometry.girder_profile
+    if isinstance(profile, RectangularGirderProfile):
+        return float(profile.width_m)
+    if isinstance(profile, TGirderProfile):
+        return float(profile.web_width_m)
+    if isinstance(profile, IGirderProfile):
+        return float(profile.web_width_m)
+    raise TypeError("Unsupported girder profile.")
