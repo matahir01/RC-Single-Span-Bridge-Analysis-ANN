@@ -78,7 +78,19 @@ def test_construction_suite_crosschecks_all_three_stages_and_cumulative_response
 
     assert len(suite.stages) == 9
     assert len(suite.cumulative) == 3
-    assert suite.passes_internal_crosscheck
+    failed = [
+        (
+            comparison.label,
+            comparison.internal_value,
+            comparison.reference_value,
+            comparison.relative_difference,
+            comparison.absolute_difference,
+        )
+        for item in (*suite.stages, *suite.cumulative)
+        for comparison in item.comparisons
+        if not comparison.passes
+    ]
+    assert suite.passes_internal_crosscheck, failed
     assert all(item.passes_internal_crosscheck for item in suite.stages)
     assert all(item.passes_internal_crosscheck for item in suite.cumulative)
 
