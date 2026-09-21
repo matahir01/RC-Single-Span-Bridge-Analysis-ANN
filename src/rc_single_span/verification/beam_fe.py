@@ -204,8 +204,15 @@ def solve_construction_beam_fe(
         raise ValueError("Construction beam FE model has no bending restraints.")
     free = tuple(index for index in range(dof_count) if index not in constrained)
     reduced = stiffness[np.ix_(free, free)]
-    if np.linalg.matrix_rank(reduced) < reduced.shape[0]:
-        raise ValueError("Construction beam FE stiffness matrix is singular.")
+    rank = int(np.linalg.matrix_rank(reduced))
+    if rank < reduced.shape[0]:
+        minimum_length = min(element.length_m for element in elements)
+        raise ValueError(
+            "Construction beam FE stiffness matrix is singular: "
+            f"rank={rank}/{reduced.shape[0]}, nodes={len(model.nodes)}, "
+            f"free_dofs={len(free)}, min_member_length_m={minimum_length:.12g}, "
+            f"constrained_dofs={len(constrained)}."
+        )
 
     displacement = np.zeros(dof_count)
     displacement[list(free)] = np.linalg.solve(reduced, loads[list(free)])
