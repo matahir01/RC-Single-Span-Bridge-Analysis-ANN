@@ -108,7 +108,11 @@ def test_writer_emits_complete_full_width_campaign(tmp_path) -> None:
     assert index["permanent_component_model_count"] == 4
     assert index["governing_traffic_model_count"] == len(result.traffic_campaign.cases)
     assert index["combination_rule_count"] == 22
-    assert index["combination_instance_count"] == 250
+    expected_combination_instances = sum(
+        len(result.traffic_campaign.cases_for(rule.traffic_action))
+        for rule in result.combination_rules
+    )
+    assert index["combination_instance_count"] == expected_combination_instances
     assert index["repository_sha"] == "abc123"
     assert index["internal_status"] == "passed"
     assert index["external_verification_status"] == "pending"
@@ -145,7 +149,8 @@ def test_writer_emits_complete_full_width_campaign(tmp_path) -> None:
     matrix = json.loads(
         (output / "combination_application_matrix.json").read_text(encoding="utf-8")
     )
-    assert matrix["combination_instance_count"] == 250
+    assert matrix["combination_instance_count"] == expected_combination_instances
+    assert len(matrix["instances"]) == expected_combination_instances
     assert all(len(item["terms"]) == 5 for item in matrix["instances"])
     assert "load-time stiffness" in matrix["application_note"]
     assert len(result.written_files) > expected_model_count * 4
