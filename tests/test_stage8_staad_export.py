@@ -136,12 +136,14 @@ def test_staad_verification_package_is_traceable_and_does_not_claim_acceptance()
     assert manifest["equilibrium"]["residual_kn"] == analysis.vertical_equilibrium_residual_kn
     assert manifest["staad_stabilization"]["ux_restrained_nodes"]
     assert manifest["staad_stabilization"]["uy_restrained_nodes"]
-    assert manifest["comparison_scope"]["direct_now"] == [
+    assert manifest["comparison_scope"]["direct_global_components"] == [
         "support FZ reactions",
         "joint vertical DZ displacements",
+        "member-end global FZ",
+        "member-end global MX",
+        "member-end global MY",
     ]
+    assert "first" in manifest["comparison_scope"]["first_external_run_note"].lower()
     assert "not independent verification by itself" in manifest["verification_note"]
-    assert "requires_explicit_staad_axis_mapping" in package.expected_results_csv
-    assert "Populate only after explicit STAAD/native axis mapping is confirmed." in (
-        package.external_results_template_csv
-    )
+    assert "direct_global_mapping" in package.expected_results_csv
+    assert "PRINT MEMBER FORCES GLOBAL" in package.external_results_template_csv
