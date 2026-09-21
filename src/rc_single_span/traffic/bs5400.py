@@ -403,7 +403,10 @@ def run_ha_grillage_search(
         model = replace(build.model, load_cases=(case,))
         analysis = solve_prepared_vertical_grillage(prepared, model)
         if abs(analysis.vertical_equilibrium_residual_kn) > 1.0e-6:
-            raise RuntimeError(\n                "HA grillage case failed vertical equilibrium: "\n                f"{analysis.vertical_equilibrium_residual_kn:.12g} kN."\n            )
+            raise RuntimeError(
+                "HA grillage case failed vertical equilibrium: "
+                f"{analysis.vertical_equilibrium_residual_kn:.12g} kN."
+            )
         girders = native_traffic_girder_envelope(model, analysis)
         _update_governing(governing, placement.case_id, girders)
         case_result = BS5400CaseResult(
@@ -590,7 +593,10 @@ def run_hb_grillage_search(
             model = replace(build.model, load_cases=(case,))
             analysis = solve_prepared_vertical_grillage(prepared, model)
             if abs(analysis.vertical_equilibrium_residual_kn) > 1.0e-6:
-                raise RuntimeError(\n                    "HB grillage case failed vertical equilibrium: "\n                    f"{analysis.vertical_equilibrium_residual_kn:.12g} kN."\n                )
+                raise RuntimeError(
+                    "HB grillage case failed vertical equilibrium: "
+                    f"{analysis.vertical_equilibrium_residual_kn:.12g} kN."
+                )
             girders = native_traffic_girder_envelope(model, analysis)
             _update_governing(governing, placement.case_id, girders)
             case_result = BS5400CaseResult(
