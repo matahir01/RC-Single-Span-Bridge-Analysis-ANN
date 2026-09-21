@@ -1,0 +1,72 @@
+{
+  "comparison_scope": {
+    "direct_global_components": [
+      "support FZ reactions",
+      "joint vertical DZ displacements",
+      "member-end global FZ",
+      "member-end global MX",
+      "member-end global MY"
+    ],
+    "first_external_run_note": "Confirm STAAD's reported member-end action sign convention on the first benchmark before promoting structural-analysis acceptance.",
+    "member_mapping_basis": "Native local bending/torsion are transformed with the same direction cosines used by the solver; stored bending sign is explicitly reversed back to the force-dual convention before global projection."
+  },
+  "equilibrium": {
+    "applied_vertical_load_kn": -1254.6000000000001,
+    "residual_kn": -9.094947017729282e-13,
+    "vertical_reaction_kn": 1254.5999999999992
+  },
+  "external_solver": "STAAD SPACE",
+  "files": {
+    "expected_results_csv": {
+      "extension": ".csv",
+      "sha256": "ffa295fa897c795a27bc1b443049bd08b4610a911c1f983ea4c99b5de0d54779"
+    },
+    "external_results_template_csv": {
+      "extension": ".csv",
+      "sha256": "175af2156d885a2a22053055ef41a94c77786f2dcb3e282a6ebc64b307e596a2"
+    },
+    "staad_std": {
+      "extension": ".std",
+      "sha256": "0b3ba7037ad2d08af7773067bf5cfd6778d003e171b5009f681a4f5f5ed39f67"
+    }
+  },
+  "load_case_id": 101,
+  "load_case_name": "Full bridge precast_girder",
+  "member_count": 56,
+  "model_name": "15 m single-span RC girder reference - full seven-girder precast_girder",
+  "native_solver": "vertical grillage: w, rx, ry DOFs",
+  "node_count": 63,
+  "provenance": {
+    "girder_line_count": "7",
+    "load_basis": "all automatic_permanent_loads segments for this stage across every physical girder line",
+    "repository": "RC-Single-Span-Bridge-Analysis-ANN",
+    "stage": "precast_girder",
+    "structural_system_basis": "seven coordinated longitudinal girder lines; transverse stiffness is zero because no diaphragm properties are supplied and the in-situ deck has not hardened at this load stage",
+    "verification_domain": "full_width_construction_stage_response"
+  },
+  "schema_version": 1,
+  "section_count": 7,
+  "staad_stabilization": {
+    "claim": "These added in-plane restraints are stabilization only and must not be interpreted as physical bearing restraints.",
+    "reason": "STAAD carries in-plane rigid-body DOFs absent from the native vertical-only grillage solver.",
+    "ux_restrained_nodes": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "uy_restrained_nodes": [
+      1
+    ],
+    "vertical_restraints": "copied from the native support set"
+  },
+  "units": {
+    "force": "kN",
+    "length": "m",
+    "moment": "kNm"
+  },
+  "verification_note": "The package exports the exact structural model already solved by the internal engine. It is evidence infrastructure, not independent verification by itself. Acceptance state changes only after genuine external results are returned and compared."
+}

@@ -1,0 +1,74 @@
+{
+  "comparison_scope": {
+    "direct_global_components": [
+      "support FZ reactions",
+      "joint vertical DZ displacements",
+      "member-end global FZ",
+      "member-end global MX",
+      "member-end global MY"
+    ],
+    "first_external_run_note": "Confirm STAAD's reported member-end action sign convention on the first benchmark before promoting structural-analysis acceptance.",
+    "member_mapping_basis": "Native local bending/torsion are transformed with the same direction cosines used by the solver; stored bending sign is explicitly reversed back to the force-dual convention before global projection."
+  },
+  "equilibrium": {
+    "applied_vertical_load_kn": -1805.2232399268842,
+    "residual_kn": -1.5231717043207027e-07,
+    "vertical_reaction_kn": 1805.223239774567
+  },
+  "external_solver": "STAAD SPACE",
+  "files": {
+    "expected_results_csv": {
+      "extension": ".csv",
+      "sha256": "a9907fa854b8ed92da389f39717a301277ee40386482967b16a67da9a0b51356"
+    },
+    "external_results_template_csv": {
+      "extension": ".csv",
+      "sha256": "6461bc6b70ae652039d1a0510eabca162f9b3c9237aff12ddcebc867d5bd25c5"
+    },
+    "staad_std": {
+      "extension": ".std",
+      "sha256": "7c7d5ab5c173c67b74bceda29b787f4245d9111ff2aa53849586a51855335a2e"
+    }
+  },
+  "load_case_id": 41,
+  "load_case_name": "BD 37/01 HA case 41",
+  "member_count": 316,
+  "model_name": "15 m single-span RC girder reference final composite grillage",
+  "native_solver": "vertical grillage: w, rx, ry DOFs",
+  "node_count": 209,
+  "provenance": {
+    "case_key": "ha_000041",
+    "governing_for": "G3 shear",
+    "repository": "RC-Single-Span-Bridge-Analysis-ANN",
+    "search_retention_basis": "case governs at least one moment, shear, torsion or deflection quantity across the seven physical girders",
+    "source_search_case_id": "41",
+    "standard": "BD 37/01",
+    "traffic_action": "ha",
+    "verification_domain": "full_width_governing_traffic_response"
+  },
+  "schema_version": 1,
+  "section_count": 26,
+  "staad_stabilization": {
+    "claim": "These added in-plane restraints are stabilization only and must not be interpreted as physical bearing restraints.",
+    "reason": "STAAD carries in-plane rigid-body DOFs absent from the native vertical-only grillage solver.",
+    "ux_restrained_nodes": [
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10
+    ],
+    "uy_restrained_nodes": [
+      2
+    ],
+    "vertical_restraints": "copied from the native support set"
+  },
+  "units": {
+    "force": "kN",
+    "length": "m",
+    "moment": "kNm"
+  },
+  "verification_note": "The package exports the exact structural model already solved by the internal engine. It is evidence infrastructure, not independent verification by itself. Acceptance state changes only after genuine external results are returned and compared."
+}
