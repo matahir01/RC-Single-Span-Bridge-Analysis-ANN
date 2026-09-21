@@ -15,11 +15,11 @@ from rc_single_span.core.models import (
 from rc_single_span.traffic.bs5400 import (
     HALanePlacement,
     HASearchPlacement,
+    HBSearchPlacement,
     build_ha_plan_loads,
     build_hb_plan_loads,
     run_ha_grillage_search,
     run_hb_grillage_search,
-    HBSearchPlacement,
 )
 
 
