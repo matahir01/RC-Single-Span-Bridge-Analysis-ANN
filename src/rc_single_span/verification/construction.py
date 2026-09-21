@@ -8,10 +8,7 @@ from rc_single_span.analysis.construction import (
     CumulativeGirderResult,
     run_construction_stage_analysis,
 )
-from rc_single_span.analysis.grillage_solver import (
-    GrillageAnalysisResult,
-    solve_vertical_grillage,
-)
+from rc_single_span.analysis.grillage_solver import GrillageAnalysisResult, solve_vertical_grillage
 from rc_single_span.analysis.permanent import PermanentLoadSegment
 from rc_single_span.analysis.simple_span import (
     DistributedLoadSegment,
@@ -33,9 +30,7 @@ from rc_single_span.verification.comparison import (
     ScalarComparison,
     compare_scalar,
 )
-from rc_single_span.verification.member_forces import (
-    native_global_member_end_forces,
-)
+from rc_single_span.verification.member_forces import native_global_member_end_forces
 from rc_single_span.verification.package import (
     StaadVerificationPackage,
     build_staad_verification_package,
