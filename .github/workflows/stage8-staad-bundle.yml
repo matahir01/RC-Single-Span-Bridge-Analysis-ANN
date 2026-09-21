@@ -1,0 +1,37 @@
+name: Stage 8 STAAD verification bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      elastic_modulus_mpa:
+        description: "Concrete elastic modulus in MPa for this verification run"
+        required: true
+        type: string
+      elastic_modulus_basis:
+        description: "Traceable basis/source for the supplied elastic modulus"
+        required: true
+        type: string
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Export construction-stage verification packages
+        run: >
+          python examples/export_reference_staad_packages.py
+          --elastic-modulus-mpa "${{ inputs.elastic_modulus_mpa }}"
+          --elastic-modulus-basis "${{ inputs.elastic_modulus_basis }}"
+          --repository-sha "${{ github.sha }}"
+          --output-dir stage8_staad_bundle
+      - name: Upload verification bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage8-staad-verification-bundle
+          path: stage8_staad_bundle
+          if-no-files-found: error
