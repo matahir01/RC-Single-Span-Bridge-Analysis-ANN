@@ -1,1 +1,79 @@
-# RC-Single-Span-Bridge-Analysis-ANN
+# RC Single-Span Bridge Analysis & ANN
+
+A focused engineering application for simply supported, single-span, non-prestressed reinforced-concrete girder bridges.
+
+The deterministic bridge-analysis and design engine is the primary product. ANN surrogate modelling, reliability analysis and RBDO are advanced capabilities built on top of verified deterministic results; the application is not branded or architected as an MSc-only tool.
+
+## Design philosophy
+
+One physical bridge model is shared by all code profiles.
+
+Physical bridge -> code-specific traffic and combinations -> common structural solver -> code-specific RC design.
+
+Eurocode and BS 5400 are allowed to differ only where the standards actually differ: traffic generation, combination rules, material interpretation, resistance/serviceability checks and detailing provisions.
+
+The structural solver itself is code-neutral.
+
+No automatic BS cube-strength to Eurocode cylinder-strength conversion is permitted. If a project is analysed to both standards, the applicable material strengths must be supplied explicitly and remain traceable.
+
+## V1 scope
+
+The target V1 application is intentionally narrow:
+
+- simply supported, one span only;
+- non-prestressed reinforced concrete;
+- longitudinal rectangular, T or I girder profiles;
+- composite reinforced-concrete deck;
+- editable span, deck/carriageway width, girder count/spacing and physical sections;
+- geometry-derived self-weight and permanent actions;
+- full-width grillage analysis with transverse distribution;
+- Eurocode EN 1990 / EN 1991-2 / EN 1992-2 profile;
+- BS 5400 / BD 37 profile;
+- flexure, shear, cracking and deflection checks;
+- practical reinforcement selection and constructability checks;
+- calculation reports with formula, substitution, result and reference;
+- verification evidence kept separate for structural analysis, code loading and RC design;
+- deterministic dataset export, ANN, reliability and RBDO only after deterministic gates are accepted.
+
+## Explicitly outside V1
+
+Continuous spans, prestressing, curved bridges, substructure/foundation design, broad construction-stage analysis, general local-deck design, arbitrary bridge systems and unrelated advanced features are excluded. They belong in the broader RC-Bridge-Analysis-ANN project if pursued later.
+
+## Reliability rule
+
+A capability is never labelled verified merely because the software runs.
+
+Structural analysis is checked against independent structural software such as STAAD using the same physical model and loads. Code loading and combinations are checked against published/code-reference examples and hand calculations. RC design equations are checked independently against worked examples and hand calculations. Internal unit tests protect implementation consistency but do not replace independent engineering verification.
+
+## Foundation status
+
+The repository currently contains the first common foundation:
+
+- validated single-span physical bridge model;
+- explicit Eurocode and BS 5400 material requirements;
+- rectangular/T/I girder definitions;
+- deck build-up with explicit composite participation;
+- longitudinal reinforcement representation;
+- code-neutral load-effect container;
+- exact simple-span UDL and segmented-load mechanics migrated from the verified parent project;
+- CI, linting and regression tests;
+- a 15 m reference bridge with 7 girders at 1.70 m spacing, 400 x 950 mm precast girders, 75 + 175 mm deck build-up and four layers of four Y32 bars.
+
+This is not yet a completed design application. The next milestone is the common full-width grillage model and permanent-action engine, followed by the two code-specific traffic adapters.
+
+## Migration policy
+
+Stable code is migrated selectively from matahir01/RC-Bridge-Analysis-ANN. General and continuous-span features are not copied merely because they already exist. Every migrated component must have relevant regression tests in this repository and fit the single-span architecture.
+
+## Development sequence
+
+1. Common physical model and simple-span mechanics.
+2. Common full-width grillage and permanent actions.
+3. Eurocode LM1 adapter and convergence-controlled search.
+4. BS 5400 HA/HB adapter on the same grillage.
+5. Code-specific ULS/SLS combinations.
+6. EC2 and BS 5400 flexure/shear/cracking/deflection.
+7. Practical reinforcement and constructability checks.
+8. Independent verification campaign and calculation reports.
+9. Deterministic dataset generation.
+10. ANN surrogate validation, reliability analysis and RBDO.
