@@ -1,0 +1,67 @@
+result_type,object_id,end,component,external_value,unit,source,notes
+node_displacement,1,,DZ,,m,STAAD,
+support_reaction,1,,FZ,,kN,STAAD,
+node_displacement,2,,DZ,,m,STAAD,
+support_reaction,2,,FZ,,kN,STAAD,
+node_displacement,3,,DZ,,m,STAAD,
+support_reaction,3,,FZ,,kN,STAAD,
+node_displacement,4,,DZ,,m,STAAD,
+support_reaction,4,,FZ,,kN,STAAD,
+node_displacement,5,,DZ,,m,STAAD,
+support_reaction,5,,FZ,,kN,STAAD,
+node_displacement,6,,DZ,,m,STAAD,
+support_reaction,6,,FZ,,kN,STAAD,
+node_displacement,7,,DZ,,m,STAAD,
+support_reaction,7,,FZ,,kN,STAAD,
+node_displacement,8,,DZ,,m,STAAD,
+support_reaction,8,,FZ,,kN,STAAD,
+node_displacement,9,,DZ,,m,STAAD,
+support_reaction,9,,FZ,,kN,STAAD,
+member_end_force,1,i,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,1,i,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,1,i,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,1,j,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,1,j,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,1,j,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,2,i,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,2,i,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,2,i,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,2,j,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,2,j,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,2,j,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,3,i,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,3,i,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,3,i,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,3,j,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,3,j,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,3,j,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,4,i,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,4,i,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,4,i,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,4,j,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,4,j,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,4,j,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,5,i,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,5,i,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,5,i,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,5,j,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,5,j,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,5,j,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,6,i,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,6,i,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,6,i,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,6,j,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,6,j,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,6,j,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,7,i,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,7,i,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,7,i,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,7,j,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,7,j,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,7,j,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,8,i,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,8,i,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,8,i,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,8,j,FZ,,kN,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,8,j,MX,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.
+member_end_force,8,j,MY,,kNm,STAAD,Use STAAD PRINT MEMBER FORCES GLOBAL output for this member end.

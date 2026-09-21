@@ -79,3 +79,9 @@ Stable code is migrated selectively from matahir01/RC-Bridge-Analysis-ANN. Gener
 8. Independent verification campaign and calculation reports. **In progress:** the reproducible reference runner, explicit acceptance matrix, external-comparison tolerances, all-case combined-deflection re-search, structured formula/substitution/result/reference reporting, exact-common-grillage STAAD verification export, global FZ/MX/MY member-result mapping, and the dedicated construction/permanent-action verification suite are implemented. Every precast, wet-deck and final/superimposed girder stage can now be rebuilt as a separate beam-FE model using the exact production load segments, stage section A/J/Iy/Iz and elastic modulus; reactions, M, V and displacement are cross-checked against the production construction equations, and an exact STAAD package is emitted for each stage. A bundle writer and manual GitHub Actions workflow now package the full stage-model set, expected results, external-return templates, internal cross-check CSV and provenance index; the elastic modulus and its basis must be supplied explicitly. See `docs/STAAD_VERIFICATION.md`. The internal second-solver agreement remains internal evidence only: the first genuine STAAD benchmark must confirm external sign conventions and return comparable stage results before structural-analysis evidence is promoted from internal-tested; no capability is promoted until genuine external/hand-reference evidence is returned and reviewed.
 9. Deterministic dataset generation.
 10. ANN surrogate validation, reliability analysis and RBDO.
+
+The first generated construction-stage evidence bundle is committed under
+`stage8_staad_bundle/`. It contains 21 loaded STAAD `.std` models (seven girders
+by three stages), expected-result tables, empty STAAD-return templates and
+provenance manifests. Its internal cross-check is passing; external STAAD
+verification remains pending.
