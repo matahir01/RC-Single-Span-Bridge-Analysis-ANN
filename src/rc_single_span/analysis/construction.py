@@ -339,3 +339,70 @@ def factored_permanent_deflection(
         maximum_position_m=float(optimum.x),
         factors_by_category=dict(factors),
     )
+
+
+
+def factored_permanent_deflection_at_x_mm(
+    project: BridgeProject,
+    *,
+    girder_index: int,
+    x_m: float,
+    factors_by_category: dict[PermanentLoadCategory, float] | None = None,
+    elastic_modulus_mpa: float | None = None,
+) -> float:
+    """Return stage-aware permanent deflection at one longitudinal coordinate."""
+
+    if not 1 <= girder_index <= int(project.geometry.girder_count):
+        raise IndexError("girder_index is outside the bridge layout.")
+    span = float(project.geometry.span_m)
+    if not 0.0 <= x_m <= span:
+        raise ValueError("x_m lies outside the bridge span.")
+    factors = factors_by_category or {
+        category: 1.0 for category in PermanentLoadCategory
+    }
+    missing = set(PermanentLoadCategory) - set(factors)
+    if missing:
+        labels = ", ".join(sorted(item.value for item in missing))
+        raise ValueError(f"Missing permanent-deflection factors for: {labels}.")
+    if any(value < 0.0 for value in factors.values()):
+        raise ValueError("Permanent-deflection factors cannot be negative.")
+
+    e_mpa = (
+        float(elastic_modulus_mpa)
+        if elastic_modulus_mpa is not None
+        else project.materials.elastic_modulus_mpa
+    )
+    if e_mpa is None or e_mpa <= 0.0:
+        raise ValueError("Permanent deflection requires an explicit elastic modulus.")
+
+    total_m = 0.0
+    all_segments = automatic_permanent_loads(project)
+    for stage in PermanentActionStage:
+        stage_segments = tuple(
+            segment
+            for segment in all_segments
+            if segment.girder_index == girder_index and segment.stage is stage
+        )
+        loads = tuple(
+            DistributedLoadSegment(
+                segment.magnitude_kn_m * factors[segment.category],
+                segment.x_start_m,
+                segment.x_end_m,
+                label=segment.source,
+            )
+            for segment in stage_segments
+        )
+        if not loads:
+            continue
+        section = _section_for_stage(
+            project,
+            girder_index=girder_index,
+            stage=stage,
+        )
+        total_m += _deflection_m(
+            span,
+            loads,
+            x_m=x_m,
+            ei_kn_m2=e_mpa * 1000.0 * section.iy_m4,
+        )
+    return total_m * 1000.0
