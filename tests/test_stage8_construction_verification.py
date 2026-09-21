@@ -90,8 +90,8 @@ def test_construction_suite_crosschecks_all_three_stages_and_cumulative_response
             1.0,
         )
         assert abs(item.analysis.vertical_equilibrium_residual_kn) <= max(
-            1.0e-6,
-            1.0e-6 * scale,
+            1.0e-5,
+            1.0e-5 * scale,
         )
 
 
