@@ -283,7 +283,7 @@ def test_bs5400_project_design_keeps_governing_case_provenance() -> None:
     assert len(result) == 7
     exterior = result[0]
     assert "HB" in exterior.flexure_case.upper()
-    assert "HA_HB" in exterior.shear_case
+    assert "ha_hb" in exterior.shear_case.lower()
     assert exterior.flexure is None
     assert exterior.flexure_issue is not None
     assert "Neutral axis exceeds" in exterior.flexure_issue
