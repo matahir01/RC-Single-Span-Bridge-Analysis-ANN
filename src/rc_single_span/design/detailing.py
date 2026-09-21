@@ -72,6 +72,7 @@ def select_longitudinal_bar_arrangement(
     available_diameters_mm: tuple[float, ...] = (16.0, 20.0, 25.0, 32.0, 40.0),
     maximum_layers: int = 4,
     preferred_vertical_clear_spacing_mm: float | None = None,
+    diameter_governs_clear_spacing: bool = True,
 ) -> LongitudinalBarArrangement:
     """Choose the least-area unbundled arrangement satisfying explicit cage geometry."""
 
@@ -101,7 +102,11 @@ def select_longitudinal_bar_arrangement(
     for diameter in sorted(set(available_diameters_mm)):
         area = bar_area_mm2(diameter)
         count = max(2, ceil(required_area_mm2 / area))
-        minimum_clear = max(minimum_clear_spacing_mm, diameter)
+        minimum_clear = (
+            max(minimum_clear_spacing_mm, diameter)
+            if diameter_governs_clear_spacing
+            else minimum_clear_spacing_mm
+        )
         maximum_per_layer = int(
             (clear_width + minimum_clear) // (diameter + minimum_clear)
         )
@@ -262,6 +267,7 @@ def audit_provided_longitudinal_cage(
     minimum_clear_spacing_mm: float,
     section_total_depth_mm: float | None = None,
     provided_vertical_clear_spacing_mm: float | None = None,
+    diameter_governs_clear_spacing: bool = True,
 ) -> ProvidedCageAudit:
     """Audit the stored bar layers without inventing missing vertical spacing."""
 
@@ -288,7 +294,11 @@ def audit_provided_longitudinal_cage(
     for index, layer in enumerate(reinforcement.layers, start=1):
         count = int(layer.count)
         diameter = float(layer.diameter_mm)
-        minimum_clear = max(minimum_clear_spacing_mm, diameter)
+        minimum_clear = (
+            max(minimum_clear_spacing_mm, diameter)
+            if diameter_governs_clear_spacing
+            else minimum_clear_spacing_mm
+        )
         clear = (
             (inside_width - count * diameter) / (count - 1)
             if count > 1
@@ -307,7 +317,11 @@ def audit_provided_longitudinal_cage(
 
     horizontal_fit = all(item.horizontal_fit for item in layer_checks)
     maximum_diameter = max(float(layer.diameter_mm) for layer in reinforcement.layers)
-    minimum_vertical = max(minimum_clear_spacing_mm, maximum_diameter)
+    minimum_vertical = (
+        max(minimum_clear_spacing_mm, maximum_diameter)
+        if diameter_governs_clear_spacing
+        else minimum_clear_spacing_mm
+    )
 
     available_depth: float | None = None
     required_stack: float | None = None
