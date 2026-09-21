@@ -8,7 +8,7 @@ from rc_single_span.analysis.construction import (
     CumulativeGirderResult,
     run_construction_stage_analysis,
 )
-from rc_single_span.analysis.grillage_solver import GrillageAnalysisResult, solve_vertical_grillage
+from rc_single_span.analysis.grillage_solver import GrillageAnalysisResult
 from rc_single_span.analysis.permanent import PermanentLoadSegment
 from rc_single_span.analysis.simple_span import (
     DistributedLoadSegment,
@@ -25,6 +25,7 @@ from rc_single_span.analysis.structural_model import (
     UniformLoad,
 )
 from rc_single_span.core.models import BridgeProject, PermanentActionStage
+from rc_single_span.verification.beam_fe import solve_construction_beam_fe
 from rc_single_span.verification.comparison import (
     ComparisonTolerance,
     ScalarComparison,
@@ -474,8 +475,9 @@ def build_construction_verification_suite(
     have been assigned to girder lines. This verifier preserves that exact
     mechanics: same load segments, same stage section A/J/Iy/Iz and same E.
 
-    The second solver is the repository's beam-FE kernel, used here as an
-    independent implementation cross-check. Exact load boundaries and analytical
+    The second solver is a dedicated Stage-8 bending-only Euler-Bernoulli beam
+    FE implementation, deliberately separate from both the production simple-span
+    equations and the 3-DOF traffic grillage solver. Exact load boundaries and analytical
     governing response stations are always inserted as nodes, so only a small
     number of supplemental divisions is needed; excessive subdivision is avoided
     because it needlessly degrades the conditioning of the verification stiffness
@@ -513,7 +515,7 @@ def build_construction_verification_suite(
                 item,
                 stations_m=stations,
             )
-            analysis = solve_vertical_grillage(model)
+            analysis = solve_construction_beam_fe(model)
             if abs(analysis.vertical_equilibrium_residual_kn) > 1.0e-6:
                 raise RuntimeError(
                     "Construction verification beam failed vertical equilibrium."
