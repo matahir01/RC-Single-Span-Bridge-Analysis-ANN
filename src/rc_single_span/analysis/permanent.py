@@ -1,13 +1,25 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 
 from rc_single_span.analysis.sections import (
     girder_tributary_bands_m,
     girder_tributary_widths_m,
     girder_y_positions_m,
 )
+from rc_single_span.analysis.simple_span import (
+    DistributedLoadSegment,
+    simple_span_distributed_load_response,
+)
+from rc_single_span.codes.common import LoadEffects
 from rc_single_span.core.models import BridgeProject, PermanentActionStage
+
+
+class PermanentLoadCategory(str, Enum):
+    STRUCTURAL_DEAD = "structural_dead"
+    SURFACING = "surfacing"
+    OTHER_SUPERIMPOSED = "other_superimposed"
 
 
 @dataclass(frozen=True)
@@ -18,6 +30,7 @@ class PermanentLoadSegment:
     x_start_m: float
     x_end_m: float
     source: str
+    category: PermanentLoadCategory = PermanentLoadCategory.STRUCTURAL_DEAD
 
     @property
     def total_load_kn(self) -> float:
@@ -103,6 +116,7 @@ def automatic_permanent_loads(project: BridgeProject) -> tuple[PermanentLoadSegm
                     float(layer.x_start_m),
                     x_end,
                     layer.name,
+                    category=PermanentLoadCategory.SURFACING,
                 )
             )
 
@@ -119,7 +133,114 @@ def automatic_permanent_loads(project: BridgeProject) -> tuple[PermanentLoadSegm
                     float(action.x_start_m),
                     x_end,
                     action.name,
+                    category=PermanentLoadCategory.OTHER_SUPERIMPOSED,
                 )
             )
 
     return tuple(segment for segment in segments if segment.magnitude_kn_m > 0.0)
+
+
+
+def _distributed_segments(
+    segments: tuple[PermanentLoadSegment, ...],
+    *,
+    factors_by_category: dict[PermanentLoadCategory, float] | None = None,
+) -> tuple[DistributedLoadSegment, ...]:
+    factors = factors_by_category or {}
+    return tuple(
+        DistributedLoadSegment(
+            magnitude_kn_m=segment.magnitude_kn_m
+            * factors.get(segment.category, 1.0),
+            start_m=segment.x_start_m,
+            end_m=segment.x_end_m,
+            label=f"{segment.category.value}: {segment.source}",
+        )
+        for segment in segments
+    )
+
+
+def characteristic_permanent_effects(
+    project: BridgeProject,
+    *,
+    girder_index: int,
+) -> LoadEffects:
+    """Return the characteristic permanent M/V envelope for one girder."""
+
+    if not 1 <= girder_index <= int(project.geometry.girder_count):
+        raise IndexError("girder_index is outside the bridge layout.")
+    segments = tuple(
+        item
+        for item in automatic_permanent_loads(project)
+        if item.girder_index == girder_index
+    )
+    response = simple_span_distributed_load_response(
+        float(project.geometry.span_m),
+        _distributed_segments(segments),
+    )
+    return LoadEffects(
+        moment_knm=response.max_moment_knm,
+        shear_kn=response.max_abs_shear_kn,
+    )
+
+
+def characteristic_permanent_effects_by_category(
+    project: BridgeProject,
+    *,
+    girder_index: int,
+) -> dict[PermanentLoadCategory, LoadEffects]:
+    """Return auditable characteristic permanent effects split by BS load class."""
+
+    if not 1 <= girder_index <= int(project.geometry.girder_count):
+        raise IndexError("girder_index is outside the bridge layout.")
+    all_segments = automatic_permanent_loads(project)
+    result: dict[PermanentLoadCategory, LoadEffects] = {}
+    for category in PermanentLoadCategory:
+        segments = tuple(
+            item
+            for item in all_segments
+            if item.girder_index == girder_index and item.category is category
+        )
+        response = simple_span_distributed_load_response(
+            float(project.geometry.span_m),
+            _distributed_segments(segments),
+        )
+        result[category] = LoadEffects(
+            moment_knm=response.max_moment_knm,
+            shear_kn=response.max_abs_shear_kn,
+        )
+    return result
+
+
+def factored_permanent_effects(
+    project: BridgeProject,
+    *,
+    girder_index: int,
+    factors_by_category: dict[PermanentLoadCategory, float],
+) -> LoadEffects:
+    """Factor permanent load segments first, then recover their exact span envelope."""
+
+    if not 1 <= girder_index <= int(project.geometry.girder_count):
+        raise IndexError("girder_index is outside the bridge layout.")
+    missing = set(PermanentLoadCategory) - set(factors_by_category)
+    if missing:
+        labels = ", ".join(sorted(item.value for item in missing))
+        raise ValueError(f"Missing permanent-load factors for: {labels}.")
+    if any(value < 0.0 for value in factors_by_category.values()):
+        raise ValueError("Permanent-load factors cannot be negative.")
+
+    segments = tuple(
+        item
+        for item in automatic_permanent_loads(project)
+        if item.girder_index == girder_index
+    )
+    response = simple_span_distributed_load_response(
+        float(project.geometry.span_m),
+        _distributed_segments(
+            segments,
+            factors_by_category=factors_by_category,
+        ),
+    )
+    return LoadEffects(
+        moment_knm=response.max_moment_knm,
+        shear_kn=response.max_abs_shear_kn,
+    )
