@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import pairwise
 
 from rc_single_span.core.models import (
     GirderProfile,
@@ -272,7 +273,7 @@ def transverse_deck_strip_properties(
 def station_tributary_widths_m(stations_m: tuple[float, ...]) -> tuple[float, ...]:
     if len(stations_m) < 2:
         raise ValueError("At least two longitudinal stations are required.")
-    if any(b <= a for a, b in zip(stations_m, stations_m[1:], strict=True)):
+    if any(b <= a for a, b in pairwise(stations_m)):
         raise ValueError("Stations must be strictly increasing.")
     widths = []
     for index, station in enumerate(stations_m):
