@@ -182,3 +182,62 @@ def native_traffic_girder_envelope(
             )
         )
     return tuple(envelopes)
+
+
+
+def girder_vertical_displacement_mm(
+    model: StructuralModel,
+    analysis: GrillageAnalysisResult,
+    *,
+    girder_index: int,
+    x_m: float,
+) -> float:
+    """Return downward-positive traffic displacement at one girder station.
+
+    Longitudinal member deflection is recovered with the same cubic Hermite
+    interpolation used by the native traffic envelope.
+    """
+
+    groups = _longitudinal_groups(model)
+    if not 1 <= girder_index <= len(groups):
+        raise IndexError("girder_index is outside the grillage.")
+    nodes = {node.node_id: node for node in model.nodes}
+    results = {node.node_id: node for node in analysis.nodes}
+    _, beams = groups[girder_index - 1]
+
+    for beam in beams:
+        ni, nj = nodes[beam.node_i], nodes[beam.node_j]
+        x1, x2 = ni.x_m, nj.x_m
+        left, right = sorted((x1, x2))
+        if not left - 1.0e-10 <= x_m <= right + 1.0e-10:
+            continue
+
+        dx = x2 - x1
+        length = abs(dx)
+        if length <= 1.0e-12:
+            continue
+        cx = dx / length
+        local_x = (x_m - x1) / cx
+        local_x = min(max(local_x, 0.0), length)
+
+        ri, rj = results[beam.node_i], results[beam.node_j]
+        wi, wj = ri.vertical_displacement_m, rj.vertical_displacement_m
+        slope_i = -cx * ri.rotation_y_rad
+        slope_j = -cx * rj.rotation_y_rad
+        coefficient_a = (
+            3.0 * (wj - wi) / length**2
+            - (2.0 * slope_i + slope_j) / length
+        )
+        coefficient_b = (
+            2.0 * (wi - wj) / length**3
+            + (slope_i + slope_j) / length**2
+        )
+        displacement_m = (
+            wi
+            + slope_i * local_x
+            + coefficient_a * local_x**2
+            + coefficient_b * local_x**3
+        )
+        return -displacement_m * 1000.0
+
+    raise ValueError("x_m does not lie on the requested longitudinal girder.")
