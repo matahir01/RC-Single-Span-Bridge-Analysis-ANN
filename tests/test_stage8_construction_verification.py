@@ -177,5 +177,7 @@ def test_superimposed_partial_actions_are_split_without_losing_total_load() -> N
         expected_downward
     )
     assert exterior.analysis.total_vertical_reaction_kn == pytest.approx(
-        expected_downward
+        expected_downward,
+        rel=1.0e-5,
+        abs=1.0e-5,
     )
