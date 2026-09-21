@@ -86,9 +86,15 @@ by three stages), expected-result tables, empty STAAD-return templates and
 provenance manifests. Its internal cross-check is passing; external STAAD
 verification remains pending.
 
-The complete bridge-level package is generated under
+The committed bridge-level reference snapshot is under
 `full_bridge_staad_bundle/`. Unlike the original 21 supplementary line-girder
 files, its stage systems contain all seven girders and its final/traffic models
-use the connected transverse deck grillage. It also includes governing LM1, HA,
-HB and HA+HB cases plus auditable Eurocode/BS 5400 cross-stage combination
-matrices. External STAAD verification remains pending.
+use the connected transverse deck grillage. The repository keeps all 67 STAAD
+`.std` models and their manifests browsable, together with the bundle index and
+Eurocode/BS 5400 combination matrices. The complete generated evidence tree
+(including internal expected-result tables and empty external-return templates)
+is retained losslessly as `full-seven-girder-staad-bundle.zip` with a committed
+SHA-256 checksum. The production reference search retained 18 LM1, 14 HA, 13 HB
+and 15 HA+HB governing cases, giving 60 full-width traffic models and 324
+rule-by-case combination applications. External STAAD verification remains
+pending.
