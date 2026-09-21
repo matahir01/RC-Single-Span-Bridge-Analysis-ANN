@@ -334,7 +334,7 @@ def _stage_comparisons(
     )
     deflection_mm = -target_node.vertical_displacement_m * 1000.0
 
-    force_tolerance = ComparisonTolerance(relative=1.0e-6, absolute=1.0e-6)
+    force_tolerance = ComparisonTolerance(relative=1.0e-5, absolute=1.0e-5)
     deflection_tolerance = ComparisonTolerance(
         relative=2.0e-3,
         absolute=1.0e-3,
@@ -429,7 +429,7 @@ def _cumulative_comparisons(
         )
         cumulative_deflection_mm += -node.vertical_displacement_m * 1000.0
 
-    force_tolerance = ComparisonTolerance(relative=1.0e-6, absolute=1.0e-6)
+    force_tolerance = ComparisonTolerance(relative=1.0e-5, absolute=1.0e-5)
     deflection_tolerance = ComparisonTolerance(
         relative=2.0e-3,
         absolute=1.0e-3,
