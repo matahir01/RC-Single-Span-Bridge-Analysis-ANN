@@ -30,6 +30,7 @@ The target V1 application is intentionally narrow:
 - full-width grillage analysis with transverse distribution;
 - Eurocode EN 1990 / EN 1991-2 / EN 1992-2 profile;
 - BS 5400 / BD 37 profile;
+- common-grillage traffic adapters for Eurocode LM1 and BD 37/01 HA/HB;
 - flexure, shear, cracking and deflection checks;
 - practical reinforcement selection and constructability checks;
 - calculation reports with formula, substitution, result and reference;
@@ -60,7 +61,7 @@ The repository currently contains the first common foundation:
 - CI, linting and regression tests;
 - a 15 m reference bridge with 7 girders at 1.70 m spacing, 400 x 950 mm precast girders, 75 + 175 mm deck build-up and four layers of four Y32 bars.
 
-This is not yet a completed design application. The next milestone is the common full-width grillage model and permanent-action engine, followed by the two code-specific traffic adapters.
+This is not yet a completed design application. The common full-width grillage, permanent-action/construction-stage backbone and the Eurocode LM1 plus BD 37/01 HA/HB nominal traffic adapters are now implemented. The next milestone is code-specific traffic application/load combinations and the RC design checks.
 
 ## Migration policy
 
@@ -70,9 +71,9 @@ Stable code is migrated selectively from matahir01/RC-Bridge-Analysis-ANN. Gener
 
 1. Common physical model and simple-span mechanics.
 2. Common full-width grillage, permanent actions and essential three-stage construction analysis.
-3. Eurocode LM1 adapter and convergence-controlled search.
-4. BS 5400 HA/HB adapter on the same grillage.
-5. Code-specific ULS/SLS combinations.
+3. Eurocode LM1 adapter and convergence-controlled search. **Implemented.**
+4. BS 5400 / BD 37/01 HA and HB adapters on the same grillage. **Implemented for nominal HA-alone and HB vehicle searches.**
+5. Code-specific traffic application and ULS/SLS combinations, including BD 37/01 HA+HB coexistence rules.
 6. EC2 and BS 5400 flexure/shear/cracking/deflection.
 7. Practical reinforcement and constructability checks.
 8. Independent verification campaign and calculation reports.
