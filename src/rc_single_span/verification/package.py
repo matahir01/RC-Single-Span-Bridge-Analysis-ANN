@@ -176,7 +176,7 @@ def build_staad_verification_package(
     *,
     provenance: dict[str, str] | None = None,
 ) -> StaadVerificationPackage:
-    """Build one traceable STAAD package for the exact solved common grillage."""
+    """Build one traceable STAAD package for the exact solved structural model."""
 
     if analysis.load_case_id not in {case.load_case_id for case in model.load_cases}:
         raise ValueError("Analysis load case is absent from the exported structural model.")
@@ -253,7 +253,7 @@ def build_staad_verification_package(
             },
         },
         "verification_note": (
-            "The package exports the exact common-grillage model already solved by "
+            "The package exports the exact structural model already solved by "
             "the internal engine. It is evidence infrastructure, not independent "
             "verification by itself. Acceptance state changes only after genuine "
             "external results are returned and compared."
