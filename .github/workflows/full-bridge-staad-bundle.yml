@@ -1,11 +1,6 @@
 name: Full seven-girder STAAD bundle
 
 on:
-  push:
-    branches:
-      - batch-16-full-seven-girder-staad
-    paths:
-      - ".github/workflows/full-bridge-staad-bundle.yml"
   workflow_dispatch:
     inputs:
       elastic_modulus_mpa:
@@ -37,19 +32,9 @@ on:
         default: "1.35"
         type: string
 
-permissions:
-  contents: write
-
 jobs:
   export:
     runs-on: ubuntu-latest
-    env:
-      ELASTIC_MODULUS_MPA: ${{ inputs.elastic_modulus_mpa || '31000' }}
-      ELASTIC_MODULUS_BASIS: ${{ inputs.elastic_modulus_basis || 'EN 1992-1-1:2004+A1:2014 Table 3.1 benchmark C25/30 Ecm' }}
-      PSI1_TRAFFIC: ${{ inputs.psi1_traffic || '0.75' }}
-      PSI2_TRAFFIC: ${{ inputs.psi2_traffic || '0.00' }}
-      GAMMA_G_UNFAVOURABLE: ${{ inputs.gamma_g_unfavourable || '1.35' }}
-      GAMMA_Q_TRAFFIC: ${{ inputs.gamma_q_traffic || '1.35' }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -60,12 +45,12 @@ jobs:
       - name: Export full seven-girder verification campaign
         run: >
           python examples/export_full_bridge_staad_bundle.py
-          --elastic-modulus-mpa "$ELASTIC_MODULUS_MPA"
-          --elastic-modulus-basis "$ELASTIC_MODULUS_BASIS"
-          --psi1-traffic "$PSI1_TRAFFIC"
-          --psi2-traffic "$PSI2_TRAFFIC"
-          --gamma-g-unfavourable "$GAMMA_G_UNFAVOURABLE"
-          --gamma-q-traffic "$GAMMA_Q_TRAFFIC"
+          --elastic-modulus-mpa "${{ inputs.elastic_modulus_mpa }}"
+          --elastic-modulus-basis "${{ inputs.elastic_modulus_basis }}"
+          --psi1-traffic "${{ inputs.psi1_traffic }}"
+          --psi2-traffic "${{ inputs.psi2_traffic }}"
+          --gamma-g-unfavourable "${{ inputs.gamma_g_unfavourable }}"
+          --gamma-q-traffic "${{ inputs.gamma_q_traffic }}"
           --repository-sha "${{ github.sha }}"
           --output-dir generated_full_bridge_staad_bundle
       - name: Upload verification bundle
@@ -74,27 +59,3 @@ jobs:
           name: full-seven-girder-staad-bundle
           path: generated_full_bridge_staad_bundle
           if-no-files-found: error
-      - name: Commit reference verification snapshot
-        if: github.event_name == 'push'
-        shell: bash
-        run: |
-          rm -rf full_bridge_staad_bundle
-          mkdir -p full_bridge_staad_bundle
-          cp generated_full_bridge_staad_bundle/README.md full_bridge_staad_bundle/
-          cp generated_full_bridge_staad_bundle/bundle_index.json full_bridge_staad_bundle/
-          cp generated_full_bridge_staad_bundle/combination_rules.csv full_bridge_staad_bundle/
-          cp generated_full_bridge_staad_bundle/combination_envelopes.csv full_bridge_staad_bundle/
-          cp generated_full_bridge_staad_bundle/combination_application_matrix.csv full_bridge_staad_bundle/
-          cp generated_full_bridge_staad_bundle/combination_application_matrix.json full_bridge_staad_bundle/
-          while IFS= read -r file; do
-            rel="${file#generated_full_bridge_staad_bundle/}"
-            mkdir -p "full_bridge_staad_bundle/$(dirname "$rel")"
-            cp "$file" "full_bridge_staad_bundle/$rel"
-          done < <(find generated_full_bridge_staad_bundle -type f \( -name '*.std' -o -name '*_manifest.json' \) -print)
-          (cd generated_full_bridge_staad_bundle && zip -qr ../full_bridge_staad_bundle/full-seven-girder-staad-bundle.zip .)
-          sha256sum full_bridge_staad_bundle/full-seven-girder-staad-bundle.zip > full_bridge_staad_bundle/full-seven-girder-staad-bundle.zip.sha256
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add full_bridge_staad_bundle
-          git commit -m "Batch 23: commit generated full seven-girder STAAD evidence"
-          git push
