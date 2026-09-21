@@ -14,8 +14,8 @@ from rc_single_span.core.models import (
 )
 from rc_single_span.traffic.bs5400 import (
     HBSearchPlacement,
-    _equilibrium_tolerance_kn,
     _require_vertical_equilibrium,
+    traffic_equilibrium_tolerance_kn,
 )
 from rc_single_span.traffic.bs5400_combined import (
     HAHBCombinedPlacement,
@@ -178,9 +178,7 @@ def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium() -> 
     assert result.kel_combinations_exhaustive
     assert len(result.girders) == 7
     assert result.cases
-    assert result.checked_inner_axle_spacings_m == pytest.approx(
-        (6.0, 11.0, 16.0, 21.0, 26.0)
-    )
+    assert result.checked_inner_axle_spacings_m == pytest.approx((6.0, 11.0, 16.0, 21.0, 26.0))
     for case in result.cases:
         scale = max(
             abs(case.analysis.total_applied_vertical_load_kn),
@@ -199,7 +197,7 @@ def test_equilibrium_guard_allows_only_machine_scale_sparse_roundoff() -> None:
         total_vertical_reaction_kn=1352.611602,
         vertical_equilibrium_residual_kn=-1.8e-5,
     )
-    tolerance = _equilibrium_tolerance_kn(analysis)
+    tolerance = traffic_equilibrium_tolerance_kn(analysis)
     assert tolerance == pytest.approx(6.7630581e-5)
     assert abs(analysis.vertical_equilibrium_residual_kn) < tolerance
     _require_vertical_equilibrium(analysis, traffic_model="regression")

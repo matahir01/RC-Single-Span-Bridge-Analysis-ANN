@@ -31,6 +31,7 @@ from rc_single_span.traffic.bs5400 import (
     HBSearchResult,
     run_ha_grillage_search,
     run_hb_grillage_search,
+    traffic_equilibrium_tolerance_kn,
 )
 from rc_single_span.traffic.bs5400_combined import (
     HAHBCombinedCaseResult,
@@ -111,14 +112,10 @@ class FullBridgeTrafficCaseVerification:
 
     @property
     def passes_equilibrium_check(self) -> bool:
-        scale = max(
-            abs(self.analysis.total_applied_vertical_load_kn),
-            abs(self.analysis.total_vertical_reaction_kn),
-            1.0,
-        )
-        return abs(self.analysis.vertical_equilibrium_residual_kn) <= max(
-            1.0e-6,
-            scale * 1.0e-8,
+        return abs(
+            self.analysis.vertical_equilibrium_residual_kn
+        ) <= traffic_equilibrium_tolerance_kn(
+            self.analysis,
         )
 
 

@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 
 from rc_single_span.analysis.permanent import PermanentLoadCategory
@@ -16,6 +18,7 @@ from rc_single_span.core.models import (
     SurfacingLayer,
 )
 from rc_single_span.verification.full_bridge_campaign import (
+    FullBridgeTrafficCaseVerification,
     FullBridgeTrafficSearchConfig,
     TrafficAction,
     build_cross_stage_combination_rules,
@@ -193,3 +196,40 @@ def test_cross_stage_rules_cover_eurocode_and_bs5400_factors() -> None:
     assert bs.permanent_factors[PermanentLoadCategory.OTHER_SUPERIMPOSED] == 1.20
     assert bs.traffic_factor == pytest.approx(1.50)
     assert "load-time stiffness" in bs.application_basis
+
+
+def test_packaging_uses_the_shared_sparse_equilibrium_guard() -> None:
+    analysis = SimpleNamespace(
+        total_applied_vertical_load_kn=-1352.61162,
+        total_vertical_reaction_kn=1352.611602,
+        vertical_equilibrium_residual_kn=-1.8e-5,
+    )
+    item = FullBridgeTrafficCaseVerification(
+        case_key="ha_hb_regression",
+        standard="BD 37/01",
+        action=TrafficAction.HA_HB,
+        source_case_id=1,
+        description="roundoff regression",
+        governing_for=("G1 moment",),
+        model=None,
+        analysis=analysis,
+        staad_package=None,
+    )
+    assert item.passes_equilibrium_check
+
+    failed = FullBridgeTrafficCaseVerification(
+        case_key="ha_hb_failed",
+        standard="BD 37/01",
+        action=TrafficAction.HA_HB,
+        source_case_id=2,
+        description="material imbalance regression",
+        governing_for=("G1 moment",),
+        model=None,
+        analysis=SimpleNamespace(
+            total_applied_vertical_load_kn=-1352.61162,
+            total_vertical_reaction_kn=1352.61062,
+            vertical_equilibrium_residual_kn=-1.0e-3,
+        ),
+        staad_package=None,
+    )
+    assert not failed.passes_equilibrium_check
