@@ -1,4 +1,8 @@
-# Stage 8 STAAD verification workflow
+# STAAD verification workflow
+
+For the complete seven-girder bridge campaign, including full-width construction
+systems, connected final-composite traffic grillages and cross-stage code
+combinations, see `FULL_BRIDGE_STAAD_MODEL.md`.
 
 The repository can prepare the construction-stage verification models and result
 templates needed for independent STAAD.Pro comparison without rebuilding the
@@ -97,14 +101,17 @@ The first genuine comparison must also confirm STAAD's reported member-end sign
 convention. No acceptance-matrix item should be promoted merely because the
 export files were generated.
 
-## Current verification boundary
+## Original line-girder bundle boundary
 
-The prepared construction-stage models cover the production V1 staged mechanics:
+The original prepared construction-stage models cover the production V1 staged
+line-girder mechanics:
 
 - precast girder + precast false-slab weight on the construction-stage girder;
 - wet in-situ deck concrete on the pre-composite construction stiffness;
 - final superimposed permanent actions on the hardened composite girder.
 
 The false slab remains non-composite unless the project geometry explicitly
-states otherwise. Traffic verification remains a separate full-width grillage
-campaign.
+states otherwise. The newer `full_bridge_staad_bundle/` campaign contains all
+seven girders in every stage model and adds the connected full-width LM1, HA, HB
+and HA+HB verification cases. The 21 original files remain supplementary
+line-girder checks rather than the complete bridge model.
