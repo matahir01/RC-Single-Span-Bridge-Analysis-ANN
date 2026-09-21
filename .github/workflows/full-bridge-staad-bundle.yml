@@ -1,0 +1,61 @@
+name: Full seven-girder STAAD bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      elastic_modulus_mpa:
+        description: "Concrete elastic modulus in MPa"
+        required: true
+        type: string
+      elastic_modulus_basis:
+        description: "Traceable basis/source for the supplied modulus"
+        required: true
+        type: string
+      psi1_traffic:
+        description: "Project/National Annex traffic psi1"
+        required: true
+        default: "0.75"
+        type: string
+      psi2_traffic:
+        description: "Project/National Annex traffic psi2"
+        required: true
+        default: "0.00"
+        type: string
+      gamma_g_unfavourable:
+        description: "Eurocode persistent ULS gamma G, unfavourable"
+        required: true
+        default: "1.35"
+        type: string
+      gamma_q_traffic:
+        description: "Eurocode persistent ULS gamma Q traffic"
+        required: true
+        default: "1.35"
+        type: string
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Export full seven-girder verification campaign
+        run: >
+          python examples/export_full_bridge_staad_bundle.py
+          --elastic-modulus-mpa "${{ inputs.elastic_modulus_mpa }}"
+          --elastic-modulus-basis "${{ inputs.elastic_modulus_basis }}"
+          --psi1-traffic "${{ inputs.psi1_traffic }}"
+          --psi2-traffic "${{ inputs.psi2_traffic }}"
+          --gamma-g-unfavourable "${{ inputs.gamma_g_unfavourable }}"
+          --gamma-q-traffic "${{ inputs.gamma_q_traffic }}"
+          --repository-sha "${{ github.sha }}"
+          --output-dir generated_full_bridge_staad_bundle
+      - name: Upload verification bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-seven-girder-staad-bundle
+          path: generated_full_bridge_staad_bundle
+          if-no-files-found: error

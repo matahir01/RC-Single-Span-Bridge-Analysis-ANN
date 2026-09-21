@@ -1,0 +1,1374 @@
+{
+  "combination_files": {
+    "application_matrix_csv": "combination_application_matrix.csv",
+    "application_matrix_json": "combination_application_matrix.json",
+    "internal_envelopes_csv": "combination_envelopes.csv",
+    "rules_csv": "combination_rules.csv"
+  },
+  "combination_instance_count": 324,
+  "combination_rule_count": 22,
+  "deck_width_m": 11.0,
+  "elastic_modulus_basis": "EN 1992-1-1:2004+A1:2014 Table 3.1 benchmark C25/30 Ecm",
+  "elastic_modulus_mpa": 31000.0,
+  "eurocode_sls_factors": {
+    "psi1_traffic": 0.75,
+    "psi2_traffic": 0.0
+  },
+  "eurocode_uls_factors": {
+    "gamma_g_favourable": 1.0,
+    "gamma_g_unfavourable": 1.35,
+    "gamma_q_traffic": 1.35
+  },
+  "external_verification_note": "Run the full-width .std files in STAAD.Pro and return genuine result tables before promoting structural-analysis verification.",
+  "external_verification_status": "pending",
+  "full_width_stage_model_count": 3,
+  "girder_count": 7,
+  "girder_spacing_m": 1.7,
+  "governing_traffic_model_count": 60,
+  "internal_status": "passed",
+  "longitudinal_stage_divisions": 8,
+  "permanent_component_model_count": 4,
+  "permanent_components": [
+    {
+      "category": "structural_dead",
+      "characteristic_resultant_kn": 1254.6000000000001,
+      "component_key": "precast_girder_structural_dead",
+      "files": [
+        "permanent_components/precast_girder_structural_dead/precast_girder_structural_dead.std",
+        "permanent_components/precast_girder_structural_dead/precast_girder_structural_dead_manifest.json",
+        "permanent_components/precast_girder_structural_dead/precast_girder_structural_dead_expected_results.csv",
+        "permanent_components/precast_girder_structural_dead/precast_girder_structural_dead_external_results_template.csv"
+      ],
+      "load_case_id": 201,
+      "stage": "precast_girder"
+    },
+    {
+      "category": "structural_dead",
+      "characteristic_resultant_kn": 693.0,
+      "component_key": "deck_construction_structural_dead",
+      "files": [
+        "permanent_components/deck_construction_structural_dead/deck_construction_structural_dead.std",
+        "permanent_components/deck_construction_structural_dead/deck_construction_structural_dead_manifest.json",
+        "permanent_components/deck_construction_structural_dead/deck_construction_structural_dead_expected_results.csv",
+        "permanent_components/deck_construction_structural_dead/deck_construction_structural_dead_external_results_template.csv"
+      ],
+      "load_case_id": 202,
+      "stage": "deck_construction"
+    },
+    {
+      "category": "surfacing",
+      "characteristic_resultant_kn": 184.8,
+      "component_key": "superimposed_surfacing",
+      "files": [
+        "permanent_components/superimposed_surfacing/superimposed_surfacing.std",
+        "permanent_components/superimposed_surfacing/superimposed_surfacing_manifest.json",
+        "permanent_components/superimposed_surfacing/superimposed_surfacing_expected_results.csv",
+        "permanent_components/superimposed_surfacing/superimposed_surfacing_external_results_template.csv"
+      ],
+      "load_case_id": 203,
+      "stage": "superimposed"
+    },
+    {
+      "category": "other_superimposed",
+      "characteristic_resultant_kn": 360.0,
+      "component_key": "superimposed_other_superimposed",
+      "files": [
+        "permanent_components/superimposed_other_superimposed/superimposed_other_superimposed.std",
+        "permanent_components/superimposed_other_superimposed/superimposed_other_superimposed_manifest.json",
+        "permanent_components/superimposed_other_superimposed/superimposed_other_superimposed_expected_results.csv",
+        "permanent_components/superimposed_other_superimposed/superimposed_other_superimposed_external_results_template.csv"
+      ],
+      "load_case_id": 204,
+      "stage": "superimposed"
+    }
+  ],
+  "project_name": "15 m single-span RC girder reference",
+  "readme": "README.md",
+  "repository_sha": "3a5f5d2a153a69822695a56fe03aa9a65befd640",
+  "schema_version": 2,
+  "span_m": 15.0,
+  "stage_models": [
+    {
+      "files": [
+        "stages/precast_girder/full_bridge_precast_girder.std",
+        "stages/precast_girder/full_bridge_precast_girder_manifest.json",
+        "stages/precast_girder/full_bridge_precast_girder_expected_results.csv",
+        "stages/precast_girder/full_bridge_precast_girder_external_results_template.csv"
+      ],
+      "load_case_id": 101,
+      "longitudinal_member_count": 56,
+      "member_count": 56,
+      "model_label": "precast_girder",
+      "node_count": 63,
+      "stage": "precast_girder",
+      "structural_system_basis": "seven coordinated longitudinal girder lines; transverse stiffness is zero because no diaphragm properties are supplied and the in-situ deck has not hardened at this load stage",
+      "transverse_member_count": 0,
+      "transverse_system_active": false
+    },
+    {
+      "files": [
+        "stages/deck_construction/full_bridge_deck_construction.std",
+        "stages/deck_construction/full_bridge_deck_construction_manifest.json",
+        "stages/deck_construction/full_bridge_deck_construction_expected_results.csv",
+        "stages/deck_construction/full_bridge_deck_construction_external_results_template.csv"
+      ],
+      "load_case_id": 102,
+      "longitudinal_member_count": 56,
+      "member_count": 56,
+      "model_label": "deck_construction",
+      "node_count": 63,
+      "stage": "deck_construction",
+      "structural_system_basis": "seven coordinated longitudinal girder lines; transverse stiffness is zero because no diaphragm properties are supplied and the in-situ deck has not hardened at this load stage",
+      "transverse_member_count": 0,
+      "transverse_system_active": false
+    },
+    {
+      "files": [
+        "stages/final_composite/full_bridge_final_composite.std",
+        "stages/final_composite/full_bridge_final_composite_manifest.json",
+        "stages/final_composite/full_bridge_final_composite_expected_results.csv",
+        "stages/final_composite/full_bridge_final_composite_external_results_template.csv"
+      ],
+      "load_case_id": 103,
+      "longitudinal_member_count": 56,
+      "member_count": 128,
+      "model_label": "final_composite",
+      "node_count": 81,
+      "stage": "superimposed",
+      "structural_system_basis": "connected final composite seven-girder orthogonal deck grillage",
+      "transverse_member_count": 72,
+      "transverse_system_active": true
+    }
+  ],
+  "traffic_models": [
+    {
+      "action": "lm1",
+      "case_key": "lm1_000120",
+      "description": "EN 1991-2 LM1 (lane 1 lead x=7.2 m, lane 2 lead x=7.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000120/lm1_000120.std",
+        "traffic/lm1/lm1_000120/lm1_000120_manifest.json",
+        "traffic/lm1/lm1_000120/lm1_000120_expected_results.csv",
+        "traffic/lm1/lm1_000120/lm1_000120_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 moment"
+      ],
+      "load_case_id": 120,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 120,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000216",
+      "description": "EN 1991-2 LM1 (lane 1 lead x=13.8 m, lane 2 lead x=7.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000216/lm1_000216.std",
+        "traffic/lm1/lm1_000216/lm1_000216_manifest.json",
+        "traffic/lm1/lm1_000216/lm1_000216_expected_results.csv",
+        "traffic/lm1/lm1_000216/lm1_000216_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G3 torsion"
+      ],
+      "load_case_id": 216,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 216,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000328",
+      "description": "EN 1991-2 LM1 (lane 2 lead x=7.2 m, lane 1 lead x=3.6 m)",
+      "files": [
+        "traffic/lm1/lm1_000328/lm1_000328.std",
+        "traffic/lm1/lm1_000328/lm1_000328_manifest.json",
+        "traffic/lm1/lm1_000328/lm1_000328_expected_results.csv",
+        "traffic/lm1/lm1_000328/lm1_000328_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G6 torsion"
+      ],
+      "load_case_id": 328,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 328,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000369",
+      "description": "EN 1991-2 LM1 (lane 2 lead x=-1.2 m, lane 1 lead x=7.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000369/lm1_000369.std",
+        "traffic/lm1/lm1_000369/lm1_000369_manifest.json",
+        "traffic/lm1/lm1_000369/lm1_000369_expected_results.csv",
+        "traffic/lm1/lm1_000369/lm1_000369_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G7 shear"
+      ],
+      "load_case_id": 369,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 369,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000376",
+      "description": "EN 1991-2 LM1 (lane 2 lead x=7.2 m, lane 1 lead x=7.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000376/lm1_000376.std",
+        "traffic/lm1/lm1_000376/lm1_000376_manifest.json",
+        "traffic/lm1/lm1_000376/lm1_000376_expected_results.csv",
+        "traffic/lm1/lm1_000376/lm1_000376_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 moment",
+        "G5 deflection",
+        "G6 moment",
+        "G6 deflection",
+        "G7 torsion"
+      ],
+      "load_case_id": 376,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 376,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000384",
+      "description": "EN 1991-2 LM1 (lane 2 lead x=15 m, lane 1 lead x=7.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000384/lm1_000384.std",
+        "traffic/lm1/lm1_000384/lm1_000384_manifest.json",
+        "traffic/lm1/lm1_000384/lm1_000384_expected_results.csv",
+        "traffic/lm1/lm1_000384/lm1_000384_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G7 moment",
+        "G7 deflection"
+      ],
+      "load_case_id": 384,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 384,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000455",
+      "description": "EN 1991-2 LM1 (lane 2 lead x=6 m, lane 1 lead x=13.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000455/lm1_000455.std",
+        "traffic/lm1/lm1_000455/lm1_000455_manifest.json",
+        "traffic/lm1/lm1_000455/lm1_000455_expected_results.csv",
+        "traffic/lm1/lm1_000455/lm1_000455_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G6 shear"
+      ],
+      "load_case_id": 455,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 455,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000457",
+      "description": "EN 1991-2 LM1 (lane 2 lead x=8.4 m, lane 1 lead x=13.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000457/lm1_000457.std",
+        "traffic/lm1/lm1_000457/lm1_000457_manifest.json",
+        "traffic/lm1/lm1_000457/lm1_000457_expected_results.csv",
+        "traffic/lm1/lm1_000457/lm1_000457_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 shear"
+      ],
+      "load_case_id": 457,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 457,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000584",
+      "description": "EN 1991-2 LM1 (lane 1 lead x=3.6 m, lane 2 lead x=7.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000584/lm1_000584.std",
+        "traffic/lm1/lm1_000584/lm1_000584_manifest.json",
+        "traffic/lm1/lm1_000584/lm1_000584_expected_results.csv",
+        "traffic/lm1/lm1_000584/lm1_000584_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G2 torsion"
+      ],
+      "load_case_id": 584,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 584,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000592",
+      "description": "EN 1991-2 LM1 (lane 1 lead x=3.6 m, lane 2 lead x=15 m)",
+      "files": [
+        "traffic/lm1/lm1_000592/lm1_000592.std",
+        "traffic/lm1/lm1_000592/lm1_000592_manifest.json",
+        "traffic/lm1/lm1_000592/lm1_000592_expected_results.csv",
+        "traffic/lm1/lm1_000592/lm1_000592_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 torsion"
+      ],
+      "load_case_id": 592,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 592,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000625",
+      "description": "EN 1991-2 LM1 (lane 1 lead x=7.2 m, lane 2 lead x=-1.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000625/lm1_000625.std",
+        "traffic/lm1/lm1_000625/lm1_000625_manifest.json",
+        "traffic/lm1/lm1_000625/lm1_000625_expected_results.csv",
+        "traffic/lm1/lm1_000625/lm1_000625_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G1 shear"
+      ],
+      "load_case_id": 625,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 625,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000632",
+      "description": "EN 1991-2 LM1 (lane 1 lead x=7.2 m, lane 2 lead x=7.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000632/lm1_000632.std",
+        "traffic/lm1/lm1_000632/lm1_000632_manifest.json",
+        "traffic/lm1/lm1_000632/lm1_000632_expected_results.csv",
+        "traffic/lm1/lm1_000632/lm1_000632_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G1 torsion",
+        "G2 moment",
+        "G2 deflection",
+        "G3 moment",
+        "G3 deflection"
+      ],
+      "load_case_id": 632,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 632,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000640",
+      "description": "EN 1991-2 LM1 (lane 1 lead x=7.2 m, lane 2 lead x=15 m)",
+      "files": [
+        "traffic/lm1/lm1_000640/lm1_000640.std",
+        "traffic/lm1/lm1_000640/lm1_000640_manifest.json",
+        "traffic/lm1/lm1_000640/lm1_000640_expected_results.csv",
+        "traffic/lm1/lm1_000640/lm1_000640_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G1 moment",
+        "G1 deflection"
+      ],
+      "load_case_id": 640,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 640,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000711",
+      "description": "EN 1991-2 LM1 (lane 1 lead x=13.2 m, lane 2 lead x=6 m)",
+      "files": [
+        "traffic/lm1/lm1_000711/lm1_000711.std",
+        "traffic/lm1/lm1_000711/lm1_000711_manifest.json",
+        "traffic/lm1/lm1_000711/lm1_000711_expected_results.csv",
+        "traffic/lm1/lm1_000711/lm1_000711_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G2 shear"
+      ],
+      "load_case_id": 711,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 711,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000713",
+      "description": "EN 1991-2 LM1 (lane 1 lead x=13.2 m, lane 2 lead x=8.4 m)",
+      "files": [
+        "traffic/lm1/lm1_000713/lm1_000713.std",
+        "traffic/lm1/lm1_000713/lm1_000713_manifest.json",
+        "traffic/lm1/lm1_000713/lm1_000713_expected_results.csv",
+        "traffic/lm1/lm1_000713/lm1_000713_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G3 shear"
+      ],
+      "load_case_id": 713,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 713,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000888",
+      "description": "EN 1991-2 LM1 (lane 2 lead x=7.2 m, lane 1 lead x=7.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000888/lm1_000888.std",
+        "traffic/lm1/lm1_000888/lm1_000888_manifest.json",
+        "traffic/lm1/lm1_000888/lm1_000888_expected_results.csv",
+        "traffic/lm1/lm1_000888/lm1_000888_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 deflection"
+      ],
+      "load_case_id": 888,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 888,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000973",
+      "description": "EN 1991-2 LM1 (lane 2 lead x=13.2 m, lane 1 lead x=13.2 m)",
+      "files": [
+        "traffic/lm1/lm1_000973/lm1_000973.std",
+        "traffic/lm1/lm1_000973/lm1_000973_manifest.json",
+        "traffic/lm1/lm1_000973/lm1_000973_expected_results.csv",
+        "traffic/lm1/lm1_000973/lm1_000973_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 shear"
+      ],
+      "load_case_id": 973,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 973,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "lm1",
+      "case_key": "lm1_000984",
+      "description": "EN 1991-2 LM1 (lane 2 lead x=7.2 m, lane 1 lead x=13.8 m)",
+      "files": [
+        "traffic/lm1/lm1_000984/lm1_000984.std",
+        "traffic/lm1/lm1_000984/lm1_000984_manifest.json",
+        "traffic/lm1/lm1_000984/lm1_000984_expected_results.csv",
+        "traffic/lm1/lm1_000984/lm1_000984_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 torsion"
+      ],
+      "load_case_id": 984,
+      "member_count": 398,
+      "node_count": 315,
+      "source_case_id": 984,
+      "standard": "EN 1991-2"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000008",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000008/ha_000008.std",
+        "traffic/ha/ha_000008/ha_000008_manifest.json",
+        "traffic/ha/ha_000008/ha_000008_expected_results.csv",
+        "traffic/ha/ha_000008/ha_000008_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 torsion"
+      ],
+      "load_case_id": 8,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 8,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000009",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000009/ha_000009.std",
+        "traffic/ha/ha_000009/ha_000009_manifest.json",
+        "traffic/ha/ha_000009/ha_000009_expected_results.csv",
+        "traffic/ha/ha_000009/ha_000009_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G1 moment",
+        "G1 deflection"
+      ],
+      "load_case_id": 9,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 9,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000010",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000010/ha_000010.std",
+        "traffic/ha/ha_000010/ha_000010_manifest.json",
+        "traffic/ha/ha_000010/ha_000010_expected_results.csv",
+        "traffic/ha/ha_000010/ha_000010_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G1 shear"
+      ],
+      "load_case_id": 10,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 10,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000025",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000025/ha_000025.std",
+        "traffic/ha/ha_000025/ha_000025_manifest.json",
+        "traffic/ha/ha_000025/ha_000025_expected_results.csv",
+        "traffic/ha/ha_000025/ha_000025_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G3 torsion",
+        "G4 torsion"
+      ],
+      "load_case_id": 25,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 25,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000026",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000026/ha_000026.std",
+        "traffic/ha/ha_000026/ha_000026_manifest.json",
+        "traffic/ha/ha_000026/ha_000026_expected_results.csv",
+        "traffic/ha/ha_000026/ha_000026_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G7 moment",
+        "G7 deflection"
+      ],
+      "load_case_id": 26,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 26,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000027",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000027/ha_000027.std",
+        "traffic/ha/ha_000027/ha_000027_manifest.json",
+        "traffic/ha/ha_000027/ha_000027_expected_results.csv",
+        "traffic/ha/ha_000027/ha_000027_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G7 shear"
+      ],
+      "load_case_id": 27,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 27,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000035",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000035/ha_000035.std",
+        "traffic/ha/ha_000035/ha_000035_manifest.json",
+        "traffic/ha/ha_000035/ha_000035_expected_results.csv",
+        "traffic/ha/ha_000035/ha_000035_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 shear"
+      ],
+      "load_case_id": 35,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 35,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000041",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000041/ha_000041.std",
+        "traffic/ha/ha_000041/ha_000041_manifest.json",
+        "traffic/ha/ha_000041/ha_000041_expected_results.csv",
+        "traffic/ha/ha_000041/ha_000041_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G3 shear"
+      ],
+      "load_case_id": 41,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 41,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000045",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000045/ha_000045.std",
+        "traffic/ha/ha_000045/ha_000045_manifest.json",
+        "traffic/ha/ha_000045/ha_000045_expected_results.csv",
+        "traffic/ha/ha_000045/ha_000045_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G2 shear"
+      ],
+      "load_case_id": 45,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 45,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000137",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000137/ha_000137.std",
+        "traffic/ha/ha_000137/ha_000137_manifest.json",
+        "traffic/ha/ha_000137/ha_000137_expected_results.csv",
+        "traffic/ha/ha_000137/ha_000137_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 shear"
+      ],
+      "load_case_id": 137,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 137,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000162",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000162/ha_000162.std",
+        "traffic/ha/ha_000162/ha_000162_manifest.json",
+        "traffic/ha/ha_000162/ha_000162_expected_results.csv",
+        "traffic/ha/ha_000162/ha_000162_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G1 torsion",
+        "G2 torsion"
+      ],
+      "load_case_id": 162,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 162,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000178",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000178/ha_000178.std",
+        "traffic/ha/ha_000178/ha_000178_manifest.json",
+        "traffic/ha/ha_000178/ha_000178_expected_results.csv",
+        "traffic/ha/ha_000178/ha_000178_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G6 torsion",
+        "G7 torsion"
+      ],
+      "load_case_id": 178,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 178,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000179",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000179/ha_000179.std",
+        "traffic/ha/ha_000179/ha_000179_manifest.json",
+        "traffic/ha/ha_000179/ha_000179_expected_results.csv",
+        "traffic/ha/ha_000179/ha_000179_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G2 moment",
+        "G2 deflection",
+        "G3 moment",
+        "G3 deflection",
+        "G4 moment",
+        "G4 deflection",
+        "G5 moment",
+        "G5 deflection",
+        "G6 moment",
+        "G6 deflection"
+      ],
+      "load_case_id": 179,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 179,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha",
+      "case_key": "ha_000205",
+      "description": "BD 37/01 HA UDL + transverse KEL",
+      "files": [
+        "traffic/ha/ha_000205/ha_000205.std",
+        "traffic/ha/ha_000205/ha_000205_manifest.json",
+        "traffic/ha/ha_000205/ha_000205_expected_results.csv",
+        "traffic/ha/ha_000205/ha_000205_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G6 shear"
+      ],
+      "load_case_id": 205,
+      "member_count": 316,
+      "node_count": 209,
+      "source_case_id": 205,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000118",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=-1.75 m",
+      "files": [
+        "traffic/hb/hb_000118/hb_000118.std",
+        "traffic/hb/hb_000118/hb_000118_manifest.json",
+        "traffic/hb/hb_000118/hb_000118_expected_results.csv",
+        "traffic/hb/hb_000118/hb_000118_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G2 shear",
+        "G3 shear"
+      ],
+      "load_case_id": 118,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 118,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000122",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=0 m",
+      "files": [
+        "traffic/hb/hb_000122/hb_000122.std",
+        "traffic/hb/hb_000122/hb_000122_manifest.json",
+        "traffic/hb/hb_000122/hb_000122_expected_results.csv",
+        "traffic/hb/hb_000122/hb_000122_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 shear"
+      ],
+      "load_case_id": 122,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 122,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000126",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=1.75 m",
+      "files": [
+        "traffic/hb/hb_000126/hb_000126.std",
+        "traffic/hb/hb_000126/hb_000126_manifest.json",
+        "traffic/hb/hb_000126/hb_000126_expected_results.csv",
+        "traffic/hb/hb_000126/hb_000126_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 shear",
+        "G6 shear"
+      ],
+      "load_case_id": 126,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 126,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000127",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=-1.75 m",
+      "files": [
+        "traffic/hb/hb_000127/hb_000127.std",
+        "traffic/hb/hb_000127/hb_000127_manifest.json",
+        "traffic/hb/hb_000127/hb_000127_expected_results.csv",
+        "traffic/hb/hb_000127/hb_000127_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G2 moment",
+        "G3 moment"
+      ],
+      "load_case_id": 127,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 127,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000131",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=0 m",
+      "files": [
+        "traffic/hb/hb_000131/hb_000131.std",
+        "traffic/hb/hb_000131/hb_000131_manifest.json",
+        "traffic/hb/hb_000131/hb_000131_expected_results.csv",
+        "traffic/hb/hb_000131/hb_000131_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 moment"
+      ],
+      "load_case_id": 131,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 131,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000135",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=1.75 m",
+      "files": [
+        "traffic/hb/hb_000135/hb_000135.std",
+        "traffic/hb/hb_000135/hb_000135_manifest.json",
+        "traffic/hb/hb_000135/hb_000135_expected_results.csv",
+        "traffic/hb/hb_000135/hb_000135_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 moment",
+        "G6 moment"
+      ],
+      "load_case_id": 135,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 135,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000136",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=-1.75 m",
+      "files": [
+        "traffic/hb/hb_000136/hb_000136.std",
+        "traffic/hb/hb_000136/hb_000136_manifest.json",
+        "traffic/hb/hb_000136/hb_000136_expected_results.csv",
+        "traffic/hb/hb_000136/hb_000136_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G1 moment",
+        "G1 shear",
+        "G1 torsion",
+        "G1 deflection",
+        "G2 deflection",
+        "G3 deflection"
+      ],
+      "load_case_id": 136,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 136,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000137",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=-1.25 m",
+      "files": [
+        "traffic/hb/hb_000137/hb_000137.std",
+        "traffic/hb/hb_000137/hb_000137_manifest.json",
+        "traffic/hb/hb_000137/hb_000137_expected_results.csv",
+        "traffic/hb/hb_000137/hb_000137_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G2 torsion"
+      ],
+      "load_case_id": 137,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 137,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000139",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=-0.25 m",
+      "files": [
+        "traffic/hb/hb_000139/hb_000139.std",
+        "traffic/hb/hb_000139/hb_000139_manifest.json",
+        "traffic/hb/hb_000139/hb_000139_expected_results.csv",
+        "traffic/hb/hb_000139/hb_000139_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 torsion"
+      ],
+      "load_case_id": 139,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 139,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000140",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=0 m",
+      "files": [
+        "traffic/hb/hb_000140/hb_000140.std",
+        "traffic/hb/hb_000140/hb_000140_manifest.json",
+        "traffic/hb/hb_000140/hb_000140_expected_results.csv",
+        "traffic/hb/hb_000140/hb_000140_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 deflection"
+      ],
+      "load_case_id": 140,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 140,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000141",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=0.25 m",
+      "files": [
+        "traffic/hb/hb_000141/hb_000141.std",
+        "traffic/hb/hb_000141/hb_000141_manifest.json",
+        "traffic/hb/hb_000141/hb_000141_expected_results.csv",
+        "traffic/hb/hb_000141/hb_000141_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G3 torsion"
+      ],
+      "load_case_id": 141,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 141,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000143",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=1.25 m",
+      "files": [
+        "traffic/hb/hb_000143/hb_000143.std",
+        "traffic/hb/hb_000143/hb_000143_manifest.json",
+        "traffic/hb/hb_000143/hb_000143_expected_results.csv",
+        "traffic/hb/hb_000143/hb_000143_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G6 torsion"
+      ],
+      "load_case_id": 143,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 143,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "hb",
+      "case_key": "hb_000144",
+      "description": "BD 37/01 HB 45 unit, inner spacing 6 m, centre y=1.75 m",
+      "files": [
+        "traffic/hb/hb_000144/hb_000144.std",
+        "traffic/hb/hb_000144/hb_000144_manifest.json",
+        "traffic/hb/hb_000144/hb_000144_expected_results.csv",
+        "traffic/hb/hb_000144/hb_000144_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 torsion",
+        "G5 deflection",
+        "G6 deflection",
+        "G7 moment",
+        "G7 shear",
+        "G7 torsion",
+        "G7 deflection"
+      ],
+      "load_case_id": 144,
+      "member_count": 1610,
+      "node_count": 1323,
+      "source_case_id": 144,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000630",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=-1.75 m; HA slot2:unoccupied",
+      "files": [
+        "traffic/ha_hb/ha_hb_000630/ha_hb_000630.std",
+        "traffic/ha_hb/ha_hb_000630/ha_hb_000630_manifest.json",
+        "traffic/ha_hb/ha_hb_000630/ha_hb_000630_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000630/ha_hb_000630_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G3 shear"
+      ],
+      "load_case_id": 630,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 630,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000632",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=-1.75 m; HA slot2:unoccupied",
+      "files": [
+        "traffic/ha_hb/ha_hb_000632/ha_hb_000632.std",
+        "traffic/ha_hb/ha_hb_000632/ha_hb_000632_manifest.json",
+        "traffic/ha_hb/ha_hb_000632/ha_hb_000632_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000632/ha_hb_000632_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G2 shear"
+      ],
+      "load_case_id": 632,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 632,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000657",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=-0.75 m; HA slot2:residual_width_ge_2p5",
+      "files": [
+        "traffic/ha_hb/ha_hb_000657/ha_hb_000657.std",
+        "traffic/ha_hb/ha_hb_000657/ha_hb_000657_manifest.json",
+        "traffic/ha_hb/ha_hb_000657/ha_hb_000657_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000657/ha_hb_000657_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 shear"
+      ],
+      "load_case_id": 657,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 657,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000676",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=1.75 m; HA slot1:unoccupied",
+      "files": [
+        "traffic/ha_hb/ha_hb_000676/ha_hb_000676.std",
+        "traffic/ha_hb/ha_hb_000676/ha_hb_000676_manifest.json",
+        "traffic/ha_hb/ha_hb_000676/ha_hb_000676_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000676/ha_hb_000676_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 shear"
+      ],
+      "load_case_id": 676,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 676,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000678",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=1.75 m; HA slot1:unoccupied",
+      "files": [
+        "traffic/ha_hb/ha_hb_000678/ha_hb_000678.std",
+        "traffic/ha_hb/ha_hb_000678/ha_hb_000678_manifest.json",
+        "traffic/ha_hb/ha_hb_000678/ha_hb_000678_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000678/ha_hb_000678_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G6 shear"
+      ],
+      "load_case_id": 678,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 678,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000703",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=-1.75 m; HA slot1:displaced_clear_zone",
+      "files": [
+        "traffic/ha_hb/ha_hb_000703/ha_hb_000703.std",
+        "traffic/ha_hb/ha_hb_000703/ha_hb_000703_manifest.json",
+        "traffic/ha_hb/ha_hb_000703/ha_hb_000703_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000703/ha_hb_000703_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G1 moment",
+        "G1 shear",
+        "G1 deflection"
+      ],
+      "load_case_id": 703,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 703,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000708",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=-1.75 m; HA slot2:unoccupied",
+      "files": [
+        "traffic/ha_hb/ha_hb_000708/ha_hb_000708.std",
+        "traffic/ha_hb/ha_hb_000708/ha_hb_000708_manifest.json",
+        "traffic/ha_hb/ha_hb_000708/ha_hb_000708_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000708/ha_hb_000708_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G1 torsion",
+        "G2 torsion",
+        "G2 deflection",
+        "G3 deflection",
+        "G4 deflection"
+      ],
+      "load_case_id": 708,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 708,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000734",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=-0.75 m; HA slot1:displaced_clear_zone",
+      "files": [
+        "traffic/ha_hb/ha_hb_000734/ha_hb_000734.std",
+        "traffic/ha_hb/ha_hb_000734/ha_hb_000734_manifest.json",
+        "traffic/ha_hb/ha_hb_000734/ha_hb_000734_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000734/ha_hb_000734_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 torsion"
+      ],
+      "load_case_id": 734,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 734,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000742",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=0.25 m; HA slot1:displaced_clear_zone",
+      "files": [
+        "traffic/ha_hb/ha_hb_000742/ha_hb_000742.std",
+        "traffic/ha_hb/ha_hb_000742/ha_hb_000742_manifest.json",
+        "traffic/ha_hb/ha_hb_000742/ha_hb_000742_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000742/ha_hb_000742_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G3 torsion"
+      ],
+      "load_case_id": 742,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 742,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000746",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=1.25 m; HA slot1:residual_width_ge_2p5",
+      "files": [
+        "traffic/ha_hb/ha_hb_000746/ha_hb_000746.std",
+        "traffic/ha_hb/ha_hb_000746/ha_hb_000746_manifest.json",
+        "traffic/ha_hb/ha_hb_000746/ha_hb_000746_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000746/ha_hb_000746_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G6 torsion"
+      ],
+      "load_case_id": 746,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 746,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000754",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=1.75 m; HA slot1:unoccupied",
+      "files": [
+        "traffic/ha_hb/ha_hb_000754/ha_hb_000754.std",
+        "traffic/ha_hb/ha_hb_000754/ha_hb_000754_manifest.json",
+        "traffic/ha_hb/ha_hb_000754/ha_hb_000754_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000754/ha_hb_000754_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 deflection",
+        "G6 deflection",
+        "G7 torsion"
+      ],
+      "load_case_id": 754,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 754,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000760",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=1.75 m; HA slot2:displaced_clear_zone",
+      "files": [
+        "traffic/ha_hb/ha_hb_000760/ha_hb_000760.std",
+        "traffic/ha_hb/ha_hb_000760/ha_hb_000760_manifest.json",
+        "traffic/ha_hb/ha_hb_000760/ha_hb_000760_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000760/ha_hb_000760_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 torsion",
+        "G7 moment",
+        "G7 shear",
+        "G7 deflection"
+      ],
+      "load_case_id": 760,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 760,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000785",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=-1.75 m; HA slot2:unoccupied",
+      "files": [
+        "traffic/ha_hb/ha_hb_000785/ha_hb_000785.std",
+        "traffic/ha_hb/ha_hb_000785/ha_hb_000785_manifest.json",
+        "traffic/ha_hb/ha_hb_000785/ha_hb_000785_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000785/ha_hb_000785_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G4 moment"
+      ],
+      "load_case_id": 785,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 785,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000786",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=-1.75 m; HA slot2:unoccupied",
+      "files": [
+        "traffic/ha_hb/ha_hb_000786/ha_hb_000786.std",
+        "traffic/ha_hb/ha_hb_000786/ha_hb_000786_manifest.json",
+        "traffic/ha_hb/ha_hb_000786/ha_hb_000786_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000786/ha_hb_000786_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G2 moment",
+        "G3 moment"
+      ],
+      "load_case_id": 786,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 786,
+      "standard": "BD 37/01"
+    },
+    {
+      "action": "ha_hb",
+      "case_key": "ha_hb_000832",
+      "description": "BD 37/01 HA+HB, HB 45 units, inner spacing 6 m, centre y=1.75 m; HA slot1:unoccupied",
+      "files": [
+        "traffic/ha_hb/ha_hb_000832/ha_hb_000832.std",
+        "traffic/ha_hb/ha_hb_000832/ha_hb_000832_manifest.json",
+        "traffic/ha_hb/ha_hb_000832/ha_hb_000832_expected_results.csv",
+        "traffic/ha_hb/ha_hb_000832/ha_hb_000832_external_results_template.csv"
+      ],
+      "governing_for": [
+        "G5 moment",
+        "G6 moment"
+      ],
+      "load_case_id": 832,
+      "member_count": 1379,
+      "node_count": 1134,
+      "source_case_id": 832,
+      "standard": "BD 37/01"
+    }
+  ],
+  "traffic_search": {
+    "ha": {
+      "evaluated_case_count": 612,
+      "kel_combinations_exhaustive": true,
+      "longitudinal_step_m": 1.0,
+      "retained_governing_case_count": 14
+    },
+    "ha_hb": {
+      "evaluated_case_count": 9672,
+      "ha_assignment_search_exhaustive": true,
+      "ha_kel_step_m": 2.0,
+      "hb_longitudinal_step_m": 2.0,
+      "hb_transverse_step_m": 1.0,
+      "kel_combinations_exhaustive": true,
+      "retained_governing_case_count": 15
+    },
+    "hb": {
+      "checked_inner_axle_spacings_m": [
+        6.0,
+        11.0,
+        16.0,
+        21.0,
+        26.0
+      ],
+      "evaluated_case_count": 1845,
+      "longitudinal_step_m": 1.0,
+      "retained_governing_case_count": 13,
+      "transverse_step_m": 0.5
+    },
+    "lm1": {
+      "evaluated_case_count": 1024,
+      "longitudinal_step_m": 1.2,
+      "retained_governing_case_count": 18,
+      "search_strategy": "fixed-topology sparse exhaustive independent tandems",
+      "tandem_combinations_exhaustive": true
+    }
+  }
+}

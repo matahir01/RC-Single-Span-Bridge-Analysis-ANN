@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 
 from rc_single_span.codes.bs5400.traffic import (
@@ -10,7 +12,11 @@ from rc_single_span.core.models import (
     RectangularGirderProfile,
     SingleSpanBridgeGeometry,
 )
-from rc_single_span.traffic.bs5400 import HBSearchPlacement
+from rc_single_span.traffic.bs5400 import (
+    HBSearchPlacement,
+    _require_vertical_equilibrium,
+    traffic_equilibrium_tolerance_kn,
+)
 from rc_single_span.traffic.bs5400_combined import (
     HAHBCombinedPlacement,
     HAHBHALanePlacement,
@@ -172,9 +178,7 @@ def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium() -> 
     assert result.kel_combinations_exhaustive
     assert len(result.girders) == 7
     assert result.cases
-    assert result.checked_inner_axle_spacings_m == pytest.approx(
-        (6.0, 11.0, 16.0, 21.0, 26.0)
-    )
+    assert result.checked_inner_axle_spacings_m == pytest.approx((6.0, 11.0, 16.0, 21.0, 26.0))
     for case in result.cases:
         scale = max(
             abs(case.analysis.total_applied_vertical_load_kn),
@@ -185,3 +189,23 @@ def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium() -> 
             1.0e-6,
             1.0e-8 * scale,
         )
+
+
+def test_equilibrium_guard_allows_only_machine_scale_sparse_roundoff() -> None:
+    analysis = SimpleNamespace(
+        total_applied_vertical_load_kn=-1352.61162,
+        total_vertical_reaction_kn=1352.611602,
+        vertical_equilibrium_residual_kn=-1.8e-5,
+    )
+    tolerance = traffic_equilibrium_tolerance_kn(analysis)
+    assert tolerance == pytest.approx(6.7630581e-5)
+    assert abs(analysis.vertical_equilibrium_residual_kn) < tolerance
+    _require_vertical_equilibrium(analysis, traffic_model="regression")
+
+    failed = SimpleNamespace(
+        total_applied_vertical_load_kn=-1352.61162,
+        total_vertical_reaction_kn=1352.61062,
+        vertical_equilibrium_residual_kn=-1.0e-3,
+    )
+    with pytest.raises(RuntimeError, match="failed vertical equilibrium"):
+        _require_vertical_equilibrium(failed, traffic_model="regression")

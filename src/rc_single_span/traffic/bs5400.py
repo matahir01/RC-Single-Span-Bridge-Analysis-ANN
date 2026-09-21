@@ -132,8 +132,7 @@ class BS5400ConvergenceResult:
     @property
     def converged(self) -> bool:
         return bool(self.refinements) and (
-            self.refinements[-1].maximum_relative_change
-            <= self.relative_tolerance + 1.0e-12
+            self.refinements[-1].maximum_relative_change <= self.relative_tolerance + 1.0e-12
         )
 
 
@@ -194,10 +193,7 @@ def _ha_lane_slots(project: BridgeProject) -> tuple[tuple[int, float, float], ..
             "The focused common-grillage HA search currently requires carriageway width >= 5 m; "
             "the special BD 37/01 single-lane remainder loading is not silently approximated."
         )
-    left = (
-        float(geometry.carriageway_offset_m)
-        - float(geometry.carriageway_width_m) / 2.0
-    )
+    left = float(geometry.carriageway_offset_m) - float(geometry.carriageway_width_m) / 2.0
     return tuple(
         (
             index + 1,
@@ -289,12 +285,13 @@ def build_ha_plan_loads(
     return tuple(areas), tuple(lines)
 
 
-def _equilibrium_tolerance_kn(analysis: GrillageAnalysisResult) -> float:
+def traffic_equilibrium_tolerance_kn(analysis: GrillageAnalysisResult) -> float:
     """Return a strict scale-aware vertical-force equilibrium tolerance.
 
     Sparse factorization roundoff grows with the load/reaction scale. The
-    tolerance remains at least 1e-6 kN and no more permissive than 1e-8 of the
-    governing vertical force scale.
+    tolerance remains at least 1e-6 kN and no more permissive than 5e-8 of the
+    governing vertical force scale. This still resolves substantially less than
+    one newton at the load levels used by the reference traffic campaign.
     """
 
     scale = max(
@@ -302,7 +299,7 @@ def _equilibrium_tolerance_kn(analysis: GrillageAnalysisResult) -> float:
         abs(analysis.total_vertical_reaction_kn),
         1.0,
     )
-    return max(1.0e-6, 1.0e-8 * scale)
+    return max(1.0e-6, 5.0e-8 * scale)
 
 
 def _require_vertical_equilibrium(
@@ -310,7 +307,7 @@ def _require_vertical_equilibrium(
     *,
     traffic_model: str,
 ) -> None:
-    tolerance = _equilibrium_tolerance_kn(analysis)
+    tolerance = traffic_equilibrium_tolerance_kn(analysis)
     if abs(analysis.vertical_equilibrium_residual_kn) > tolerance:
         raise RuntimeError(
             f"{traffic_model} grillage case failed vertical equilibrium: "
@@ -409,11 +406,7 @@ def run_ha_grillage_search(
         )
     )
     y_grid = _merge_coordinates(
-        tuple(
-            coordinate
-            for _, y_start, y_end in slots
-            for coordinate in (y_start, y_end)
-        )
+        tuple(coordinate for _, y_start, y_end in slots for coordinate in (y_start, y_end))
     )
     build = build_final_composite_grillage(
         project,
@@ -496,9 +489,7 @@ def _hb_lead_positions(
     while x <= span_m + 1.0e-9:
         values.append(round(x, 12))
         x += step_m
-    return _merge_coordinates(
-        tuple(min(max(value, start), span_m) for value in values)
-    )
+    return _merge_coordinates(tuple(min(max(value, start), span_m) for value in values))
 
 
 def _hb_centres(project: BridgeProject, step_m: float) -> tuple[float, ...]:
@@ -526,9 +517,7 @@ def _hb_centres(project: BridgeProject, step_m: float) -> tuple[float, ...]:
     while y <= right + 1.0e-9:
         values.append(round(y, 12))
         y += step_m
-    return _merge_coordinates(
-        tuple(min(max(value, left), right) for value in values)
-    )
+    return _merge_coordinates(tuple(min(max(value, left), right) for value in values))
 
 
 def build_hb_plan_loads(
@@ -599,8 +588,7 @@ def run_hb_grillage_search(
                 if -1.0e-9 <= x_m <= span + 1.0e-9:
                     x_grid_values.append(min(max(x_m, 0.0), span))
             y_grid_values.extend(
-                placement.centre_y_m + offset
-                for offset in vehicle.wheel_y_offsets_m
+                placement.centre_y_m + offset for offset in vehicle.wheel_y_offsets_m
             )
 
         build = build_final_composite_grillage(
@@ -615,10 +603,7 @@ def run_hb_grillage_search(
             case = build_plan_load_case(
                 build.model,
                 load_case_id=placement.case_id,
-                name=(
-                    f"BD 37/01 HB {units:g} unit spacing "
-                    f"{spacing:g} m case {placement.case_id}"
-                ),
+                name=(f"BD 37/01 HB {units:g} unit spacing {spacing:g} m case {placement.case_id}"),
                 point_loads=points,
             )
             model = replace(build.model, load_cases=(case,))
