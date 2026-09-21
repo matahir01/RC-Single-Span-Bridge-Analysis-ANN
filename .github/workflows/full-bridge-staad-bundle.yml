@@ -1,6 +1,11 @@
 name: Full seven-girder STAAD bundle
 
 on:
+  push:
+    branches:
+      - batch-16-full-seven-girder-staad
+    paths:
+      - ".github/workflows/full-bridge-staad-bundle.yml"
   workflow_dispatch:
     inputs:
       elastic_modulus_mpa:
@@ -35,6 +40,13 @@ on:
 jobs:
   export:
     runs-on: ubuntu-latest
+    env:
+      ELASTIC_MODULUS_MPA: ${{ inputs.elastic_modulus_mpa || '31000' }}
+      ELASTIC_MODULUS_BASIS: ${{ inputs.elastic_modulus_basis || 'EN 1992-1-1:2004+A1:2014 Table 3.1 benchmark C25/30 Ecm' }}
+      PSI1_TRAFFIC: ${{ inputs.psi1_traffic || '0.75' }}
+      PSI2_TRAFFIC: ${{ inputs.psi2_traffic || '0.00' }}
+      GAMMA_G_UNFAVOURABLE: ${{ inputs.gamma_g_unfavourable || '1.35' }}
+      GAMMA_Q_TRAFFIC: ${{ inputs.gamma_q_traffic || '1.35' }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -45,12 +57,12 @@ jobs:
       - name: Export full seven-girder verification campaign
         run: >
           python examples/export_full_bridge_staad_bundle.py
-          --elastic-modulus-mpa "${{ inputs.elastic_modulus_mpa }}"
-          --elastic-modulus-basis "${{ inputs.elastic_modulus_basis }}"
-          --psi1-traffic "${{ inputs.psi1_traffic }}"
-          --psi2-traffic "${{ inputs.psi2_traffic }}"
-          --gamma-g-unfavourable "${{ inputs.gamma_g_unfavourable }}"
-          --gamma-q-traffic "${{ inputs.gamma_q_traffic }}"
+          --elastic-modulus-mpa "$ELASTIC_MODULUS_MPA"
+          --elastic-modulus-basis "$ELASTIC_MODULUS_BASIS"
+          --psi1-traffic "$PSI1_TRAFFIC"
+          --psi2-traffic "$PSI2_TRAFFIC"
+          --gamma-g-unfavourable "$GAMMA_G_UNFAVOURABLE"
+          --gamma-q-traffic "$GAMMA_Q_TRAFFIC"
           --repository-sha "${{ github.sha }}"
           --output-dir generated_full_bridge_staad_bundle
       - name: Upload verification bundle
