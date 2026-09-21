@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from itertools import combinations, permutations, product
+from typing import TYPE_CHECKING
 
 from rc_single_span.analysis.grillage import build_final_composite_grillage
 from rc_single_span.analysis.grillage_solver import GrillageAnalysisResult
@@ -28,6 +29,9 @@ from rc_single_span.codes.bs5400.traffic import (
     notional_lane_layout_bd37_01,
 )
 from rc_single_span.core.models import BridgeProject
+
+if TYPE_CHECKING:
+    from rc_single_span.traffic.bs5400_combined import HAHBCombinedSearchResult
 
 
 @dataclass(frozen=True)
@@ -104,6 +108,7 @@ class HBSearchResult:
 class BS5400NominalTrafficSuite:
     ha: HASearchResult
     hb: HBSearchResult
+    ha_hb: "HAHBCombinedSearchResult"
     application_status: str
 
 
@@ -676,7 +681,14 @@ def run_bs5400_nominal_traffic_suite(
     ha_longitudinal_step_m: float = 1.0,
     hb_longitudinal_step_m: float = 1.0,
     hb_transverse_step_m: float = 0.5,
+    combined_hb_longitudinal_step_m: float = 2.0,
+    combined_hb_transverse_step_m: float = 1.0,
+    combined_ha_kel_step_m: float = 2.0,
 ) -> BS5400NominalTrafficSuite:
+    from rc_single_span.traffic.bs5400_combined import (
+        run_ha_hb_combined_grillage_search,
+    )
+
     return BS5400NominalTrafficSuite(
         ha=run_ha_grillage_search(
             project,
@@ -688,10 +700,17 @@ def run_bs5400_nominal_traffic_suite(
             longitudinal_step_m=hb_longitudinal_step_m,
             transverse_step_m=hb_transverse_step_m,
         ),
+        ha_hb=run_ha_hb_combined_grillage_search(
+            project,
+            units=hb_units,
+            hb_longitudinal_step_m=combined_hb_longitudinal_step_m,
+            hb_transverse_step_m=combined_hb_transverse_step_m,
+            ha_kel_step_m=combined_ha_kel_step_m,
+        ),
         application_status=(
-            "Nominal HA-alone and HB vehicle searches use the common physical grillage. "
-            "Code-specific HA+HB coexistence/application under BD 37/01 6.4.2 is intentionally "
-            "reserved for the next load-application/combination batch rather than approximated."
+            "Nominal HA-alone, HB-alone and BD 37/01 6.4.2 HA+HB coexistence searches "
+            "all use the same physical common grillage. Design gamma_fL factors are exposed "
+            "separately for the code-specific ULS/SLS combination engine."
         ),
     )
 
