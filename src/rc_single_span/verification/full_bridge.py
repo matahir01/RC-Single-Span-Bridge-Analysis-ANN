@@ -185,18 +185,27 @@ def _longitudinal_members_by_girder(
     return tuple(by_girder)
 
 
-def _stage_load_case(
+def build_girder_line_load_case(
     model: StructuralModel,
     *,
-    stage: PermanentActionStage,
     girder_y_m: tuple[float, ...],
     segments: tuple[PermanentLoadSegment, ...],
+    load_case_id: int,
+    name: str,
 ) -> LoadCase:
+    """Map assigned permanent segments to the physical longitudinal members."""
+
+    if load_case_id <= 0:
+        raise ValueError("Full-bridge load-case ID must be positive.")
+    if not name.strip():
+        raise ValueError("Full-bridge load-case name cannot be empty.")
     nodes = {item.node_id: item for item in model.nodes}
     members_by_girder = _longitudinal_members_by_girder(model, girder_y_m)
     loads: list[UniformLoad] = []
 
     for segment in segments:
+        if not 1 <= segment.girder_index <= len(members_by_girder):
+            raise ValueError("Permanent segment references an absent girder line.")
         members = members_by_girder[segment.girder_index - 1]
         for member in members:
             node_i = nodes[member.node_i]
@@ -228,8 +237,8 @@ def _stage_load_case(
                 )
 
     return LoadCase(
-        _LOAD_CASE_IDS[stage],
-        f"Full bridge {stage.value}",
+        load_case_id,
+        name,
         uniform_loads=tuple(loads),
     )
 
@@ -310,11 +319,12 @@ def _unhardened_stage_model(
         supports=tuple(supports),
         load_cases=(LoadCase(_LOAD_CASE_IDS[stage], "EMPTY"),),
     )
-    load_case = _stage_load_case(
+    load_case = build_girder_line_load_case(
         unloaded,
-        stage=stage,
         girder_y_m=girder_y,
         segments=_stage_segments(project, stage),
+        load_case_id=_LOAD_CASE_IDS[stage],
+        name=f"Full bridge {stage.value}",
     )
     return replace(unloaded, load_cases=(load_case,))
 
@@ -356,11 +366,12 @@ def build_full_bridge_stage_model(
         elastic_modulus_mpa=float(project.materials.elastic_modulus_mpa),
         load_case=LoadCase(_LOAD_CASE_IDS[stage], "EMPTY"),
     )
-    load_case = _stage_load_case(
+    load_case = build_girder_line_load_case(
         build.model,
-        stage=stage,
         girder_y_m=girder_y,
         segments=_stage_segments(project, stage),
+        load_case_id=_LOAD_CASE_IDS[stage],
+        name=f"Full bridge {stage.value}",
     )
     return replace(
         build.model,
