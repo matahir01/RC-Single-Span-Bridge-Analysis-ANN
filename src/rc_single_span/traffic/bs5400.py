@@ -284,6 +284,36 @@ def build_ha_plan_loads(
     return tuple(areas), tuple(lines)
 
 
+def _equilibrium_tolerance_kn(analysis: GrillageAnalysisResult) -> float:
+    """Return a strict scale-aware vertical-force equilibrium tolerance.
+
+    Sparse factorization roundoff grows with the load/reaction scale. The
+    tolerance remains at least 1e-6 kN and no more permissive than 1e-8 of the
+    governing vertical force scale.
+    """
+
+    scale = max(
+        abs(analysis.total_applied_vertical_load_kn),
+        abs(analysis.total_vertical_reaction_kn),
+        1.0,
+    )
+    return max(1.0e-6, 1.0e-8 * scale)
+
+
+def _require_vertical_equilibrium(
+    analysis: GrillageAnalysisResult,
+    *,
+    traffic_model: str,
+) -> None:
+    tolerance = _equilibrium_tolerance_kn(analysis)
+    if abs(analysis.vertical_equilibrium_residual_kn) > tolerance:
+        raise RuntimeError(
+            f"{traffic_model} grillage case failed vertical equilibrium: "
+            f"residual={analysis.vertical_equilibrium_residual_kn:.12g} kN, "
+            f"tolerance={tolerance:.12g} kN."
+        )
+
+
 def _update_governing(
     governing: list[dict[str, object]],
     case_id: int,
@@ -402,11 +432,7 @@ def run_ha_grillage_search(
         )
         model = replace(build.model, load_cases=(case,))
         analysis = solve_prepared_vertical_grillage(prepared, model)
-        if abs(analysis.vertical_equilibrium_residual_kn) > 1.0e-6:
-            raise RuntimeError(
-                "HA grillage case failed vertical equilibrium: "
-                f"{analysis.vertical_equilibrium_residual_kn:.12g} kN."
-            )
+        _require_vertical_equilibrium(analysis, traffic_model="HA")
         girders = native_traffic_girder_envelope(model, analysis)
         _update_governing(governing, placement.case_id, girders)
         case_result = BS5400CaseResult(
@@ -592,11 +618,7 @@ def run_hb_grillage_search(
             )
             model = replace(build.model, load_cases=(case,))
             analysis = solve_prepared_vertical_grillage(prepared, model)
-            if abs(analysis.vertical_equilibrium_residual_kn) > 1.0e-6:
-                raise RuntimeError(
-                    "HB grillage case failed vertical equilibrium: "
-                    f"{analysis.vertical_equilibrium_residual_kn:.12g} kN."
-                )
+            _require_vertical_equilibrium(analysis, traffic_model="HB")
             girders = native_traffic_girder_envelope(model, analysis)
             _update_governing(governing, placement.case_id, girders)
             case_result = BS5400CaseResult(
