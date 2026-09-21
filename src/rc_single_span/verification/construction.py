@@ -36,7 +36,6 @@ from rc_single_span.verification.package import (
     build_staad_verification_package,
 )
 
-
 _STAGE_ORDER = {
     PermanentActionStage.PRECAST_GIRDER: 1,
     PermanentActionStage.DECK_CONSTRUCTION: 2,
