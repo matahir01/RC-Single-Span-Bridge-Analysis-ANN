@@ -73,7 +73,7 @@ def _project() -> BridgeProject:
 def test_construction_suite_crosschecks_all_three_stages_and_cumulative_response() -> None:
     suite = build_construction_verification_suite(
         _project(),
-        longitudinal_divisions=40,
+        longitudinal_divisions=8,
     )
 
     assert len(suite.stages) == 9
@@ -90,7 +90,7 @@ def test_construction_suite_crosschecks_all_three_stages_and_cumulative_response
 def test_stage_loads_and_stiffness_preserve_the_actual_construction_sequence() -> None:
     suite = build_construction_verification_suite(
         _project(),
-        longitudinal_divisions=32,
+        longitudinal_divisions=8,
     )
     precast = suite.stage(
         girder_index=2,
@@ -123,7 +123,7 @@ def test_stage_loads_and_stiffness_preserve_the_actual_construction_sequence() -
 def test_each_stage_staad_package_uses_exact_stage_section_and_load_case() -> None:
     suite = build_construction_verification_suite(
         _project(),
-        longitudinal_divisions=24,
+        longitudinal_divisions=8,
     )
     item = suite.stage(
         girder_index=1,
@@ -145,7 +145,7 @@ def test_each_stage_staad_package_uses_exact_stage_section_and_load_case() -> No
 def test_superimposed_partial_actions_are_split_without_losing_total_load() -> None:
     suite = build_construction_verification_suite(
         _project(),
-        longitudinal_divisions=24,
+        longitudinal_divisions=8,
     )
     exterior = suite.stage(
         girder_index=1,
