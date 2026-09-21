@@ -125,7 +125,7 @@ class BS5400ConvergenceStep:
 
 @dataclass(frozen=True)
 class BS5400ConvergenceResult:
-    result: HASearchResult | HBSearchResult
+    result: "HASearchResult | HBSearchResult | HAHBCombinedSearchResult"
     refinements: tuple[BS5400ConvergenceStep, ...]
     relative_tolerance: float
 
