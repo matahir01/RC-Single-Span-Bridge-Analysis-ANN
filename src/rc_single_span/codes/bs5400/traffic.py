@@ -189,3 +189,26 @@ def hb_vehicle_definition(
         axle_offsets_m=offsets,
         wheel_y_offsets_m=(-1.5, -0.5, 0.5, 1.5),
     )
+
+
+def ha_hb_coexistent_gamma_fl(
+    *,
+    combination: int,
+    limit_state: str,
+) -> float:
+    """Return BD 37/01 primary-live-load gamma_fL for coexistent HA + HB.
+
+    BD 37/01 6.2.7 requires HA coexistent with HB to use the HB factors
+    specified by 6.3.4. This helper covers combinations 1, 2 and 3; other
+    combinations have different primary/secondary-live-load rules and are
+    handled by the later combination engine.
+    """
+
+    if combination not in (1, 2, 3):
+        raise ValueError("Coexistent HA/HB gamma_fL is defined here only for combinations 1-3.")
+    state = limit_state.strip().lower()
+    if state == "uls":
+        return 1.30 if combination == 1 else 1.10
+    if state == "sls":
+        return 1.10 if combination == 1 else 1.00
+    raise ValueError("limit_state must be 'uls' or 'sls'.")
