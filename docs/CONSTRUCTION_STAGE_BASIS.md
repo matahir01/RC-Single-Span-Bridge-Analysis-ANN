@@ -19,6 +19,9 @@ Active longitudinal section: precast girder plus only any explicitly verified co
 
 Typical new actions:
 - wet in-situ deck concrete;
+- diaphragms/cross-beams cast at this stage, represented as transverse
+  permanent line actions and converted to exact longitudinal-girder point
+  loads by tributary overlap;
 - construction-stage deck loads that are actually present.
 
 By default the 75 mm false slab is weight-only and the 175 mm wet in-situ slab does not contribute composite stiffness until hardened.
@@ -55,3 +58,19 @@ The following require a separate future model and must not be silently approxima
 - local formwork or falsework design.
 
 Unsupported assumptions must be reported explicitly rather than hidden behind a generic construction-stage switch.
+
+## Permanent-action representation
+
+The permanent-action engine distinguishes three physical representations:
+
+- distributed longitudinal loads, used for girder/deck self-weight and
+  surfacing;
+- longitudinal line actions, used for barriers, kerbs and services;
+- transverse line actions at a fixed longitudinal station, used for
+  diaphragms/cross-beams. These are distributed across the girder tributary
+  bands and retained as point loads in the simple-span response and
+  construction-stage deflection calculations.
+
+Point actions are not smeared into artificial short UDLs. Their reactions,
+shear discontinuities, bending moments and virtual-work deflections are
+evaluated as point loads.
