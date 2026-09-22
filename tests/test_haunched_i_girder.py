@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from rc_single_span.analysis.permanent import permanent_load_summary_by_stage
 from rc_single_span.analysis.sections import (
     final_composite_concrete_layers,
     precast_girder_properties,
@@ -10,6 +11,7 @@ from rc_single_span.analysis.sections import (
 from rc_single_span.core.models import (
     IGirderProfile,
     RectangularGirderProfile,
+    PermanentActionStage,
     SectionType,
     SingleSpanBridgeGeometry,
     TGirderProfile,
@@ -120,3 +122,30 @@ def test_20m_i_reference_is_a_geometry_and_loading_benchmark_not_a_bar_target() 
     assert bridge.provided_longitudinal_reinforcement is None
     assert len(bridge.permanent_actions.surfacing_layers) == 3
     assert len(bridge.permanent_actions.line_actions) == 6
+
+
+def test_20m_benchmark_permanent_actions_are_fully_staged_and_auditable() -> None:
+    bridge = _load_20m_reference()
+    summaries = permanent_load_summary_by_stage(bridge)
+    by_stage = {item.stage: item for item in summaries}
+
+    # Stage 1: seven girder self-weights + 75 mm false slab over 11 m deck.
+    assert by_stage[PermanentActionStage.PRECAST_GIRDER].total_kn == pytest.approx(
+        1738.125
+    )
+
+    # Stage 2: 175 mm wet deck + three 250x900 nominal diaphragms.
+    assert by_stage[PermanentActionStage.DECK_CONSTRUCTION].total_kn == pytest.approx(
+        1134.625
+    )
+    assert by_stage[PermanentActionStage.DECK_CONSTRUCTION].point_total_kn == pytest.approx(
+        172.125
+    )
+
+    # Stage 3: asphalt, footway toppings, kerbs, barriers and services.
+    assert by_stage[PermanentActionStage.SUPERIMPOSED].total_kn == pytest.approx(
+        987.6
+    )
+
+    total = sum(item.total_kn for item in summaries)
+    assert total == pytest.approx(3860.35)
