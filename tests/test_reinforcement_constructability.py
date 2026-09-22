@@ -254,6 +254,7 @@ def test_eurocode_project_detailing_sizes_discrete_bars_links_and_audits_provide
     assert first.cover_check.passes
     assert first.anchorage is not None
     assert first.anchorage.design_anchorage_length_mm > 0.0
+    assert first.doubly_reinforced_requirement is None
     assert first.longitudinal_synthesis is not None
     assert first.longitudinal_synthesis.selected is not None
     assert not first.longitudinal_synthesis.final_design_ready
@@ -328,6 +329,7 @@ def test_bs5400_project_detailing_can_recommend_valid_steel_even_when_provided_e
             provided_link_spacing_mm=200.0,
             provided_vertical_clear_spacing_mm=None,
             provided_side_face_steel_each_face_mm2=250.0,
+            compression_steel_depth_m=0.10,
         ),
     )
 
@@ -353,6 +355,10 @@ def test_bs5400_project_detailing_can_recommend_valid_steel_even_when_provided_e
     assert exterior.recommended_side_face_each_face.provided_area_mm2 >= (
         exterior.limits.minimum_side_face_steel_each_face_mm2
     )
+    assert exterior.doubly_reinforced_requirement is not None
+    assert exterior.doubly_reinforced_requirement.compression_steel_mm2 > 0.0
+    assert exterior.doubly_reinforced_requirement.total_tension_steel_mm2 > 0.0
+    assert "doubly reinforced requirement" in exterior.required_flexural_steel_issue
     assert "explicit" in exterior.limits.minimum_main_ratio_basis
     assert exterior.longitudinal_synthesis is not None
     assert exterior.longitudinal_synthesis.selected is not None
