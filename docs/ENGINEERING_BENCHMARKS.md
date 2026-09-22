@@ -43,7 +43,9 @@ The I-girder may include optional tapered haunches; zero-haunch I-sections remai
 backward compatible.
 
 For haunched sections, area, centroid and bending inertias are calculated from
-the exact symmetric trapezoidal bands. The grillage torsion constant for a
-tapered haunch currently uses an explicitly documented mean-width rectangular
-component approximation; this is not to be represented as an exact St-Venant
-solution.
+the exact symmetric trapezoidal bands. The connected precast I-girder
+Saint-Venant torsion constant is now obtained by solving the Prandtl
+stress-function boundary-value problem with a successively refined triangular
+finite-element mesh and Richardson extrapolation. This is a numerically
+converged continuum solution rather than a rectangle-summation approximation;
+the reported convergence error is retained by the torsion solver.
