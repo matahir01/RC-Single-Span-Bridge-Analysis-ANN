@@ -62,9 +62,9 @@ def bar_area_mm2(diameter_mm: float) -> float:
     return pi * diameter_mm**2 / 4.0
 
 
-def select_longitudinal_bar_arrangement(
+def generate_longitudinal_bar_arrangements(
     *,
-    required_area_mm2: float,
+    minimum_area_mm2: float,
     web_width_mm: float,
     cover_mm: float,
     link_diameter_mm: float,
@@ -73,17 +73,23 @@ def select_longitudinal_bar_arrangement(
     maximum_layers: int = 4,
     preferred_vertical_clear_spacing_mm: float | None = None,
     diameter_governs_clear_spacing: bool = True,
-) -> LongitudinalBarArrangement:
-    """Choose the least-area unbundled arrangement satisfying explicit cage geometry."""
+) -> tuple[LongitudinalBarArrangement, ...]:
+    """Generate every practical unbundled cage at or above a minimum steel area.
+
+    Unlike the original one-shot selector, this enumerates additional bar
+    counts as well as diameters.  The design layer can therefore reject the
+    nominally smallest cage after rechecking its real centroid, ULS resistance
+    and serviceability, then continue to a larger practical arrangement.
+    """
 
     if min(
-        required_area_mm2,
+        minimum_area_mm2,
         web_width_mm,
         cover_mm,
         link_diameter_mm,
         minimum_clear_spacing_mm,
     ) <= 0.0:
-        raise ValueError("Longitudinal bar-selection inputs must be positive.")
+        raise ValueError("Longitudinal bar-generation inputs must be positive.")
     if maximum_layers < 1:
         raise ValueError("maximum_layers must be at least one.")
     if not available_diameters_mm or any(value <= 0.0 for value in available_diameters_mm):
@@ -101,7 +107,7 @@ def select_longitudinal_bar_arrangement(
     candidates: list[LongitudinalBarArrangement] = []
     for diameter in sorted(set(available_diameters_mm)):
         area = bar_area_mm2(diameter)
-        count = max(2, ceil(required_area_mm2 / area))
+        minimum_count = max(2, ceil(minimum_area_mm2 / area))
         minimum_clear = (
             max(minimum_clear_spacing_mm, diameter)
             if diameter_governs_clear_spacing
@@ -113,56 +119,122 @@ def select_longitudinal_bar_arrangement(
         if maximum_per_layer < 2:
             continue
 
-        layers = ceil(count / maximum_per_layer)
-        if layers > maximum_layers:
-            continue
-        distribution = [count // layers] * layers
-        for index in range(count % layers):
-            distribution[index] += 1
-        if min(distribution) < 2:
-            continue
+        maximum_count = maximum_per_layer * maximum_layers
+        for count in range(minimum_count, maximum_count + 1):
+            layers = ceil(count / maximum_per_layer)
+            if layers > maximum_layers:
+                continue
+            distribution = [count // layers] * layers
+            for index in range(count % layers):
+                distribution[index] += 1
+            if min(distribution) < 2:
+                continue
 
-        governing_count = max(distribution)
-        horizontal_clear = (
-            (clear_width - governing_count * diameter) / (governing_count - 1)
-            if governing_count > 1
-            else clear_width - diameter
-        )
-        if horizontal_clear + 1.0e-9 < minimum_clear:
-            continue
-
-        vertical_clear = max(
-            minimum_clear,
-            preferred_vertical_clear_spacing_mm or minimum_clear,
-        )
-        candidates.append(
-            LongitudinalBarArrangement(
-                bar_diameter_mm=diameter,
-                bar_count=count,
-                layer_count=layers,
-                bars_per_layer=tuple(distribution),
-                provided_area_mm2=count * area,
-                clear_horizontal_spacing_mm=horizontal_clear,
-                clear_vertical_spacing_mm=vertical_clear,
-                minimum_clear_spacing_mm=minimum_clear,
-                fits_web=True,
+            governing_count = max(distribution)
+            horizontal_clear = (
+                (clear_width - governing_count * diameter) / (governing_count - 1)
+                if governing_count > 1
+                else clear_width - diameter
             )
-        )
+            if horizontal_clear + 1.0e-9 < minimum_clear:
+                continue
+
+            vertical_clear = max(
+                minimum_clear,
+                preferred_vertical_clear_spacing_mm or minimum_clear,
+            )
+            candidates.append(
+                LongitudinalBarArrangement(
+                    bar_diameter_mm=diameter,
+                    bar_count=count,
+                    layer_count=layers,
+                    bars_per_layer=tuple(distribution),
+                    provided_area_mm2=count * area,
+                    clear_horizontal_spacing_mm=horizontal_clear,
+                    clear_vertical_spacing_mm=vertical_clear,
+                    minimum_clear_spacing_mm=minimum_clear,
+                    fits_web=True,
+                )
+            )
 
     if not candidates:
         raise ValueError(
             "No unbundled longitudinal-bar arrangement fits the web, cover and layer limits."
         )
-    return min(
-        candidates,
-        key=lambda item: (
-            item.provided_area_mm2,
-            item.layer_count,
-            item.bar_count,
-            item.bar_diameter_mm,
-        ),
+    return tuple(
+        sorted(
+            candidates,
+            key=lambda item: (
+                item.provided_area_mm2,
+                item.layer_count,
+                item.bar_count,
+                item.bar_diameter_mm,
+            ),
+        )
     )
 
+
+def longitudinal_cage_effective_depth_m(
+    arrangement: LongitudinalBarArrangement,
+    *,
+    section_total_depth_mm: float,
+    cover_mm: float,
+    link_diameter_mm: float,
+) -> float:
+    """Return the steel-area centroid depth from the top of the full section."""
+
+    if min(section_total_depth_mm, cover_mm, link_diameter_mm) <= 0.0:
+        raise ValueError("Cage-centroid geometry must be positive.")
+
+    diameter = arrangement.bar_diameter_mm
+    first_center_from_bottom = cover_mm + link_diameter_mm + diameter / 2.0
+    pitch = diameter + arrangement.clear_vertical_spacing_mm
+    weighted = 0.0
+    total_bars = 0
+    for index, count in enumerate(arrangement.bars_per_layer):
+        center = first_center_from_bottom + index * pitch
+        weighted += count * center
+        total_bars += count
+    if total_bars <= 0:
+        raise ValueError("Longitudinal arrangement contains no bars.")
+
+    centroid_from_bottom = weighted / total_bars
+    effective_depth_mm = section_total_depth_mm - centroid_from_bottom
+    if effective_depth_mm <= 0.0:
+        raise ValueError("Longitudinal cage centroid lies outside the section.")
+    return effective_depth_mm / 1000.0
+
+
+def select_longitudinal_bar_arrangement(
+    *,
+    required_area_mm2: float,
+    web_width_mm: float,
+    cover_mm: float,
+    link_diameter_mm: float,
+    minimum_clear_spacing_mm: float,
+    available_diameters_mm: tuple[float, ...] = (16.0, 20.0, 25.0, 32.0, 40.0),
+    maximum_layers: int = 4,
+    preferred_vertical_clear_spacing_mm: float | None = None,
+    diameter_governs_clear_spacing: bool = True,
+) -> LongitudinalBarArrangement:
+    """Backward-compatible least-area selector.
+
+    Higher-level bridge design should prefer the reinforcement-synthesis path,
+    which rechecks generated cages for actual effective depth, ULS and SLS.
+    """
+
+    candidates = generate_longitudinal_bar_arrangements(
+        minimum_area_mm2=required_area_mm2,
+        web_width_mm=web_width_mm,
+        cover_mm=cover_mm,
+        link_diameter_mm=link_diameter_mm,
+        minimum_clear_spacing_mm=minimum_clear_spacing_mm,
+        available_diameters_mm=available_diameters_mm,
+        maximum_layers=maximum_layers,
+        preferred_vertical_clear_spacing_mm=preferred_vertical_clear_spacing_mm,
+        diameter_governs_clear_spacing=diameter_governs_clear_spacing,
+    )
+    return candidates[0]
 
 def select_vertical_link_arrangement(
     *,
