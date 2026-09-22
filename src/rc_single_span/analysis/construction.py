@@ -9,7 +9,9 @@ from scipy.optimize import minimize_scalar
 from rc_single_span.analysis.permanent import (
     PermanentLoadCategory,
     PermanentLoadSegment,
+    PermanentPointLoad,
     automatic_permanent_loads,
+    automatic_permanent_point_loads,
 )
 from rc_single_span.analysis.sections import (
     SectionProperties,
@@ -19,9 +21,10 @@ from rc_single_span.analysis.sections import (
 )
 from rc_single_span.analysis.simple_span import (
     DistributedLoadSegment,
+    PointLoadSegment,
     SimpleSpanDistributedResult,
-    simple_span_distributed_load_response,
-    simple_span_distributed_response_at_x,
+    simple_span_mixed_load_response,
+    simple_span_mixed_response_at_x,
 )
 from rc_single_span.core.models import BridgeProject, PermanentActionStage
 
@@ -31,6 +34,7 @@ class ConstructionStageGirderResult:
     girder_index: int
     stage: PermanentActionStage
     loads: tuple[PermanentLoadSegment, ...]
+    point_loads: tuple[PermanentPointLoad, ...]
     section: SectionProperties
     elastic_modulus_mpa: float
     response: SimpleSpanDistributedResult
@@ -92,21 +96,35 @@ def _distributed(loads: tuple[PermanentLoadSegment, ...]) -> tuple[DistributedLo
     )
 
 
+def _points(loads: tuple[PermanentPointLoad, ...]) -> tuple[PointLoadSegment, ...]:
+    return tuple(
+        PointLoadSegment(
+            load.magnitude_kn,
+            load.x_m,
+            label=load.source,
+        )
+        for load in loads
+    )
+
+
 def _deflection_m(
     span_m: float,
     loads: tuple[DistributedLoadSegment, ...],
+    point_loads: tuple[PointLoadSegment, ...] = (),
     *,
     x_m: float,
     ei_kn_m2: float,
 ) -> float:
     if not 0.0 <= x_m <= span_m:
         raise ValueError("Deflection coordinate lies outside the span.")
-    if x_m in {0.0, span_m} or not loads:
+    if x_m in {0.0, span_m} or (not loads and not point_loads):
         return 0.0
 
     boundaries = {0.0, span_m, x_m}
     for load in loads:
         boundaries.update((load.start_m, load.end_m))
+    for load in point_loads:
+        boundaries.add(load.position_m)
     ordered = sorted(boundaries)
     gauss_x, gauss_w = np.polynomial.legendre.leggauss(8)
     unit_left_reaction = (span_m - x_m) / span_m
@@ -119,9 +137,10 @@ def _deflection_m(
         half = 0.5 * (right - left)
         for coordinate, weight in zip(gauss_x, gauss_w, strict=True):
             station = midpoint + half * float(coordinate)
-            moment, _ = simple_span_distributed_response_at_x(
+            moment, _ = simple_span_mixed_response_at_x(
                 span_m,
                 loads,
+                point_loads,
                 station,
             )
             if station <= x_m:
@@ -135,15 +154,17 @@ def _deflection_m(
 def _max_deflection(
     span_m: float,
     loads: tuple[DistributedLoadSegment, ...],
+    point_loads: tuple[PointLoadSegment, ...] = (),
     *,
     ei_kn_m2: float,
 ) -> tuple[float, float]:
-    if not loads:
+    if not loads and not point_loads:
         return 0.0, span_m / 2.0
 
     objective = lambda x: -_deflection_m(
         span_m,
         loads,
+        point_loads,
         x_m=float(x),
         ei_kn_m2=ei_kn_m2,
     )
@@ -174,6 +195,7 @@ def run_construction_stage_analysis(
 
     span = float(project.geometry.span_m)
     all_segments = automatic_permanent_loads(project)
+    all_points = automatic_permanent_point_loads(project)
     stage_results: list[ConstructionStageGirderResult] = []
 
     for stage in PermanentActionStage:
@@ -183,8 +205,14 @@ def run_construction_stage_analysis(
                 for item in all_segments
                 if item.stage is stage and item.girder_index == girder_index
             )
+            point_loads = tuple(
+                item
+                for item in all_points
+                if item.stage is stage and item.girder_index == girder_index
+            )
             distributed = _distributed(loads)
-            response = simple_span_distributed_load_response(span, distributed)
+            points = _points(point_loads)
+            response = simple_span_mixed_load_response(span, distributed, points)
             section = _section_for_stage(
                 project,
                 girder_index=girder_index,
@@ -194,6 +222,7 @@ def run_construction_stage_analysis(
             deflection_m, position_m = _max_deflection(
                 span,
                 distributed,
+                points,
                 ei_kn_m2=ei,
             )
             stage_results.append(
@@ -201,6 +230,7 @@ def run_construction_stage_analysis(
                     girder_index,
                     stage,
                     loads,
+                    point_loads,
                     section,
                     e_mpa,
                     response,
@@ -213,7 +243,14 @@ def run_construction_stage_analysis(
     for girder_index in range(1, int(project.geometry.girder_count) + 1):
         items = tuple(item for item in stage_results if item.girder_index == girder_index)
         all_loads = tuple(load for item in items for load in _distributed(item.loads))
-        combined = simple_span_distributed_load_response(span, all_loads)
+        all_point_loads = tuple(
+            load for item in items for load in _points(item.point_loads)
+        )
+        combined = simple_span_mixed_load_response(
+            span,
+            all_loads,
+            all_point_loads,
+        )
 
         def cumulative_deflection(
             x_m: float,
@@ -222,16 +259,18 @@ def run_construction_stage_analysis(
             total = 0.0
             for item in stage_items:
                 stage_loads = _distributed(item.loads)
+                stage_points = _points(item.point_loads)
                 ei = item.elastic_modulus_mpa * 1000.0 * item.section.iy_m4
                 total += _deflection_m(
                     span,
                     stage_loads,
+                    stage_points,
                     x_m=x_m,
                     ei_kn_m2=ei,
                 )
             return total
 
-        if all_loads:
+        if all_loads or all_point_loads:
             optimum = minimize_scalar(
                 lambda x: -cumulative_deflection(float(x)),
                 bounds=(0.0, span),
@@ -294,6 +333,7 @@ def factored_permanent_deflection(
 
     span = float(project.geometry.span_m)
     all_segments = automatic_permanent_loads(project)
+    all_points = automatic_permanent_point_loads(project)
 
     def displacement_m(x_m: float) -> float:
         total = 0.0
@@ -302,6 +342,11 @@ def factored_permanent_deflection(
                 segment
                 for segment in all_segments
                 if segment.girder_index == girder_index and segment.stage is stage
+            )
+            stage_points = tuple(
+                point
+                for point in all_points
+                if point.girder_index == girder_index and point.stage is stage
             )
             loads = tuple(
                 DistributedLoadSegment(
@@ -312,7 +357,15 @@ def factored_permanent_deflection(
                 )
                 for segment in stage_segments
             )
-            if not loads:
+            points = tuple(
+                PointLoadSegment(
+                    point.magnitude_kn * factors[point.category],
+                    point.x_m,
+                    label=point.source,
+                )
+                for point in stage_points
+            )
+            if not loads and not points:
                 continue
             section = _section_for_stage(
                 project,
@@ -322,6 +375,7 @@ def factored_permanent_deflection(
             total += _deflection_m(
                 span,
                 loads,
+                points,
                 x_m=x_m,
                 ei_kn_m2=e_mpa * 1000.0 * section.iy_m4,
             )
@@ -377,11 +431,17 @@ def factored_permanent_deflection_at_x_mm(
 
     total_m = 0.0
     all_segments = automatic_permanent_loads(project)
+    all_points = automatic_permanent_point_loads(project)
     for stage in PermanentActionStage:
         stage_segments = tuple(
             segment
             for segment in all_segments
             if segment.girder_index == girder_index and segment.stage is stage
+        )
+        stage_points = tuple(
+            point
+            for point in all_points
+            if point.girder_index == girder_index and point.stage is stage
         )
         loads = tuple(
             DistributedLoadSegment(
@@ -392,7 +452,15 @@ def factored_permanent_deflection_at_x_mm(
             )
             for segment in stage_segments
         )
-        if not loads:
+        points = tuple(
+            PointLoadSegment(
+                point.magnitude_kn * factors[point.category],
+                point.x_m,
+                label=point.source,
+            )
+            for point in stage_points
+        )
+        if not loads and not points:
             continue
         section = _section_for_stage(
             project,
@@ -402,6 +470,7 @@ def factored_permanent_deflection_at_x_mm(
         total_m += _deflection_m(
             span,
             loads,
+            points,
             x_m=x_m,
             ei_kn_m2=e_mpa * 1000.0 * section.iy_m4,
         )
