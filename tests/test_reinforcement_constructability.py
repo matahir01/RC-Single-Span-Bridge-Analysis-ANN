@@ -252,6 +252,15 @@ def test_eurocode_project_detailing_sizes_discrete_bars_links_and_audits_provide
     assert first.provided_above_minimum
     assert first.provided_below_maximum
     assert first.cover_check.passes
+    assert first.longitudinal_synthesis is not None
+    assert first.longitudinal_synthesis.selected is not None
+    assert not first.longitudinal_synthesis.final_design_ready
+    assert first.longitudinal_synthesis.candidates_evaluated > 1
+    assert first.longitudinal_synthesis.passing_candidates >= 1
+    assert any(
+        item.name == "fatigue" and item.required_area_mm2 is None
+        for item in first.longitudinal_synthesis.demands
+    )
 
 
 def test_bs5400_project_detailing_can_recommend_valid_steel_even_when_provided_exterior_is_outside_singly_reinforced_scope() -> None:
@@ -339,6 +348,10 @@ def test_bs5400_project_detailing_can_recommend_valid_steel_even_when_provided_e
     assert exterior.provided_link_spacing_ok
     assert exterior.side_face_steel_ok
     assert "explicit" in exterior.limits.minimum_main_ratio_basis
+    assert exterior.longitudinal_synthesis is not None
+    assert exterior.longitudinal_synthesis.selected is not None
+    assert not exterior.longitudinal_synthesis.final_design_ready
+    assert exterior.longitudinal_synthesis.passing_candidates >= 1
 
 
 def test_candidate_generator_keeps_larger_cages_available_for_sls_recheck() -> None:
