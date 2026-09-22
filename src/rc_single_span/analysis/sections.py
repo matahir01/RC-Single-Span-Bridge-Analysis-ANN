@@ -357,30 +357,56 @@ def girder_tributary_widths_m(
     return tuple(right - left for left, right in girder_tributary_bands_m(geometry))
 
 
+def _has_tapered_i_haunch(profile: GirderProfile) -> bool:
+    return isinstance(profile, IGirderProfile) and (
+        profile.top_haunch_depth_m > 0.0 or profile.bottom_haunch_depth_m > 0.0
+    )
+
+
+def _properties_with_exact_profile_torsion(
+    layers: tuple[ConcreteLayer, ...],
+    *,
+    profile: GirderProfile,
+    profile_top_m: float,
+    basis: str,
+) -> SectionProperties:
+    properties = _properties(layers, basis=basis)
+    if not _has_tapered_i_haunch(profile):
+        return properties
+
+    profile_layers = _profile_layers(profile, top_m=profile_top_m)
+    decomposed_profile_j = sum(
+        _layer_torsion_constant_m4(layer) for layer in profile_layers
+    )
+    exact_profile_j = saint_venant_torsion_constant_polygon_m4(
+        girder_profile_polygon_m(profile)
+    )
+    return SectionProperties(
+        area_m2=properties.area_m2,
+        centroid_from_top_m=properties.centroid_from_top_m,
+        iy_m4=properties.iy_m4,
+        iz_m4=properties.iz_m4,
+        torsion_constant_m4=(
+            properties.torsion_constant_m4
+            - decomposed_profile_j
+            + exact_profile_j.torsion_constant_m4
+        ),
+        basis=(
+            properties.basis
+            + "; tapered precast girder J from converged Prandtl stress-function FEM"
+        ),
+    )
+
+
 def precast_girder_properties(geometry: SingleSpanBridgeGeometry) -> SectionProperties:
-    properties = _properties(
-        _profile_layers(geometry.girder_profile, top_m=0.0),
+    profile = geometry.girder_profile
+    layers = _profile_layers(profile, top_m=0.0)
+    return _properties_with_exact_profile_torsion(
+        layers,
+        profile=profile,
+        profile_top_m=0.0,
         basis="gross physical precast girder",
     )
-    profile = geometry.girder_profile
-    if isinstance(profile, IGirderProfile) and (
-        profile.top_haunch_depth_m > 0.0 or profile.bottom_haunch_depth_m > 0.0
-    ):
-        torsion = saint_venant_torsion_constant_polygon_m4(
-            girder_profile_polygon_m(profile)
-        )
-        return SectionProperties(
-            area_m2=properties.area_m2,
-            centroid_from_top_m=properties.centroid_from_top_m,
-            iy_m4=properties.iy_m4,
-            iz_m4=properties.iz_m4,
-            torsion_constant_m4=torsion.torsion_constant_m4,
-            basis=(
-                properties.basis
-                + "; Saint-Venant J from converged Prandtl stress-function FEM"
-            ),
-        )
-    return properties
 
 
 def deck_construction_girder_properties(
@@ -406,8 +432,10 @@ def deck_construction_girder_properties(
         ),
         *_profile_layers(geometry.girder_profile, top_m=girder_top),
     )
-    return _properties(
+    return _properties_with_exact_profile_torsion(
         layers,
+        profile=geometry.girder_profile,
+        profile_top_m=girder_top,
         basis="precast girder plus explicitly participating false slab; wet slab excluded",
     )
 
@@ -459,11 +487,14 @@ def final_composite_girder_properties(
     *,
     girder_index: int,
 ) -> SectionProperties:
-    return _properties(
-        final_composite_concrete_layers(
-            geometry,
-            girder_index=girder_index,
-        ),
+    layers = final_composite_concrete_layers(
+        geometry,
+        girder_index=girder_index,
+    )
+    return _properties_with_exact_profile_torsion(
+        layers,
+        profile=geometry.girder_profile,
+        profile_top_m=float(geometry.deck.physical_depth_m),
         basis="final composite girder with explicitly participating deck layers",
     )
 
