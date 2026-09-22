@@ -21,10 +21,14 @@ from rc_single_span.design.detailing import (
     LongitudinalBarArrangement,
     ProvidedCageAudit,
     audit_provided_longitudinal_cage,
-    select_longitudinal_bar_arrangement,
     select_vertical_link_arrangement,
 )
 from rc_single_span.design.eurocode import required_steel_area_layered_ec2
+from rc_single_span.design.reinforcement_synthesis import (
+    LongitudinalSynthesisResult,
+    synthesize_bs5400_longitudinal_reinforcement,
+    synthesize_ec2_longitudinal_reinforcement,
+)
 from rc_single_span.design.eurocode_detailing import (
     EC2CoverCheck,
     EC2LongitudinalLimits,
@@ -38,6 +42,7 @@ from rc_single_span.design.project import (
     BS5400GirderDesignResult,
     EC2DesignInputs,
     EurocodeGirderDesignResult,
+    EurocodeSLSBasis,
 )
 from rc_single_span.traffic.combinations import (
     BS5400GirderCombinationResult,
@@ -127,6 +132,7 @@ class EC2GirderDetailingResult:
     selected_below_maximum: bool | None
     shear_limits: EC2ShearDetailingLimits
     cover_check: EC2CoverCheck
+    longitudinal_synthesis: LongitudinalSynthesisResult | None
 
 
 @dataclass(frozen=True)
@@ -148,6 +154,7 @@ class BS5400GirderDetailingResult:
     provided_tension_spacing_ok: bool | None
     provided_link_spacing_ok: bool | None
     side_face_steel_ok: bool | None
+    longitudinal_synthesis: LongitudinalSynthesisResult | None
 
 
 def _concrete_area_m2(project: BridgeProject, girder_index: int) -> float:
@@ -260,6 +267,7 @@ def run_eurocode_project_detailing(
         recommended_cage: ProvidedCageAudit | None = None
         governing_required: float | None = None
         selected_below_maximum: bool | None = None
+        longitudinal_synthesis: LongitudinalSynthesisResult | None = None
         if required_flexural is not None:
             governing_required = max(
                 required_flexural,
@@ -269,11 +277,43 @@ def run_eurocode_project_detailing(
                 20.0,
                 detailing_inputs.aggregate_size_mm + 5.0,
             )
-            selected_longitudinal = select_longitudinal_bar_arrangement(
-                required_area_mm2=governing_required,
-                web_width_mm=web_width_mm,
+            if design_inputs.sls_basis is EurocodeSLSBasis.CHARACTERISTIC:
+                sls_moment = (
+                    combination.combinations.characteristic_sls.effects.moment_knm
+                )
+            elif design_inputs.sls_basis is EurocodeSLSBasis.FREQUENT:
+                sls_moment = combination.combinations.frequent_sls.effects.moment_knm
+            else:
+                sls_moment = (
+                    combination.combinations.quasi_permanent_sls.effects.moment_knm
+                )
+            ecm = (
+                float(design_inputs.ecm_mpa)
+                if design_inputs.ecm_mpa is not None
+                else project.materials.elastic_modulus_mpa
+            )
+            if ecm is None or ecm <= 0.0:
+                raise ValueError(
+                    "EC2 reinforcement synthesis requires explicit concrete modulus."
+                )
+            longitudinal_synthesis = synthesize_ec2_longitudinal_reinforcement(
+                layers=layers,
+                total_depth_m=project.geometry.total_structural_depth_m,
+                uls_moment_knm=(
+                    combination.combinations.persistent_uls.effects.moment_knm
+                ),
+                sls_moment_knm=sls_moment,
+                required_uls_area_mm2=required_flexural,
+                minimum_area_mm2=longitudinal_limits.minimum_tension_steel_mm2,
+                maximum_area_mm2=longitudinal_limits.maximum_longitudinal_steel_mm2,
+                fck_mpa=fck,
+                fyk_mpa=fyk,
+                maximum_neutral_axis_ratio=(
+                    design_inputs.maximum_neutral_axis_ratio
+                ),
                 cover_mm=detailing_inputs.provided_cover_mm,
                 link_diameter_mm=selected_links.link_diameter_mm,
+                web_width_mm=web_width_mm,
                 minimum_clear_spacing_mm=clear_base,
                 available_diameters_mm=(
                     detailing_inputs.available_longitudinal_diameters_mm
@@ -282,26 +322,31 @@ def run_eurocode_project_detailing(
                 preferred_vertical_clear_spacing_mm=(
                     detailing_inputs.preferred_vertical_clear_spacing_mm
                 ),
-                diameter_governs_clear_spacing=True,
+                es_mpa=design_inputs.es_mpa,
+                ecm_mpa=float(ecm),
+                fct_eff_mpa=design_inputs.fct_eff_mpa,
+                crack_limit_mm=design_inputs.crack_limit_mm,
+                deflection_passes=design.deflection.passes,
             )
-            selected_below_maximum = (
-                selected_longitudinal.provided_area_mm2
-                <= longitudinal_limits.maximum_longitudinal_steel_mm2 + 1.0e-9
-            )
-            recommended_cage = audit_provided_longitudinal_cage(
-                reinforcement=_recommended_reinforcement(selected_longitudinal),
-                web_width_mm=web_width_mm,
-                cover_mm=detailing_inputs.provided_cover_mm,
-                link_diameter_mm=selected_links.link_diameter_mm,
-                minimum_clear_spacing_mm=clear_base,
-                section_total_depth_mm=(
-                    project.geometry.total_structural_depth_m * 1000.0
-                ),
-                provided_vertical_clear_spacing_mm=(
-                    selected_longitudinal.clear_vertical_spacing_mm
-                ),
-                diameter_governs_clear_spacing=True,
-            )
+            if longitudinal_synthesis.selected is not None:
+                selected_longitudinal = longitudinal_synthesis.selected.arrangement
+                selected_below_maximum = (
+                    longitudinal_synthesis.selected.maximum_steel_passes
+                )
+                recommended_cage = audit_provided_longitudinal_cage(
+                    reinforcement=_recommended_reinforcement(selected_longitudinal),
+                    web_width_mm=web_width_mm,
+                    cover_mm=detailing_inputs.provided_cover_mm,
+                    link_diameter_mm=selected_links.link_diameter_mm,
+                    minimum_clear_spacing_mm=clear_base,
+                    section_total_depth_mm=(
+                        project.geometry.total_structural_depth_m * 1000.0
+                    ),
+                    provided_vertical_clear_spacing_mm=(
+                        selected_longitudinal.clear_vertical_spacing_mm
+                    ),
+                    diameter_governs_clear_spacing=True,
+                )
 
         provided_above_minimum = (
             None
@@ -378,6 +423,7 @@ def run_eurocode_project_detailing(
                 selected_below_maximum=selected_below_maximum,
                 shear_limits=shear_limits,
                 cover_check=cover_check,
+                longitudinal_synthesis=longitudinal_synthesis,
             )
         )
     return tuple(results)
@@ -467,17 +513,50 @@ def run_bs5400_project_detailing(
         governing_required: float | None = None
         selected_below_maximum: bool | None = None
         selected_tension_spacing_ok: bool | None = None
+        longitudinal_synthesis: LongitudinalSynthesisResult | None = None
         if required_flexural is not None:
             governing_required = max(
                 required_flexural,
                 limits.minimum_main_steel_mm2,
             )
-            selected_longitudinal = select_longitudinal_bar_arrangement(
-                required_area_mm2=governing_required,
-                web_width_mm=web_width_mm,
+            sls_cases = tuple(
+                case
+                for case in combination.cases
+                if case.limit_state.value == "sls"
+            )
+            crack_case = max(
+                sls_cases,
+                key=lambda case: case.result.effects.moment_knm,
+            )
+            gamma_live = crack_case.result.factors["primary_live"]
+            live_moment = crack_case.nominal_traffic.moment_knm * gamma_live
+            permanent_moment = max(
+                crack_case.result.effects.moment_knm - live_moment,
+                0.0,
+            )
+            tension_width = (
+                design_inputs.tension_zone_width_m
+                if design_inputs.tension_zone_width_m is not None
+                else layers[-1].width_m
+            )
+            longitudinal_synthesis = synthesize_bs5400_longitudinal_reinforcement(
+                layers=layers,
+                total_depth_m=project.geometry.total_structural_depth_m,
+                uls_moment_knm=governing_moment,
+                permanent_sls_moment_knm=permanent_moment,
+                live_sls_moment_knm=live_moment,
+                required_uls_area_mm2=required_flexural,
+                minimum_area_mm2=limits.minimum_main_steel_mm2,
+                maximum_area_mm2=limits.maximum_main_steel_mm2,
+                fcu_mpa=fcu,
+                fy_mpa=fy,
                 cover_mm=detailing_inputs.provided_cover_mm,
                 link_diameter_mm=selected_links.link_diameter_mm,
+                web_width_mm=web_width_mm,
                 minimum_clear_spacing_mm=limits.minimum_clear_bar_spacing_mm,
+                maximum_tension_bar_spacing_mm=(
+                    limits.maximum_tension_bar_spacing_mm
+                ),
                 available_diameters_mm=(
                     detailing_inputs.available_longitudinal_diameters_mm
                 ),
@@ -485,31 +564,39 @@ def run_bs5400_project_detailing(
                 preferred_vertical_clear_spacing_mm=(
                     detailing_inputs.preferred_vertical_clear_spacing_mm
                 ),
-                diameter_governs_clear_spacing=False,
-            )
-            selected_below_maximum = (
-                selected_longitudinal.provided_area_mm2
-                <= limits.maximum_main_steel_mm2 + 1.0e-9
-            )
-            selected_tension_spacing_ok = (
-                selected_longitudinal.bar_diameter_mm
-                + selected_longitudinal.clear_horizontal_spacing_mm
-                <= limits.maximum_tension_bar_spacing_mm + 1.0e-9
-            )
-            recommended_cage = audit_provided_longitudinal_cage(
-                reinforcement=_recommended_reinforcement(selected_longitudinal),
-                web_width_mm=web_width_mm,
-                cover_mm=detailing_inputs.provided_cover_mm,
-                link_diameter_mm=selected_links.link_diameter_mm,
-                minimum_clear_spacing_mm=limits.minimum_clear_bar_spacing_mm,
-                section_total_depth_mm=(
-                    project.geometry.total_structural_depth_m * 1000.0
+                es_mpa=design_inputs.es_mpa,
+                ec_modified_mpa=design_inputs.ec_modified_mpa,
+                tension_zone_width_m=tension_width,
+                crack_point_depth_mm=design_inputs.crack_point_depth_mm,
+                allowable_crack_width_mm=(
+                    design_inputs.allowable_crack_width_mm
                 ),
-                provided_vertical_clear_spacing_mm=(
-                    selected_longitudinal.clear_vertical_spacing_mm
-                ),
-                diameter_governs_clear_spacing=False,
+                deflection_passes=design.deflection.passes,
             )
+            if longitudinal_synthesis.selected is not None:
+                selected_longitudinal = longitudinal_synthesis.selected.arrangement
+                selected_below_maximum = (
+                    longitudinal_synthesis.selected.maximum_steel_passes
+                )
+                selected_tension_spacing_ok = (
+                    selected_longitudinal.bar_diameter_mm
+                    + selected_longitudinal.clear_horizontal_spacing_mm
+                    <= limits.maximum_tension_bar_spacing_mm + 1.0e-9
+                )
+                recommended_cage = audit_provided_longitudinal_cage(
+                    reinforcement=_recommended_reinforcement(selected_longitudinal),
+                    web_width_mm=web_width_mm,
+                    cover_mm=detailing_inputs.provided_cover_mm,
+                    link_diameter_mm=selected_links.link_diameter_mm,
+                    minimum_clear_spacing_mm=limits.minimum_clear_bar_spacing_mm,
+                    section_total_depth_mm=(
+                        project.geometry.total_structural_depth_m * 1000.0
+                    ),
+                    provided_vertical_clear_spacing_mm=(
+                        selected_longitudinal.clear_vertical_spacing_mm
+                    ),
+                    diameter_governs_clear_spacing=False,
+                )
 
         provided_above_minimum = (
             None
@@ -580,6 +667,7 @@ def run_bs5400_project_detailing(
                 provided_tension_spacing_ok=provided_tension_spacing_ok,
                 provided_link_spacing_ok=provided_link_spacing_ok,
                 side_face_steel_ok=side_face_ok,
+                longitudinal_synthesis=longitudinal_synthesis,
             )
         )
     return tuple(results)
