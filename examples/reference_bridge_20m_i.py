@@ -5,6 +5,7 @@ from rc_single_span.core.models import (
     MaterialProperties,
     PermanentActionModel,
     PermanentLineAction,
+    PermanentTransverseLineAction,
     SingleSpanBridgeGeometry,
     SurfacingLayer,
 )
@@ -114,6 +115,29 @@ def reference_bridge_20m_i() -> BridgeProject:
                     magnitude_kn_m=1.0,
                     y_m=4.8,
                     x_end_m=20.0,
+                ),
+            ],
+            transverse_line_actions=[
+                PermanentTransverseLineAction(
+                    name="left end diaphragm 250x900 (benchmark assumption)",
+                    magnitude_kn_m=5.625,
+                    x_m=0.50,
+                    y_start_m=-5.10,
+                    y_end_m=5.10,
+                ),
+                PermanentTransverseLineAction(
+                    name="midspan diaphragm 250x900 (benchmark assumption)",
+                    magnitude_kn_m=5.625,
+                    x_m=10.00,
+                    y_start_m=-5.10,
+                    y_end_m=5.10,
+                ),
+                PermanentTransverseLineAction(
+                    name="right end diaphragm 250x900 (benchmark assumption)",
+                    magnitude_kn_m=5.625,
+                    x_m=19.50,
+                    y_start_m=-5.10,
+                    y_end_m=5.10,
                 ),
             ],
         ),
