@@ -20,6 +20,7 @@ from rc_single_span.analysis.structural_model import StructuralModel
 from rc_single_span.analysis.traffic_envelope import (
     GirderCaseEnvelope,
     native_traffic_girder_envelope,
+    native_traffic_girder_station_moments,
 )
 from rc_single_span.codes.bs5400.traffic import (
     HB_INNER_AXLE_SPACINGS_M,
@@ -50,6 +51,19 @@ class BS5400GirderGoverningEnvelope:
     torsion_knm: GoverningComponent
     deflection_mm: GoverningComponent
     deflection_position_m: float
+
+
+@dataclass(frozen=True)
+class BS5400StationMomentEnvelope:
+    x_m: float
+    moment_knm: GoverningComponent
+
+
+@dataclass(frozen=True)
+class BS5400GirderStationMomentEnvelope:
+    girder_index: int
+    y_m: float
+    stations: tuple[BS5400StationMomentEnvelope, ...]
 
 
 @dataclass(frozen=True)
@@ -88,6 +102,7 @@ class BS5400CaseResult:
 @dataclass(frozen=True)
 class HASearchResult:
     girders: tuple[BS5400GirderGoverningEnvelope, ...]
+    station_moments: tuple[BS5400GirderStationMomentEnvelope, ...]
     cases: tuple[BS5400CaseResult, ...]
     evaluated_case_count: int
     longitudinal_step_m: float
@@ -97,6 +112,7 @@ class HASearchResult:
 @dataclass(frozen=True)
 class HBSearchResult:
     girders: tuple[BS5400GirderGoverningEnvelope, ...]
+    station_moments: tuple[BS5400GirderStationMomentEnvelope, ...]
     cases: tuple[BS5400CaseResult, ...]
     evaluated_case_count: int
     longitudinal_step_m: float
@@ -365,6 +381,68 @@ def _update_governing(
             row["deflection_x"] = item.deflection_position_m
 
 
+def _update_station_moment_governing(
+    governing: list[dict[str, object]],
+    *,
+    case_id: int,
+    current: tuple[tuple[object, ...], ...],
+) -> None:
+    if not governing:
+        for girder in current:
+            if not girder:
+                continue
+            first = girder[0]
+            governing.append(
+                {
+                    "girder_index": first.girder_index,
+                    "y_m": first.y_m,
+                    "stations": {
+                        item.x_m: GoverningComponent(
+                            item.moment_knm,
+                            case_id,
+                            item.member_id,
+                        )
+                        for item in girder
+                    },
+                }
+            )
+        return
+
+    if len(governing) != len(current):
+        raise RuntimeError("Station-moment girder count changed during BS traffic search.")
+
+    for row, girder in zip(governing, current, strict=True):
+        stations = row["stations"]
+        assert isinstance(stations, dict)
+        for item in girder:
+            existing = stations.get(item.x_m)
+            if existing is None or item.moment_knm > existing.value:
+                stations[item.x_m] = GoverningComponent(
+                    item.moment_knm,
+                    case_id,
+                    item.member_id,
+                )
+
+
+def _final_station_moments(
+    governing: list[dict[str, object]],
+) -> tuple[BS5400GirderStationMomentEnvelope, ...]:
+    return tuple(
+        BS5400GirderStationMomentEnvelope(
+            girder_index=int(row["girder_index"]),
+            y_m=float(row["y_m"]),
+            stations=tuple(
+                BS5400StationMomentEnvelope(
+                    x_m=float(x_m),
+                    moment_knm=component,
+                )
+                for x_m, component in sorted(row["stations"].items())
+            ),
+        )
+        for row in governing
+    )
+
+
 def _final_envelopes(
     governing: list[dict[str, object]],
 ) -> tuple[BS5400GirderGoverningEnvelope, ...]:
@@ -416,6 +494,7 @@ def run_ha_grillage_search(
     prepared = prepare_vertical_grillage(build.model)
 
     governing: list[dict[str, object]] = []
+    station_governing: list[dict[str, object]] = []
     all_cases: list[BS5400CaseResult] = []
     retained: dict[int, BS5400CaseResult] = {}
 
@@ -433,6 +512,12 @@ def run_ha_grillage_search(
         _require_vertical_equilibrium(analysis, traffic_model="HA")
         girders = native_traffic_girder_envelope(model, analysis)
         _update_governing(governing, placement.case_id, girders)
+        station_moments = native_traffic_girder_station_moments(model, analysis)
+        _update_station_moment_governing(
+            station_governing,
+            case_id=placement.case_id,
+            current=station_moments,
+        )
         case_result = BS5400CaseResult(
             placement.case_id,
             model,
@@ -463,6 +548,7 @@ def run_ha_grillage_search(
 
     return HASearchResult(
         girders=_final_envelopes(governing),
+        station_moments=_final_station_moments(station_governing),
         cases=(
             tuple(all_cases)
             if retain_all_cases
@@ -557,6 +643,7 @@ def run_hb_grillage_search(
 ) -> HBSearchResult:
     centres = _hb_centres(project, transverse_step_m)
     governing: list[dict[str, object]] = []
+    station_governing: list[dict[str, object]] = []
     all_cases: list[BS5400CaseResult] = []
     retained: dict[int, BS5400CaseResult] = {}
     case_id = 1
@@ -611,6 +698,12 @@ def run_hb_grillage_search(
             _require_vertical_equilibrium(analysis, traffic_model="HB")
             girders = native_traffic_girder_envelope(model, analysis)
             _update_governing(governing, placement.case_id, girders)
+            station_moments = native_traffic_girder_station_moments(model, analysis)
+            _update_station_moment_governing(
+                station_governing,
+                case_id=placement.case_id,
+                current=station_moments,
+            )
             case_result = BS5400CaseResult(
                 placement.case_id,
                 model,
@@ -647,6 +740,7 @@ def run_hb_grillage_search(
 
     return HBSearchResult(
         girders=_final_envelopes(governing),
+        station_moments=_final_station_moments(station_governing),
         cases=(
             tuple(all_cases)
             if retain_all_cases
