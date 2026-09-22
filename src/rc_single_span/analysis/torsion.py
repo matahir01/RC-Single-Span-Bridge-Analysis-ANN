@@ -233,7 +233,7 @@ def saint_venant_torsion_constant_polygon_m4(
     if extent <= 0.0:
         raise ValueError("Torsion polygon has zero extent.")
 
-    divisions = (24.0, 36.0, 54.0)
+    divisions = (60.0, 90.0, 135.0)
     values = tuple(
         _solve_prandtl_fem(polygon, extent / division)
         for division in divisions
