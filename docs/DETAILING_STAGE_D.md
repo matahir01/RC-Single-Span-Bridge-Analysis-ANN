@@ -79,12 +79,37 @@ Both routines report force-equilibrium and moment residuals. They are
 requirement solvers only at this stage; automatic discrete top-compression-bar
 selection and final combined-cage verification remain to be integrated.
 
+### 6. Station-wise Eurocode ULS reinforcement envelope
+
+The LM1 common-grillage search now retains a governing bending-moment envelope
+at every longitudinal grillage station for every girder. This is accumulated
+during the traffic search itself, so it does not depend on retaining every
+full traffic case in memory.
+
+For a selected girder the EC2 detailing path can now combine, station by
+station:
+
+- the factored permanent-action bending moment evaluated at the same exact
+  longitudinal coordinate;
+- the governing LM1 traffic bending moment and its governing traffic case ID;
+- the configured persistent ULS factors;
+- the layered EC2 flexural resistance model;
+- code minimum longitudinal steel.
+
+The result is a true longitudinal `A_s(x)` demand envelope rather than a
+single midspan/global maximum. When the LM1 search is exhaustive and every
+station remains within the singly reinforced scope, the project-detailing path
+can immediately convert that envelope into an anchorage-extended preliminary
+curtailment plan for the selected discrete cage.
+
+Reduced LM1 searches are deliberately not allowed to certify curtailment.
+
 ## Stage D still outstanding
 
 The following items remain before Stage D can be called complete:
 
-1. generate the station-wise ULS reinforcement-demand envelope directly from
-   the retained common-grillage traffic/combinations;
+1. extend the same station-demand/curtailment integration to the BS 5400
+   HA/HB/HA+HB traffic paths;
 2. integrate the doubly reinforced requirement into automatic bottom/top cage
    selection using the actual discrete cage centroids;
 3. run a final combined doubly reinforced resistance check on the selected
