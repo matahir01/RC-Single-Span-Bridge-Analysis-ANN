@@ -1,7 +1,10 @@
 import pytest
 
 from rc_single_span.analysis.construction import run_construction_stage_analysis
-from rc_single_span.analysis.permanent import automatic_permanent_point_loads
+from rc_single_span.analysis.permanent import (
+    automatic_permanent_point_loads,
+    permanent_load_summary_by_stage,
+)
 from rc_single_span.analysis.simple_span import (
     PointLoadSegment,
     simple_span_mixed_load_response,
@@ -100,3 +103,16 @@ def test_construction_stage_response_includes_diaphragm_at_load_time_stiffness()
     assert middle.point_loads[0].magnitude_kn == pytest.approx(5.625 * 1.70)
     assert middle.response.max_moment_knm > 0.0
     assert middle.max_downward_deflection_mm > 0.0
+
+
+def test_stage_ledger_keeps_diagrammatic_point_actions_in_their_load_time_stage() -> None:
+    project = _project()
+    summaries = permanent_load_summary_by_stage(project)
+    deck = next(
+        item for item in summaries if item.stage is PermanentActionStage.DECK_CONSTRUCTION
+    )
+
+    expected_diaphragm = 5.625 * 10.20
+    assert deck.point_total_kn == pytest.approx(expected_diaphragm)
+    assert deck.total_kn > deck.point_total_kn
+    assert "midspan diaphragm" in deck.sources
