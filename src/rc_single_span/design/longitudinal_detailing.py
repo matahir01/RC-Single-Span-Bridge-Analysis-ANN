@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
+from itertools import pairwise
 from math import ceil, pi
-from typing import Sequence
 
 from rc_single_span.design.detailing import bar_area_mm2
 
@@ -233,7 +234,7 @@ def build_symmetric_curtailment_plan(
         for item in ordered
     ):
         raise ValueError("Curtailment demand stations are outside valid bounds.")
-    if any(b.x_m <= a.x_m for a, b in zip(ordered, ordered[1:])):
+    if any(b.x_m <= a.x_m for a, b in pairwise(ordered)):
         raise ValueError("Curtailment station positions must be unique.")
 
     single_area = pi * bar_diameter_mm**2 / 4.0
@@ -243,7 +244,7 @@ def build_symmetric_curtailment_plan(
 
     anchorage_m = anchorage_length_mm / 1000.0
     zones: list[CurtailmentZone] = []
-    for left, right in zip(ordered, ordered[1:]):
+    for left, right in pairwise(ordered):
         required = max(left.required_area_mm2, right.required_area_mm2)
         bars_required = max(2, ceil(required / single_area))
         bars_continue = min(total_bars, bars_required)
