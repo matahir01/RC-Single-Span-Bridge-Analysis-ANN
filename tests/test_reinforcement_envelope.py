@@ -1,6 +1,9 @@
 import pytest
 
-from rc_single_span.codes.eurocode.combinations import EurocodeCombinationFactors
+from rc_single_span.codes.eurocode.combinations import (
+    EurocodeCombinationFactors,
+    EurocodeServiceabilityFactors,
+)
 from rc_single_span.core.models import (
     BridgeProject,
     MaterialProperties,
@@ -8,10 +11,20 @@ from rc_single_span.core.models import (
     SingleSpanBridgeGeometry,
 )
 from rc_single_span.design.detailing import select_longitudinal_bar_arrangement
+from rc_single_span.design.project import (
+    EC2DesignInputs,
+    EurocodeSLSBasis,
+    run_eurocode_project_design,
+)
+from rc_single_span.design.project_detailing import (
+    EC2DetailingInputs,
+    run_eurocode_project_detailing,
+)
 from rc_single_span.design.reinforcement_envelope import (
     build_ec2_curtailment_plan_from_envelope,
     build_ec2_station_reinforcement_envelope,
 )
+from rc_single_span.traffic.combinations import build_eurocode_project_combinations
 from rc_single_span.traffic.lm1 import run_lm1_grillage_search
 
 
@@ -132,3 +145,63 @@ def test_station_envelope_drives_a_real_curtailment_plan() -> None:
     assert plan.total_bars == arrangement.bar_count
     assert max(zone.bars_to_continue for zone in plan.zones) <= arrangement.bar_count
     assert any(zone.bars_to_continue < arrangement.bar_count for zone in plan.zones)
+
+
+def test_project_detailing_generates_station_envelope_and_curtailment_when_lm1_is_supplied() -> None:
+    project = _project()
+    traffic = run_lm1_grillage_search(
+        project,
+        longitudinal_step_m=5.0,
+        max_exhaustive_tandem_combinations=1000,
+    )
+    combinations = build_eurocode_project_combinations(
+        project,
+        traffic,
+        sls_factors=EurocodeServiceabilityFactors(
+            psi1_traffic=0.75,
+            psi2_traffic=0.30,
+        ),
+    )
+    design_inputs = EC2DesignInputs(
+        effective_depth_m=1.10,
+        bar_diameter_mm=25.0,
+        bar_spacing_mm=120.0,
+        cover_mm=40.0,
+        fct_eff_mpa=2.6,
+        crack_limit_mm=0.30,
+        maximum_neutral_axis_ratio=0.45,
+        steel_area_mm2=6000.0,
+        es_mpa=200000.0,
+        ecm_mpa=34000.0,
+        deflection_limit_mm=60.0,
+        sls_basis=EurocodeSLSBasis.FREQUENT,
+    )
+    design = run_eurocode_project_design(
+        project,
+        combinations,
+        traffic,
+        inputs=design_inputs,
+    )
+    detailed = run_eurocode_project_detailing(
+        project,
+        combinations,
+        design,
+        design_inputs=design_inputs,
+        detailing_inputs=EC2DetailingInputs(
+            fctm_mpa=2.6,
+            aggregate_size_mm=20.0,
+            durability_minimum_cover_mm=30.0,
+            allowance_for_deviation_mm=5.0,
+            provided_cover_mm=40.0,
+        ),
+        traffic=traffic,
+    )
+
+    middle = detailed[1]
+    assert middle.reinforcement_envelope is not None
+    assert middle.reinforcement_envelope.singly_reinforced_complete
+    assert middle.reinforcement_envelope.maximum_required_area_mm2 is not None
+    assert middle.curtailment_plan is not None
+    assert middle.selected_longitudinal is not None
+    assert middle.curtailment_plan.total_bars == middle.selected_longitudinal.bar_count
+    assert middle.curtailment_plan.zones
