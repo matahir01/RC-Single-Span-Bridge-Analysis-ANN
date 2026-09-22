@@ -408,3 +408,74 @@ def test_candidate_effective_depth_comes_from_real_multilayer_cage_centroid() ->
     # 78, 150, 222 and 294 mm from the soffit, centroid = 186 mm.
     assert arrangement.bars_per_layer == (4, 4, 4, 4)
     assert effective_depth == pytest.approx((1450.0 - 186.0) / 1000.0)
+
+
+def test_bs5400_detailing_exposes_doubly_reinforced_requirement_when_singly_capacity_is_exceeded() -> None:
+    project = _project()
+    suite = SimpleNamespace(
+        ha=_traffic_result(
+            moment=6000.0,
+            shear=250.0,
+            torsion=5.0,
+            deflection=7.0,
+            x_m=7.0,
+        ),
+        hb=_traffic_result(
+            moment=6200.0,
+            shear=230.0,
+            torsion=12.0,
+            deflection=9.0,
+            x_m=7.5,
+        ),
+        ha_hb=_traffic_result(
+            moment=6100.0,
+            shear=340.0,
+            torsion=8.0,
+            deflection=10.0,
+            x_m=8.0,
+        ),
+    )
+    combinations = build_bs5400_project_combinations(
+        project,
+        suite,
+        combinations=(1, 2, 3),
+    )
+    design_inputs = BS5400DesignInputs(
+        effective_depth_m=1.10,
+        bar_diameter_mm=32.0,
+        bar_spacing_mm=100.0,
+        nominal_cover_mm=30.0,
+        crack_point_depth_mm=1190.0,
+        allowable_crack_width_mm=0.25,
+        ec_modified_mpa=27000.0,
+        es_mpa=200000.0,
+        deflection_limit_mm=60.0,
+    )
+    design = run_bs5400_project_design(
+        project,
+        combinations,
+        suite,
+        inputs=design_inputs,
+    )
+
+    detailed = run_bs5400_project_detailing(
+        project,
+        combinations,
+        design,
+        design_inputs=design_inputs,
+        detailing_inputs=BS5400DetailingInputs(
+            aggregate_size_mm=20.0,
+            provided_cover_mm=30.0,
+            adopted_minimum_main_ratio=0.0018,
+            compression_steel_depth_m=0.10,
+        ),
+    )
+
+    exterior = detailed[0]
+    assert exterior.required_flexural_steel_mm2 is None
+    assert exterior.required_flexural_steel_issue is not None
+    assert exterior.doubly_reinforced_requirement is not None
+    assert exterior.doubly_reinforced_requirement.compression_steel_mm2 > 0.0
+    assert exterior.doubly_reinforced_requirement.total_tension_steel_mm2 > 0.0
+    assert exterior.selected_longitudinal is None
+    assert exterior.longitudinal_synthesis is None
