@@ -6,6 +6,7 @@ from rc_single_span.analysis.sections import (
     final_composite_concrete_layers,
     girder_web_width_m,
 )
+from rc_single_span.codes.eurocode.combinations import EurocodeCombinationFactors
 from rc_single_span.core.models import (
     BarLayer,
     BridgeProject,
@@ -38,6 +39,7 @@ from rc_single_span.design.eurocode_detailing import (
     shear_detailing_limits_ec2,
 )
 from rc_single_span.design.longitudinal_detailing import (
+    CurtailmentPlan,
     EC2AnchorageResult,
     FaceReinforcementArrangement,
     ec2_design_anchorage_length,
@@ -55,10 +57,16 @@ from rc_single_span.design.reinforcement_synthesis import (
     synthesize_bs5400_longitudinal_reinforcement,
     synthesize_ec2_longitudinal_reinforcement,
 )
+from rc_single_span.design.reinforcement_envelope import (
+    EC2GirderReinforcementEnvelope,
+    build_ec2_curtailment_plan_from_envelope,
+    build_ec2_station_reinforcement_envelope,
+)
 from rc_single_span.traffic.combinations import (
     BS5400GirderCombinationResult,
     EurocodeGirderCombinationResult,
 )
+from rc_single_span.traffic.lm1 import LM1SearchResult
 
 
 @dataclass(frozen=True)
@@ -152,6 +160,8 @@ class EC2GirderDetailingResult:
     cover_check: EC2CoverCheck
     anchorage: EC2AnchorageResult | None
     doubly_reinforced_requirement: DoublyReinforcedRequirement | None
+    reinforcement_envelope: EC2GirderReinforcementEnvelope | None
+    curtailment_plan: CurtailmentPlan | None
     longitudinal_synthesis: LongitudinalSynthesisResult | None
 
 
@@ -215,6 +225,7 @@ def run_eurocode_project_detailing(
     *,
     design_inputs: EC2DesignInputs,
     detailing_inputs: EC2DetailingInputs,
+    traffic: LM1SearchResult | None = None,
 ) -> tuple[EC2GirderDetailingResult, ...]:
     if len(combinations) != len(design_results):
         raise ValueError("Eurocode combinations and design results are inconsistent.")
@@ -468,6 +479,35 @@ def run_eurocode_project_detailing(
                 available_length_mm=detailing_inputs.available_anchorage_length_mm,
             )
 
+        reinforcement_envelope: EC2GirderReinforcementEnvelope | None = None
+        curtailment_plan = None
+        if traffic is not None:
+            persistent_factors = combination.combinations.persistent_uls.factors
+            reinforcement_envelope = build_ec2_station_reinforcement_envelope(
+                project,
+                traffic,
+                girder_index=index,
+                effective_depth_m=design_inputs.effective_depth_m,
+                minimum_area_mm2=longitudinal_limits.minimum_tension_steel_mm2,
+                maximum_neutral_axis_ratio=design_inputs.maximum_neutral_axis_ratio,
+                uls_factors=EurocodeCombinationFactors(
+                    gamma_g_unfavourable=persistent_factors["G"],
+                    gamma_q_traffic=persistent_factors["Q_traffic"],
+                ),
+            )
+            if (
+                selected_longitudinal is not None
+                and anchorage is not None
+                and reinforcement_envelope.singly_reinforced_complete
+                and reinforcement_envelope.traffic_search_exhaustive
+            ):
+                curtailment_plan = build_ec2_curtailment_plan_from_envelope(
+                    reinforcement_envelope,
+                    span_m=float(project.geometry.span_m),
+                    arrangement=selected_longitudinal,
+                    anchorage_length_mm=anchorage.design_anchorage_length_mm,
+                )
+
         results.append(
             EC2GirderDetailingResult(
                 girder_index=index,
@@ -487,6 +527,8 @@ def run_eurocode_project_detailing(
                 cover_check=cover_check,
                 anchorage=anchorage,
                 doubly_reinforced_requirement=doubly_requirement,
+                reinforcement_envelope=reinforcement_envelope,
+                curtailment_plan=curtailment_plan,
                 longitudinal_synthesis=longitudinal_synthesis,
             )
         )
