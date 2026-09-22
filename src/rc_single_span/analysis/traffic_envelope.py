@@ -21,6 +21,15 @@ class GirderCaseEnvelope:
     governing_torsion_member_id: int
 
 
+@dataclass(frozen=True)
+class GirderStationMoment:
+    girder_index: int
+    y_m: float
+    x_m: float
+    moment_knm: float
+    member_id: int
+
+
 def _longitudinal_groups(
     model: StructuralModel,
     *,
@@ -126,6 +135,54 @@ def _member_deflection_candidates_mm(
     if not candidates:
         raise RuntimeError("No longitudinal deflection candidates were found.")
     return tuple(candidates)
+
+
+def native_traffic_girder_station_moments(
+    model: StructuralModel,
+    analysis: GrillageAnalysisResult,
+) -> tuple[tuple[GirderStationMoment, ...], ...]:
+    """Recover absolute longitudinal-girder bending moment at every grillage station.
+
+    Interior stations have member-end results from both adjacent longitudinal
+    members. The larger absolute value is retained to avoid losing a local
+    station maximum because of member-end sign convention or numerical
+    round-off. This is the station-wise quantity needed by reinforcement
+    zoning/curtailment rather than the single global girder envelope.
+    """
+
+    result_by_member = {item.member_id: item for item in analysis.members}
+    nodes = {node.node_id: node for node in model.nodes}
+    all_girders: list[tuple[GirderStationMoment, ...]] = []
+
+    for girder_index, (y_m, beams) in enumerate(_longitudinal_groups(model), start=1):
+        station_candidates: dict[float, list[tuple[float, int]]] = {}
+        for beam in beams:
+            result = result_by_member[beam.member_id]
+            ni, nj = nodes[beam.node_i], nodes[beam.node_j]
+            station_candidates.setdefault(float(ni.x_m), []).append(
+                (abs(result.i_vertical_bending_moment_knm), beam.member_id)
+            )
+            station_candidates.setdefault(float(nj.x_m), []).append(
+                (abs(result.j_vertical_bending_moment_knm), beam.member_id)
+            )
+
+        all_girders.append(
+            tuple(
+                GirderStationMoment(
+                    girder_index=girder_index,
+                    y_m=y_m,
+                    x_m=x_m,
+                    moment_knm=value,
+                    member_id=member_id,
+                )
+                for x_m, (value, member_id) in (
+                    (x, max(items, key=lambda item: item[0]))
+                    for x, items in sorted(station_candidates.items())
+                )
+            )
+        )
+
+    return tuple(all_girders)
 
 
 def native_traffic_girder_envelope(
