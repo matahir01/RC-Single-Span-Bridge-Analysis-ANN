@@ -18,6 +18,7 @@ from rc_single_span.analysis.structural_model import StructuralModel
 from rc_single_span.analysis.traffic_envelope import (
     GirderCaseEnvelope,
     native_traffic_girder_envelope,
+    native_traffic_girder_station_moments,
 )
 from rc_single_span.codes.eurocode.lm1 import (
     LM1AdjustmentFactors,
@@ -75,6 +76,19 @@ class LM1GirderGoverningEnvelope:
 
 
 @dataclass(frozen=True)
+class LM1StationMomentEnvelope:
+    x_m: float
+    moment_knm: GoverningComponent
+
+
+@dataclass(frozen=True)
+class LM1GirderStationMomentEnvelope:
+    girder_index: int
+    y_m: float
+    stations: tuple[LM1StationMomentEnvelope, ...]
+
+
+@dataclass(frozen=True)
 class LM1CaseResult:
     placement: LM1SearchPlacement
     model: StructuralModel
@@ -85,6 +99,7 @@ class LM1CaseResult:
 @dataclass(frozen=True)
 class LM1SearchResult:
     girders: tuple[LM1GirderGoverningEnvelope, ...]
+    station_moments: tuple[LM1GirderStationMomentEnvelope, ...]
     cases: tuple[LM1CaseResult, ...]
     evaluated_case_count: int
     longitudinal_step_m: float
@@ -438,6 +453,49 @@ def _update_governing(
             row["deflection_x"] = item.deflection_position_m
 
 
+def _update_station_moment_governing(
+    governing: list[dict[str, object]],
+    *,
+    case_id: int,
+    current: tuple[tuple[object, ...], ...],
+) -> None:
+    if not governing:
+        for girder in current:
+            if not girder:
+                continue
+            first = girder[0]
+            governing.append(
+                {
+                    "girder_index": first.girder_index,
+                    "y_m": first.y_m,
+                    "stations": {
+                        item.x_m: GoverningComponent(
+                            item.moment_knm,
+                            case_id,
+                            item.member_id,
+                        )
+                        for item in girder
+                    },
+                }
+            )
+        return
+
+    if len(governing) != len(current):
+        raise RuntimeError("Station-moment girder count changed during LM1 search.")
+
+    for row, girder in zip(governing, current, strict=True):
+        stations = row["stations"]
+        assert isinstance(stations, dict)
+        for item in girder:
+            existing = stations.get(item.x_m)
+            if existing is None or item.moment_knm > existing.value:
+                stations[item.x_m] = GoverningComponent(
+                    item.moment_knm,
+                    case_id,
+                    item.member_id,
+                )
+
+
 def run_lm1_grillage_search(
     project: BridgeProject,
     *,
@@ -479,6 +537,7 @@ def run_lm1_grillage_search(
     prepared = prepare_vertical_grillage(build.model)
 
     governing: list[dict[str, object]] = []
+    station_governing: list[dict[str, object]] = []
     all_cases: list[LM1CaseResult] = []
     retained: dict[int, LM1CaseResult] = {}
 
@@ -501,6 +560,12 @@ def run_lm1_grillage_search(
             raise RuntimeError("LM1 grillage case failed vertical equilibrium.")
         case_girders = native_traffic_girder_envelope(model, analysis)
         _update_governing(governing, placement.case_id, case_girders)
+        station_moments = native_traffic_girder_station_moments(model, analysis)
+        _update_station_moment_governing(
+            station_governing,
+            case_id=placement.case_id,
+            current=station_moments,
+        )
         case_result = LM1CaseResult(placement, model, analysis, case_girders)
 
         if retain_all_cases:
@@ -535,6 +600,21 @@ def run_lm1_grillage_search(
         )
         for index, row in enumerate(governing)
     )
+    final_station_moments = tuple(
+        LM1GirderStationMomentEnvelope(
+            girder_index=int(row["girder_index"]),
+            y_m=float(row["y_m"]),
+            stations=tuple(
+                LM1StationMomentEnvelope(
+                    x_m=float(x_m),
+                    moment_knm=component,
+                )
+                for x_m, component in sorted(row["stations"].items())
+            ),
+        )
+        for row in station_governing
+    )
+
     cases = (
         tuple(all_cases)
         if retain_all_cases
@@ -542,6 +622,7 @@ def run_lm1_grillage_search(
     )
     return LM1SearchResult(
         girders=final_girders,
+        station_moments=final_station_moments,
         cases=cases,
         evaluated_case_count=len(placements),
         longitudinal_step_m=longitudinal_step_m,
