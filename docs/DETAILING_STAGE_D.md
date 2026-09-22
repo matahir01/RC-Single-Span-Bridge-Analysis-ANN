@@ -108,8 +108,9 @@ Reduced LM1 searches are deliberately not allowed to certify curtailment.
 
 The following items remain before Stage D can be called complete:
 
-1. extend the same station-demand/curtailment integration to the BS 5400
-   HA/HB/HA+HB traffic paths;
+1. normalize the now-available HA, HB and HA+HB station-moment envelopes onto
+   a common BS 5400 design-station basis and combine them with the
+   traffic-specific gamma_fL/permanent factors for final BS curtailment;
 2. integrate the doubly reinforced requirement into automatic bottom/top cage
    selection using the actual discrete cage centroids;
 3. run a final combined doubly reinforced resistance check on the selected
@@ -123,3 +124,15 @@ The following items remain before Stage D can be called complete:
 
 Until those are complete, Stage D outputs are engineering detailing inputs and
 verified sub-checks, not a final construction drawing schedule.
+
+## BS 5400 station-envelope groundwork
+
+The HA-alone, HB-alone and HA+HB common-grillage searches now also retain a
+governing longitudinal bending-moment envelope at every generated girder
+station, with governing case IDs and member IDs. This removes the previous
+single-global-moment limitation from the BS traffic engines.
+
+The three BS searches do not necessarily use identical x-grids, so the program
+does not yet merge them into one bar-curtailment schedule. That merge is being
+kept explicit rather than interpolating dissimilar search grids and calling the
+result exact.
