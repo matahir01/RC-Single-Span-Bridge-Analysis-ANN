@@ -32,6 +32,12 @@ from rc_single_span.design.eurocode_detailing import (
     nominal_cover_check_ec2,
     shear_detailing_limits_ec2,
 )
+from rc_single_span.design.longitudinal_detailing import (
+    EC2AnchorageResult,
+    FaceReinforcementArrangement,
+    ec2_design_anchorage_length,
+    select_face_reinforcement,
+)
 from rc_single_span.design.project import (
     BS5400DesignInputs,
     BS5400GirderDesignResult,
@@ -80,6 +86,9 @@ class EC2DetailingInputs:
     )
     provided_link_diameter_mm: float | None = None
     provided_vertical_clear_spacing_mm: float | None = None
+    anchorage_eta1: float = 1.0
+    anchorage_eta2: float | None = None
+    available_anchorage_length_mm: float | None = None
 
 
 @dataclass(frozen=True)
@@ -113,6 +122,8 @@ class BS5400DetailingInputs:
     provided_link_spacing_mm: float | None = None
     provided_vertical_clear_spacing_mm: float | None = None
     provided_side_face_steel_each_face_mm2: float | None = None
+    available_side_face_diameters_mm: tuple[float, ...] = (10.0, 12.0, 16.0, 20.0)
+    maximum_side_face_spacing_mm: float | None = None
 
 
 @dataclass(frozen=True)
@@ -132,6 +143,7 @@ class EC2GirderDetailingResult:
     selected_below_maximum: bool | None
     shear_limits: EC2ShearDetailingLimits
     cover_check: EC2CoverCheck
+    anchorage: EC2AnchorageResult | None
     longitudinal_synthesis: LongitudinalSynthesisResult | None
 
 
@@ -154,6 +166,7 @@ class BS5400GirderDetailingResult:
     provided_tension_spacing_ok: bool | None
     provided_link_spacing_ok: bool | None
     side_face_steel_ok: bool | None
+    recommended_side_face_each_face: FaceReinforcementArrangement | None
     longitudinal_synthesis: LongitudinalSynthesisResult | None
 
 
@@ -406,6 +419,17 @@ def run_eurocode_project_detailing(
             provided_cover_mm=detailing_inputs.provided_cover_mm,
         )
 
+        anchorage: EC2AnchorageResult | None = None
+        if selected_longitudinal is not None:
+            anchorage = ec2_design_anchorage_length(
+                bar_diameter_mm=selected_longitudinal.bar_diameter_mm,
+                steel_stress_mpa=fyk / 1.15,
+                fctk_005_mpa=0.70 * detailing_inputs.fctm_mpa,
+                eta1=detailing_inputs.anchorage_eta1,
+                eta2=detailing_inputs.anchorage_eta2,
+                available_length_mm=detailing_inputs.available_anchorage_length_mm,
+            )
+
         results.append(
             EC2GirderDetailingResult(
                 girder_index=index,
@@ -423,6 +447,7 @@ def run_eurocode_project_detailing(
                 selected_below_maximum=selected_below_maximum,
                 shear_limits=shear_limits,
                 cover_check=cover_check,
+                anchorage=anchorage,
                 longitudinal_synthesis=longitudinal_synthesis,
             )
         )
@@ -647,6 +672,20 @@ def run_bs5400_project_detailing(
             else detailing_inputs.provided_side_face_steel_each_face_mm2 + 1.0e-9
             >= limits.minimum_side_face_steel_each_face_mm2
         )
+        recommended_side_face: FaceReinforcementArrangement | None = None
+        if (
+            limits.side_face_reinforcement_required
+            and limits.minimum_side_face_steel_each_face_mm2 > 0.0
+        ):
+            recommended_side_face = select_face_reinforcement(
+                required_area_mm2=limits.minimum_side_face_steel_each_face_mm2,
+                face_length_mm=float(project.geometry.girder_profile.total_depth_m)
+                * 1000.0,
+                available_diameters_mm=(
+                    detailing_inputs.available_side_face_diameters_mm
+                ),
+                maximum_spacing_mm=detailing_inputs.maximum_side_face_spacing_mm,
+            )
 
         results.append(
             BS5400GirderDetailingResult(
@@ -667,6 +706,7 @@ def run_bs5400_project_detailing(
                 provided_tension_spacing_ok=provided_tension_spacing_ok,
                 provided_link_spacing_ok=provided_link_spacing_ok,
                 side_face_steel_ok=side_face_ok,
+                recommended_side_face_each_face=recommended_side_face,
                 longitudinal_synthesis=longitudinal_synthesis,
             )
         )
