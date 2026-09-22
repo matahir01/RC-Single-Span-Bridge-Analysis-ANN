@@ -52,15 +52,15 @@ from rc_single_span.design.project import (
     EurocodeGirderDesignResult,
     EurocodeSLSBasis,
 )
-from rc_single_span.design.reinforcement_synthesis import (
-    LongitudinalSynthesisResult,
-    synthesize_bs5400_longitudinal_reinforcement,
-    synthesize_ec2_longitudinal_reinforcement,
-)
 from rc_single_span.design.reinforcement_envelope import (
     EC2GirderReinforcementEnvelope,
     build_ec2_curtailment_plan_from_envelope,
     build_ec2_station_reinforcement_envelope,
+)
+from rc_single_span.design.reinforcement_synthesis import (
+    LongitudinalSynthesisResult,
+    synthesize_bs5400_longitudinal_reinforcement,
+    synthesize_ec2_longitudinal_reinforcement,
 )
 from rc_single_span.traffic.combinations import (
     BS5400GirderCombinationResult,
