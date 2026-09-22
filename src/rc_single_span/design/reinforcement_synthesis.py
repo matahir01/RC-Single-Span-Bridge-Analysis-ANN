@@ -95,7 +95,7 @@ def synthesize_ec2_longitudinal_reinforcement(
 
     base_required = max(required_uls_area_mm2, minimum_area_mm2)
     arrangements = generate_longitudinal_bar_arrangements(
-        minimum_area_mm2=minimum_area_mm2,
+        minimum_area_mm2=base_required,
         web_width_mm=web_width_mm,
         cover_mm=cover_mm,
         link_diameter_mm=link_diameter_mm,
@@ -287,7 +287,7 @@ def synthesize_bs5400_longitudinal_reinforcement(
 
     base_required = max(required_uls_area_mm2, minimum_area_mm2)
     arrangements = generate_longitudinal_bar_arrangements(
-        minimum_area_mm2=minimum_area_mm2,
+        minimum_area_mm2=base_required,
         web_width_mm=web_width_mm,
         cover_mm=cover_mm,
         link_diameter_mm=link_diameter_mm,
