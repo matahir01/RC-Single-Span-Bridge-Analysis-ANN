@@ -23,6 +23,11 @@ from rc_single_span.design.detailing import (
     audit_provided_longitudinal_cage,
     select_vertical_link_arrangement,
 )
+from rc_single_span.design.doubly_reinforced import (
+    DoublyReinforcedRequirement,
+    required_doubly_reinforced_steel_bs5400,
+    required_doubly_reinforced_steel_ec2,
+)
 from rc_single_span.design.eurocode import required_steel_area_layered_ec2
 from rc_single_span.design.eurocode_detailing import (
     EC2CoverCheck,
@@ -89,6 +94,7 @@ class EC2DetailingInputs:
     anchorage_eta1: float = 1.0
     anchorage_eta2: float | None = None
     available_anchorage_length_mm: float | None = None
+    compression_steel_depth_m: float | None = None
 
 
 @dataclass(frozen=True)
@@ -124,6 +130,7 @@ class BS5400DetailingInputs:
     provided_side_face_steel_each_face_mm2: float | None = None
     available_side_face_diameters_mm: tuple[float, ...] = (10.0, 12.0, 16.0, 20.0)
     maximum_side_face_spacing_mm: float | None = None
+    compression_steel_depth_m: float | None = None
 
 
 @dataclass(frozen=True)
@@ -144,6 +151,7 @@ class EC2GirderDetailingResult:
     shear_limits: EC2ShearDetailingLimits
     cover_check: EC2CoverCheck
     anchorage: EC2AnchorageResult | None
+    doubly_reinforced_requirement: DoublyReinforcedRequirement | None
     longitudinal_synthesis: LongitudinalSynthesisResult | None
 
 
@@ -167,6 +175,7 @@ class BS5400GirderDetailingResult:
     provided_link_spacing_ok: bool | None
     side_face_steel_ok: bool | None
     recommended_side_face_each_face: FaceReinforcementArrangement | None
+    doubly_reinforced_requirement: DoublyReinforcedRequirement | None
     longitudinal_synthesis: LongitudinalSynthesisResult | None
 
 
@@ -244,6 +253,7 @@ def run_eurocode_project_detailing(
         )
 
         required_issue: str | None = None
+        doubly_requirement: DoublyReinforcedRequirement | None = None
         try:
             required_flexural = required_steel_area_layered_ec2(
                 med_knm=combination.combinations.persistent_uls.effects.moment_knm,
@@ -256,6 +266,34 @@ def run_eurocode_project_detailing(
         except ValueError as exc:
             required_flexural = None
             required_issue = str(exc)
+            if detailing_inputs.compression_steel_depth_m is not None:
+                try:
+                    doubly_requirement = required_doubly_reinforced_steel_ec2(
+                        med_knm=(
+                            combination.combinations.persistent_uls.effects.moment_knm
+                        ),
+                        layers=layers,
+                        effective_depth_m=design_inputs.effective_depth_m,
+                        compression_steel_depth_m=(
+                            detailing_inputs.compression_steel_depth_m
+                        ),
+                        fck_mpa=fck,
+                        fyk_mpa=fyk,
+                        maximum_neutral_axis_ratio=(
+                            design_inputs.maximum_neutral_axis_ratio
+                        ),
+                        es_mpa=design_inputs.es_mpa,
+                    )
+                    required_issue = (
+                        f"{required_issue} A doubly reinforced requirement was "
+                        "resolved separately; automatic discrete top/bottom cage "
+                        "integration is still pending Stage D completion."
+                    )
+                except ValueError as doubly_exc:
+                    required_issue = (
+                        f"{required_issue} Doubly reinforced extension also "
+                        f"unresolved: {doubly_exc}"
+                    )
 
         required_asw = max(
             shear_limits.minimum_asw_per_s_mm2_per_m,
@@ -448,6 +486,7 @@ def run_eurocode_project_detailing(
                 shear_limits=shear_limits,
                 cover_check=cover_check,
                 anchorage=anchorage,
+                doubly_reinforced_requirement=doubly_requirement,
                 longitudinal_synthesis=longitudinal_synthesis,
             )
         )
@@ -506,6 +545,7 @@ def run_bs5400_project_detailing(
             for case in uls_cases
         )
         required_issue: str | None = None
+        doubly_requirement: DoublyReinforcedRequirement | None = None
         try:
             required_flexural = required_steel_area_layered_bs5400(
                 med_knm=governing_moment,
@@ -517,6 +557,28 @@ def run_bs5400_project_detailing(
         except ValueError as exc:
             required_flexural = None
             required_issue = str(exc)
+            if detailing_inputs.compression_steel_depth_m is not None:
+                try:
+                    doubly_requirement = required_doubly_reinforced_steel_bs5400(
+                        med_knm=governing_moment,
+                        layers=layers,
+                        effective_depth_m=design_inputs.effective_depth_m,
+                        compression_steel_depth_m=(
+                            detailing_inputs.compression_steel_depth_m
+                        ),
+                        fcu_mpa=fcu,
+                        fy_mpa=fy,
+                    )
+                    required_issue = (
+                        f"{required_issue} A doubly reinforced requirement was "
+                        "resolved separately; automatic discrete top/bottom cage "
+                        "integration is still pending Stage D completion."
+                    )
+                except ValueError as doubly_exc:
+                    required_issue = (
+                        f"{required_issue} Doubly reinforced extension also "
+                        f"unresolved: {doubly_exc}"
+                    )
 
         selected_links = select_vertical_link_arrangement(
             required_asw_per_s_mm2_per_m=(
@@ -707,6 +769,7 @@ def run_bs5400_project_detailing(
                 provided_link_spacing_ok=provided_link_spacing_ok,
                 side_face_steel_ok=side_face_ok,
                 recommended_side_face_each_face=recommended_side_face,
+                doubly_reinforced_requirement=doubly_requirement,
                 longitudinal_synthesis=longitudinal_synthesis,
             )
         )
