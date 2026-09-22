@@ -35,14 +35,24 @@ class SectionProperties:
 
 @dataclass(frozen=True)
 class ConcreteLayer:
+    """Symmetric concrete band with constant or linearly varying width.
+
+    width_m is the band width at top_m. When bottom_width_m is omitted the
+    band is rectangular, preserving the original API. Supplying bottom_width_m
+    creates an exact symmetric trapezoidal band for physical I-girder haunches.
+    """
+
     width_m: float
     top_m: float
     bottom_m: float
     label: str
+    bottom_width_m: float | None = None
 
     def __post_init__(self) -> None:
         if self.width_m <= 0.0 or self.top_m < 0.0 or self.bottom_m <= self.top_m:
             raise ValueError("Concrete-layer dimensions are invalid.")
+        if self.bottom_width_m is not None and self.bottom_width_m <= 0.0:
+            raise ValueError("Concrete-layer bottom width must be positive.")
         if not self.label.strip():
             raise ValueError("Concrete-layer label cannot be empty.")
 
@@ -51,12 +61,91 @@ class ConcreteLayer:
         return self.bottom_m - self.top_m
 
     @property
+    def top_width_m(self) -> float:
+        return self.width_m
+
+    @property
+    def effective_bottom_width_m(self) -> float:
+        return self.width_m if self.bottom_width_m is None else self.bottom_width_m
+
+    @property
+    def is_tapered(self) -> bool:
+        return abs(self.effective_bottom_width_m - self.width_m) > 1.0e-12
+
+    def width_at_m(self, y_m: float) -> float:
+        if y_m < self.top_m - 1.0e-12 or y_m > self.bottom_m + 1.0e-12:
+            raise ValueError("Requested ordinate lies outside the concrete layer.")
+        ratio = (y_m - self.top_m) / self.depth_m
+        return self.width_m + ratio * (
+            self.effective_bottom_width_m - self.width_m
+        )
+
+    def segment_properties(
+        self,
+        *,
+        top_m: float,
+        bottom_m: float,
+    ) -> tuple[float, float, float, float, float]:
+        """Return A, centroid, depth, Iy(cg) and Iz(cg) for an overlap segment."""
+
+        segment_top = max(self.top_m, top_m)
+        segment_bottom = min(self.bottom_m, bottom_m)
+        if segment_bottom <= segment_top:
+            raise ValueError("Concrete-layer segment has no positive overlap.")
+
+        depth = segment_bottom - segment_top
+        top_width = self.width_at_m(segment_top)
+        bottom_width = self.width_at_m(segment_bottom)
+        width_sum = top_width + bottom_width
+        area = 0.5 * width_sum * depth
+        local_centroid = (
+            depth * (top_width + 2.0 * bottom_width) / (3.0 * width_sum)
+        )
+        centroid = segment_top + local_centroid
+
+        second_about_segment_top = (
+            depth**3 * (top_width + 3.0 * bottom_width) / 12.0
+        )
+        iy_centroid = second_about_segment_top - area * local_centroid**2
+        iz_centroid = (
+            depth
+            * (
+                top_width**3
+                + top_width**2 * bottom_width
+                + top_width * bottom_width**2
+                + bottom_width**3
+            )
+            / 48.0
+        )
+        return area, centroid, depth, iy_centroid, iz_centroid
+
+    @property
     def area_m2(self) -> float:
-        return self.width_m * self.depth_m
+        return self.segment_properties(
+            top_m=self.top_m,
+            bottom_m=self.bottom_m,
+        )[0]
 
     @property
     def centroid_from_top_m(self) -> float:
-        return 0.5 * (self.top_m + self.bottom_m)
+        return self.segment_properties(
+            top_m=self.top_m,
+            bottom_m=self.bottom_m,
+        )[1]
+
+    @property
+    def centroidal_iy_m4(self) -> float:
+        return self.segment_properties(
+            top_m=self.top_m,
+            bottom_m=self.bottom_m,
+        )[3]
+
+    @property
+    def centroidal_iz_m4(self) -> float:
+        return self.segment_properties(
+            top_m=self.top_m,
+            bottom_m=self.bottom_m,
+        )[4]
 
 
 def rectangular_torsion_constant_m4(width_m: float, depth_m: float) -> float:
@@ -99,29 +188,69 @@ def _profile_layers(profile: GirderProfile, *, top_m: float) -> tuple[ConcreteLa
         )
     if isinstance(profile, IGirderProfile):
         z1 = top_m + float(profile.top_flange_thickness_m)
-        z2 = z1 + float(profile.web_depth_m)
-        z3 = z2 + float(profile.bottom_flange_thickness_m)
-        return (
+        z2 = z1 + float(profile.top_haunch_depth_m)
+        z3 = z2 + float(profile.web_depth_m)
+        z4 = z3 + float(profile.bottom_haunch_depth_m)
+        z5 = z4 + float(profile.bottom_flange_thickness_m)
+
+        layers: list[ConcreteLayer] = [
             ConcreteLayer(
                 float(profile.top_flange_width_m),
                 top_m,
                 z1,
                 "precast I-girder top flange",
-            ),
+            )
+        ]
+        if profile.top_haunch_depth_m > 0.0:
+            layers.append(
+                ConcreteLayer(
+                    float(profile.top_flange_width_m),
+                    z1,
+                    z2,
+                    "precast I-girder top haunch",
+                    bottom_width_m=float(profile.web_width_m),
+                )
+            )
+        layers.append(
             ConcreteLayer(
                 float(profile.web_width_m),
-                z1,
-                z2,
-                "precast I-girder web",
-            ),
-            ConcreteLayer(
-                float(profile.bottom_flange_width_m),
                 z2,
                 z3,
-                "precast I-girder bottom flange",
-            ),
+                "precast I-girder web",
+            )
         )
+        if profile.bottom_haunch_depth_m > 0.0:
+            layers.append(
+                ConcreteLayer(
+                    float(profile.web_width_m),
+                    z3,
+                    z4,
+                    "precast I-girder bottom haunch",
+                    bottom_width_m=float(profile.bottom_flange_width_m),
+                )
+            )
+        layers.append(
+            ConcreteLayer(
+                float(profile.bottom_flange_width_m),
+                z4,
+                z5,
+                "precast I-girder bottom flange",
+            )
+        )
+        return tuple(layers)
     raise TypeError("Unsupported girder profile.")
+
+
+def _layer_torsion_constant_m4(layer: ConcreteLayer) -> float:
+    """Return component torsion constant used by the grillage stiffness model.
+
+    Rectangular bands retain the existing exact rectangle expression. For a
+    tapered haunch, the mean-width rectangle is used for J; area, centroid and
+    bending inertias remain exact for the trapezoid.
+    """
+
+    width = 0.5 * (layer.top_width_m + layer.effective_bottom_width_m)
+    return rectangular_torsion_constant_m4(width, layer.depth_m)
 
 
 def _properties(layers: tuple[ConcreteLayer, ...], *, basis: str) -> SectionProperties:
@@ -130,15 +259,12 @@ def _properties(layers: tuple[ConcreteLayer, ...], *, basis: str) -> SectionProp
         layer.area_m2 * layer.centroid_from_top_m for layer in layers
     ) / area
     iy = sum(
-        layer.width_m * layer.depth_m**3 / 12.0
+        layer.centroidal_iy_m4
         + layer.area_m2 * (layer.centroid_from_top_m - centroid) ** 2
         for layer in layers
     )
-    iz = sum(layer.depth_m * layer.width_m**3 / 12.0 for layer in layers)
-    torsion = sum(
-        rectangular_torsion_constant_m4(layer.width_m, layer.depth_m)
-        for layer in layers
-    )
+    iz = sum(layer.centroidal_iz_m4 for layer in layers)
+    torsion = sum(_layer_torsion_constant_m4(layer) for layer in layers)
     return SectionProperties(area, centroid, iy, iz, torsion, basis)
 
 

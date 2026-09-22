@@ -59,9 +59,10 @@ def layer_overlap(
     overlap_bottom = min(layer.bottom_m, bottom_m)
     if overlap_bottom <= overlap_top:
         return None
-    depth = overlap_bottom - overlap_top
-    area = layer.width_m * depth
-    centroid = 0.5 * (overlap_top + overlap_bottom)
+    area, centroid, depth, _, _ = layer.segment_properties(
+        top_m=overlap_top,
+        bottom_m=overlap_bottom,
+    )
     return area, centroid, depth
 
 
@@ -182,12 +183,10 @@ def uncracked_layered_section(
 
     inertia = 0.0
     for item in ordered:
-        width_mm = item.width_m * 1000.0
-        depth_mm = item.depth_m * 1000.0
         area_mm2 = item.area_m2 * 1.0e6
         y_mm = item.centroid_from_top_m * 1000.0
         inertia += (
-            width_mm * depth_mm**3 / 12.0
+            item.centroidal_iy_m4 * 1.0e12
             + area_mm2 * (y_mm - neutral_axis) ** 2
         )
     inertia += transformed_steel_area * (steel_y_mm - neutral_axis) ** 2
@@ -246,16 +245,18 @@ def cracked_layered_section(
 
     inertia = 0.0
     for item in ordered:
-        overlap = layer_overlap(item, top_m=0.0, bottom_m=x_m)
-        if overlap is None:
+        overlap_top = max(item.top_m, 0.0)
+        overlap_bottom = min(item.bottom_m, x_m)
+        if overlap_bottom <= overlap_top:
             continue
-        area_m2, centroid_m, depth_m = overlap
-        width_mm = item.width_m * 1000.0
-        depth_mm = depth_m * 1000.0
+        area_m2, centroid_m, _, iy_centroid_m4, _ = item.segment_properties(
+            top_m=overlap_top,
+            bottom_m=overlap_bottom,
+        )
         area_mm2 = area_m2 * 1.0e6
         centroid_mm = centroid_m * 1000.0
         inertia += (
-            width_mm * depth_mm**3 / 12.0
+            iy_centroid_m4 * 1.0e12
             + area_mm2 * (x_mm - centroid_mm) ** 2
         )
     inertia += transformed_steel_area * (d_mm - x_mm) ** 2

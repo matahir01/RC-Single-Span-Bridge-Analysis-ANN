@@ -71,11 +71,20 @@ class TGirderProfile(BaseModel):
 
 
 class IGirderProfile(BaseModel):
+    """Physical precast I-girder, optionally including tapered flange haunches.
+
+    web_depth_m is the clear prismatic web depth between the haunches.
+    Existing plain I-sections remain backward-compatible because both haunch
+    depths default to zero.
+    """
+
     shape: Literal["i"] = "i"
     top_flange_width_m: PositiveFloat
     top_flange_thickness_m: PositiveFloat
+    top_haunch_depth_m: float = Field(default=0.0, ge=0.0)
     web_width_m: PositiveFloat
     web_depth_m: PositiveFloat
+    bottom_haunch_depth_m: float = Field(default=0.0, ge=0.0)
     bottom_flange_width_m: PositiveFloat
     bottom_flange_thickness_m: PositiveFloat
 
@@ -86,21 +95,49 @@ class IGirderProfile(BaseModel):
             self.bottom_flange_width_m,
         ):
             raise ValueError("I-girder web width is inconsistent with flange widths.")
+        if (
+            self.top_haunch_depth_m > 0.0
+            and self.web_width_m > self.top_flange_width_m
+        ):
+            raise ValueError(
+                "Top I-girder haunch requires top flange width not less than web width."
+            )
+        if (
+            self.bottom_haunch_depth_m > 0.0
+            and self.web_width_m > self.bottom_flange_width_m
+        ):
+            raise ValueError(
+                "Bottom I-girder haunch requires bottom flange width not less than web width."
+            )
         return self
 
     @property
     def total_depth_m(self) -> float:
         return float(
             self.top_flange_thickness_m
+            + self.top_haunch_depth_m
             + self.web_depth_m
+            + self.bottom_haunch_depth_m
             + self.bottom_flange_thickness_m
         )
 
     @property
     def area_m2(self) -> float:
+        top_haunch = (
+            0.5
+            * (float(self.top_flange_width_m) + float(self.web_width_m))
+            * float(self.top_haunch_depth_m)
+        )
+        bottom_haunch = (
+            0.5
+            * (float(self.web_width_m) + float(self.bottom_flange_width_m))
+            * float(self.bottom_haunch_depth_m)
+        )
         return float(
             self.top_flange_width_m * self.top_flange_thickness_m
+            + top_haunch
             + self.web_width_m * self.web_depth_m
+            + bottom_haunch
             + self.bottom_flange_width_m * self.bottom_flange_thickness_m
         )
 
