@@ -20,6 +20,7 @@ from rc_single_span.analysis.structural_model import StructuralModel
 from rc_single_span.analysis.traffic_envelope import (
     GirderCaseEnvelope,
     native_traffic_girder_envelope,
+    native_traffic_girder_station_moments,
 )
 from rc_single_span.codes.bs5400.traffic import (
     HB_INNER_AXLE_SPACINGS_M,
@@ -33,10 +34,12 @@ from rc_single_span.traffic.bs5400 import (
     BS5400ConvergenceResult,
     BS5400ConvergenceStep,
     BS5400GirderGoverningEnvelope,
+    BS5400GirderStationMomentEnvelope,
     GoverningComponent,
     HBSearchPlacement,
     _compare_envelopes,
     _final_envelopes,
+    _final_station_moments,
     _ha_lane_slots,
     _hb_centres,
     _hb_lead_positions,
@@ -45,6 +48,7 @@ from rc_single_span.traffic.bs5400 import (
     _position_vectors,
     _require_vertical_equilibrium,
     _update_governing,
+    _update_station_moment_governing,
     build_hb_plan_loads,
 )
 
@@ -101,6 +105,7 @@ class HAHBCombinedCaseResult:
 @dataclass(frozen=True)
 class HAHBCombinedSearchResult:
     girders: tuple[BS5400GirderGoverningEnvelope, ...]
+    station_moments: tuple[BS5400GirderStationMomentEnvelope, ...]
     cases: tuple[HAHBCombinedCaseResult, ...]
     evaluated_case_count: int
     hb_units: float
@@ -508,6 +513,7 @@ def run_ha_hb_combined_grillage_search(
 
     centres = _hb_centres(project, hb_transverse_step_m)
     governing: list[dict[str, object]] = []
+    station_governing: list[dict[str, object]] = []
     all_cases: list[HAHBCombinedCaseResult] = []
     retained: dict[int, HAHBCombinedCaseResult] = {}
     evaluated = 0
@@ -597,6 +603,12 @@ def run_ha_hb_combined_grillage_search(
                 placement.case_id,
                 girders,
             )
+            station_moments = native_traffic_girder_station_moments(model, analysis)
+            _update_station_moment_governing(
+                station_governing,
+                case_id=placement.case_id,
+                current=station_moments,
+            )
             treatments = ",".join(
                 f"slot{lane.geometry.physical_slot}:{lane.geometry.treatment.value}"
                 for lane in placement.ha_lanes
@@ -639,6 +651,7 @@ def run_ha_hb_combined_grillage_search(
 
     return HAHBCombinedSearchResult(
         girders=_final_envelopes(governing),
+        station_moments=_final_station_moments(station_governing),
         cases=(
             tuple(all_cases)
             if retain_all_cases
