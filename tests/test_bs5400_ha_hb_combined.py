@@ -177,6 +177,10 @@ def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium() -> 
     assert result.ha_assignment_search_exhaustive
     assert result.kel_combinations_exhaustive
     assert len(result.girders) == 7
+    assert len(result.station_moments) == 7
+    assert max(
+        item.moment_knm.value for item in result.station_moments[3].stations
+    ) > 0.0
     assert result.cases
     assert result.checked_inner_axle_spacings_m == pytest.approx((6.0, 11.0, 16.0, 21.0, 26.0))
     for case in result.cases:
