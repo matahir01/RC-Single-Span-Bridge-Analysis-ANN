@@ -88,12 +88,12 @@ def test_transverse_diaphragm_is_distributed_to_longitudinal_girders_without_los
 def test_construction_stage_response_includes_diaphragm_at_load_time_stiffness() -> None:
     project = _project()
     result = run_construction_stage_analysis(project)
-    middle = [
+    middle = next(
         item
         for item in result.stages
         if item.girder_index == 4
         and item.stage is PermanentActionStage.DECK_CONSTRUCTION
-    ][0]
+    )
 
     assert len(middle.point_loads) == 1
     assert middle.point_loads[0].source == "midspan diaphragm"
