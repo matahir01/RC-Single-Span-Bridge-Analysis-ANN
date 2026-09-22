@@ -59,7 +59,9 @@ The repository currently contains the first common foundation:
 - code-neutral load-effect container;
 - exact simple-span UDL and segmented-load mechanics migrated from the verified parent project;
 - CI, linting and regression tests;
-- a 15 m reference bridge with 7 girders at 1.70 m spacing, 400 x 950 mm precast girders, 75 + 175 mm deck build-up and four layers of four Y32 bars.
+- a 15 m rectangular reference bridge with 7 girders at 1.70 m spacing, 400 x 950 mm precast girders, 75 + 175 mm deck build-up and four layers of four Y32 bars;
+- a second 20 m haunched I-girder engineering benchmark with the agreed 400/250/400 mm physical section, explicit nominal permanent actions and no hard-coded reinforcement target;
+- rectangular, T and I section options retained, with optional tapered I-girder haunches using exact area, centroid and bending-inertia geometry through the layered design path.
 
 This is not yet a completed design application. The common full-width grillage, permanent-action/construction-stage backbone, Eurocode LM1, BD 37/01 HA/HB nominal traffic, BD 37/01 HA+HB coexistence/application mechanics, code-specific ULS/SLS combinations, and the focused EC2/BS 5400 longitudinal-girder design layer are now implemented. The practical reinforcement/constructability layer is now implemented for the focused V1 girder path. The next milestone is the independent verification and calculation-reporting campaign.
 
