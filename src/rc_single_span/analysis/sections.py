@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from itertools import pairwise
 
+from rc_single_span.analysis.torsion import saint_venant_torsion_constant_polygon_m4
 from rc_single_span.core.models import (
     GirderProfile,
     IGirderProfile,
@@ -159,6 +160,63 @@ def rectangular_torsion_constant_m4(width_m: float, depth_m: float) -> float:
     )
 
 
+def girder_profile_polygon_m(
+    profile: GirderProfile,
+) -> tuple[tuple[float, float], ...]:
+    """Return the connected precast-section outline as (horizontal, depth) vertices."""
+
+    if isinstance(profile, RectangularGirderProfile):
+        half = 0.5 * float(profile.width_m)
+        depth = float(profile.depth_m)
+        return ((-half, 0.0), (half, 0.0), (half, depth), (-half, depth))
+
+    if isinstance(profile, TGirderProfile):
+        flange_half = 0.5 * float(profile.flange_width_m)
+        web_half = 0.5 * float(profile.web_width_m)
+        flange = float(profile.flange_thickness_m)
+        depth = float(profile.total_depth_m)
+        return (
+            (-flange_half, 0.0),
+            (flange_half, 0.0),
+            (flange_half, flange),
+            (web_half, flange),
+            (web_half, depth),
+            (-web_half, depth),
+            (-web_half, flange),
+            (-flange_half, flange),
+        )
+
+    if isinstance(profile, IGirderProfile):
+        top_half = 0.5 * float(profile.top_flange_width_m)
+        web_half = 0.5 * float(profile.web_width_m)
+        bottom_half = 0.5 * float(profile.bottom_flange_width_m)
+        z1 = float(profile.top_flange_thickness_m)
+        z2 = z1 + float(profile.top_haunch_depth_m)
+        z3 = z2 + float(profile.web_depth_m)
+        z4 = z3 + float(profile.bottom_haunch_depth_m)
+        z5 = z4 + float(profile.bottom_flange_thickness_m)
+
+        right = [
+            (top_half, 0.0),
+            (top_half, z1),
+        ]
+        if profile.top_haunch_depth_m > 0.0:
+            right.append((web_half, z2))
+        else:
+            right.append((web_half, z1))
+        right.append((web_half, z3))
+        if profile.bottom_haunch_depth_m > 0.0:
+            right.append((bottom_half, z4))
+        else:
+            right.append((bottom_half, z3))
+        right.append((bottom_half, z5))
+
+        left = [(-x, z) for x, z in reversed(right)]
+        return tuple(left + right)
+
+    raise TypeError("Unsupported girder profile.")
+
+
 def _profile_layers(profile: GirderProfile, *, top_m: float) -> tuple[ConcreteLayer, ...]:
     if isinstance(profile, RectangularGirderProfile):
         return (
@@ -300,10 +358,29 @@ def girder_tributary_widths_m(
 
 
 def precast_girder_properties(geometry: SingleSpanBridgeGeometry) -> SectionProperties:
-    return _properties(
+    properties = _properties(
         _profile_layers(geometry.girder_profile, top_m=0.0),
         basis="gross physical precast girder",
     )
+    profile = geometry.girder_profile
+    if isinstance(profile, IGirderProfile) and (
+        profile.top_haunch_depth_m > 0.0 or profile.bottom_haunch_depth_m > 0.0
+    ):
+        torsion = saint_venant_torsion_constant_polygon_m4(
+            girder_profile_polygon_m(profile)
+        )
+        return SectionProperties(
+            area_m2=properties.area_m2,
+            centroid_from_top_m=properties.centroid_from_top_m,
+            iy_m4=properties.iy_m4,
+            iz_m4=properties.iz_m4,
+            torsion_constant_m4=torsion.torsion_constant_m4,
+            basis=(
+                properties.basis
+                + "; Saint-Venant J from converged Prandtl stress-function FEM"
+            ),
+        )
+    return properties
 
 
 def deck_construction_girder_properties(
