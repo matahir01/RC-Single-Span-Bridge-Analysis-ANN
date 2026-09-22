@@ -10,8 +10,8 @@ from rc_single_span.analysis.sections import (
 )
 from rc_single_span.core.models import (
     IGirderProfile,
-    RectangularGirderProfile,
     PermanentActionStage,
+    RectangularGirderProfile,
     SectionType,
     SingleSpanBridgeGeometry,
     TGirderProfile,
