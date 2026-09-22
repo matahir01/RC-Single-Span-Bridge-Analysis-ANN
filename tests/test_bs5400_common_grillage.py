@@ -120,6 +120,12 @@ def test_ha_search_uses_common_grillage_and_envelopes_all_girders() -> None:
     assert result.evaluated_case_count > 0
     assert result.kel_combinations_exhaustive
     assert len(result.girders) == 7
+    assert len(result.station_moments) == 7
+    assert result.station_moments[3].stations[0].x_m == pytest.approx(0.0)
+    assert result.station_moments[3].stations[-1].x_m == pytest.approx(15.0)
+    assert max(
+        item.moment_knm.value for item in result.station_moments[3].stations
+    ) > 0.0
     assert result.cases
     for case in result.cases:
         scale = max(
@@ -145,6 +151,10 @@ def test_hb_search_checks_all_five_vehicle_lengths_and_transverse_positions() ->
     )
     assert result.evaluated_case_count > 0
     assert len(result.girders) == 7
+    assert len(result.station_moments) == 7
+    assert max(
+        item.moment_knm.value for item in result.station_moments[3].stations
+    ) > 0.0
     assert result.cases
     assert all(item.moment_knm.value > 0.0 for item in result.girders)
     for case in result.cases:
