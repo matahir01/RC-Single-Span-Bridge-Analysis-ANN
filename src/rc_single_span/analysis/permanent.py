@@ -12,6 +12,7 @@ from rc_single_span.analysis.simple_span import (
     DistributedLoadSegment,
     PointLoadSegment,
     simple_span_mixed_load_response,
+    simple_span_mixed_response_at_x,
 )
 from rc_single_span.codes.common import LoadEffects
 from rc_single_span.core.models import BridgeProject, PermanentActionStage
@@ -340,6 +341,53 @@ def characteristic_permanent_effects_by_category(
             shear_kn=response.max_abs_shear_kn,
         )
     return result
+
+
+def factored_permanent_moment_at_x_knm(
+    project: BridgeProject,
+    *,
+    girder_index: int,
+    x_m: float,
+    factors_by_category: dict[PermanentLoadCategory, float],
+) -> float:
+    """Return factored permanent bending moment at an exact longitudinal station."""
+
+    if not 1 <= girder_index <= int(project.geometry.girder_count):
+        raise IndexError("girder_index is outside the bridge layout.")
+    span = float(project.geometry.span_m)
+    if not 0.0 <= x_m <= span:
+        raise ValueError("x_m lies outside the physical span.")
+
+    missing = set(PermanentLoadCategory) - set(factors_by_category)
+    if missing:
+        labels = ", ".join(sorted(item.value for item in missing))
+        raise ValueError(f"Missing permanent-load factors for: {labels}.")
+    if any(value < 0.0 for value in factors_by_category.values()):
+        raise ValueError("Permanent-load factors cannot be negative.")
+
+    segments = tuple(
+        item
+        for item in automatic_permanent_loads(project)
+        if item.girder_index == girder_index
+    )
+    points = tuple(
+        item
+        for item in automatic_permanent_point_loads(project)
+        if item.girder_index == girder_index
+    )
+    moment, _ = simple_span_mixed_response_at_x(
+        span,
+        _distributed_segments(
+            segments,
+            factors_by_category=factors_by_category,
+        ),
+        _point_segments(
+            points,
+            factors_by_category=factors_by_category,
+        ),
+        x_m,
+    )
+    return max(float(moment), 0.0)
 
 
 def factored_permanent_effects(
