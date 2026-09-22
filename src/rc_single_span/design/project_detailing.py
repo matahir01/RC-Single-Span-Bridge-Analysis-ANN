@@ -24,11 +24,6 @@ from rc_single_span.design.detailing import (
     select_vertical_link_arrangement,
 )
 from rc_single_span.design.eurocode import required_steel_area_layered_ec2
-from rc_single_span.design.reinforcement_synthesis import (
-    LongitudinalSynthesisResult,
-    synthesize_bs5400_longitudinal_reinforcement,
-    synthesize_ec2_longitudinal_reinforcement,
-)
 from rc_single_span.design.eurocode_detailing import (
     EC2CoverCheck,
     EC2LongitudinalLimits,
@@ -43,6 +38,11 @@ from rc_single_span.design.project import (
     EC2DesignInputs,
     EurocodeGirderDesignResult,
     EurocodeSLSBasis,
+)
+from rc_single_span.design.reinforcement_synthesis import (
+    LongitudinalSynthesisResult,
+    synthesize_bs5400_longitudinal_reinforcement,
+    synthesize_ec2_longitudinal_reinforcement,
 )
 from rc_single_span.traffic.combinations import (
     BS5400GirderCombinationResult,
