@@ -252,6 +252,8 @@ def test_eurocode_project_detailing_sizes_discrete_bars_links_and_audits_provide
     assert first.provided_above_minimum
     assert first.provided_below_maximum
     assert first.cover_check.passes
+    assert first.anchorage is not None
+    assert first.anchorage.design_anchorage_length_mm > 0.0
     assert first.longitudinal_synthesis is not None
     assert first.longitudinal_synthesis.selected is not None
     assert not first.longitudinal_synthesis.final_design_ready
@@ -347,6 +349,10 @@ def test_bs5400_project_detailing_can_recommend_valid_steel_even_when_provided_e
     assert exterior.provided_tension_spacing_ok
     assert exterior.provided_link_spacing_ok
     assert exterior.side_face_steel_ok
+    assert exterior.recommended_side_face_each_face is not None
+    assert exterior.recommended_side_face_each_face.provided_area_mm2 >= (
+        exterior.limits.minimum_side_face_steel_each_face_mm2
+    )
     assert "explicit" in exterior.limits.minimum_main_ratio_basis
     assert exterior.longitudinal_synthesis is not None
     assert exterior.longitudinal_synthesis.selected is not None
