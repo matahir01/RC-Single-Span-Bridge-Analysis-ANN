@@ -355,10 +355,11 @@ def test_bs5400_project_detailing_can_recommend_valid_steel_even_when_provided_e
     assert exterior.recommended_side_face_each_face.provided_area_mm2 >= (
         exterior.limits.minimum_side_face_steel_each_face_mm2
     )
-    assert exterior.doubly_reinforced_requirement is not None
-    assert exterior.doubly_reinforced_requirement.compression_steel_mm2 > 0.0
-    assert exterior.doubly_reinforced_requirement.total_tension_steel_mm2 > 0.0
-    assert "doubly reinforced requirement" in exterior.required_flexural_steel_issue
+    # The stored 16Y32 cage is outside the singly-reinforced neutral-axis
+    # scope, but the *required* steel area is smaller and is singly adequate.
+    # Do not invent compression steel just because an over-provided cage fails.
+    assert exterior.doubly_reinforced_requirement is None
+    assert exterior.required_flexural_steel_issue is None
     assert "explicit" in exterior.limits.minimum_main_ratio_basis
     assert exterior.longitudinal_synthesis is not None
     assert exterior.longitudinal_synthesis.selected is not None
