@@ -48,6 +48,16 @@ class PermanentPointLoad:
     category: PermanentLoadCategory = PermanentLoadCategory.STRUCTURAL_DEAD
 
 
+@dataclass(frozen=True)
+class PermanentStageSummary:
+    stage: PermanentActionStage
+    distributed_total_kn: float
+    point_total_kn: float
+    total_kn: float
+    category_totals_kn: tuple[tuple[PermanentLoadCategory, float], ...]
+    sources: tuple[str, ...]
+
+
 def _line_action_shares(
     y_m: float,
     positions: tuple[float, ...],
@@ -213,6 +223,58 @@ def _point_segments(
         )
         for point in points
     )
+
+
+def permanent_load_summary_by_stage(
+    project: BridgeProject,
+) -> tuple[PermanentStageSummary, ...]:
+    """Return a traceable bridge-wide permanent-action ledger by load-time stage."""
+
+    distributed = automatic_permanent_loads(project)
+    points = automatic_permanent_point_loads(project)
+    summaries: list[PermanentStageSummary] = []
+
+    for stage in PermanentActionStage:
+        stage_distributed = tuple(item for item in distributed if item.stage is stage)
+        stage_points = tuple(item for item in points if item.stage is stage)
+        distributed_total = sum(item.total_load_kn for item in stage_distributed)
+        point_total = sum(item.magnitude_kn for item in stage_points)
+
+        category_totals = tuple(
+            (
+                category,
+                sum(
+                    item.total_load_kn
+                    for item in stage_distributed
+                    if item.category is category
+                )
+                + sum(
+                    item.magnitude_kn
+                    for item in stage_points
+                    if item.category is category
+                ),
+            )
+            for category in PermanentLoadCategory
+        )
+        sources = tuple(
+            sorted(
+                {
+                    *(item.source for item in stage_distributed),
+                    *(item.source for item in stage_points),
+                }
+            )
+        )
+        summaries.append(
+            PermanentStageSummary(
+                stage=stage,
+                distributed_total_kn=distributed_total,
+                point_total_kn=point_total,
+                total_kn=distributed_total + point_total,
+                category_totals_kn=category_totals,
+                sources=sources,
+            )
+        )
+    return tuple(summaries)
 
 
 def characteristic_permanent_effects(
