@@ -243,9 +243,41 @@ class PermanentLineAction(BaseModel):
         return self
 
 
+class PermanentTransverseLineAction(BaseModel):
+    """Permanent load acting transversely at one longitudinal station.
+
+    The intensity is force per metre across the specified transverse width.
+    This is intended for diaphragms/cross-beams and similar discrete transverse
+    permanent components. It becomes point loading on each longitudinal girder.
+    """
+
+    name: str
+    magnitude_kn_m: PositiveFloat
+    x_m: float
+    y_start_m: float
+    y_end_m: float
+    stage: PermanentActionStage = PermanentActionStage.DECK_CONSTRUCTION
+    category: Literal["structural_dead", "other_superimposed"] = "structural_dead"
+
+    @model_validator(mode="after")
+    def validate_action(self) -> PermanentTransverseLineAction:
+        if not self.name.strip():
+            raise ValueError("Permanent transverse-line action name cannot be empty.")
+        if self.x_m < 0.0:
+            raise ValueError("Permanent transverse-line action x_m cannot be negative.")
+        if self.y_end_m <= self.y_start_m:
+            raise ValueError(
+                "Permanent transverse-line action must define positive transverse width."
+            )
+        return self
+
+
 class PermanentActionModel(BaseModel):
     surfacing_layers: list[SurfacingLayer] = Field(default_factory=list)
     line_actions: list[PermanentLineAction] = Field(default_factory=list)
+    transverse_line_actions: list[PermanentTransverseLineAction] = Field(
+        default_factory=list
+    )
 
 
 class BarLayer(BaseModel):
@@ -333,4 +365,11 @@ class BridgeProject(BaseModel):
                 action.x_end_m is not None and action.x_end_m > span
             ):
                 raise ValueError("Permanent line action lies outside the span.")
+        for action in self.permanent_actions.transverse_line_actions:
+            if action.y_start_m < -half_width or action.y_end_m > half_width:
+                raise ValueError(
+                    "Permanent transverse-line action lies outside the physical deck width."
+                )
+            if action.x_m > span:
+                raise ValueError("Permanent transverse-line action lies outside the span.")
         return self
