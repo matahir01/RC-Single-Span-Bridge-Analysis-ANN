@@ -61,7 +61,9 @@ The repository currently contains the first common foundation:
 - CI, linting and regression tests;
 - a 15 m rectangular reference bridge with 7 girders at 1.70 m spacing, 400 x 950 mm precast girders, 75 + 175 mm deck build-up and four layers of four Y32 bars;
 - a second 20 m haunched I-girder engineering benchmark with the agreed 400/250/400 mm physical section, explicit nominal permanent actions and no hard-coded reinforcement target;
-- rectangular, T and I section options retained, with optional tapered I-girder haunches using exact area, centroid and bending-inertia geometry through the layered design path.
+- rectangular, T and I section options retained, with optional tapered I-girder haunches using exact area, centroid and bending-inertia geometry through the layered design path;
+- haunched-I precast torsion stiffness obtained from a converged Saint-Venant Prandtl stress-function FEM solution rather than rectangle-summation;
+- explicit transverse permanent actions for diaphragms/cross-beams, retained as point loads at their actual longitudinal stations, plus an auditable permanent-action ledger by construction stage and load category.
 
 This is not yet a completed design application. The common full-width grillage, permanent-action/construction-stage backbone, Eurocode LM1, BD 37/01 HA/HB nominal traffic, BD 37/01 HA+HB coexistence/application mechanics, code-specific ULS/SLS combinations, and the focused EC2/BS 5400 longitudinal-girder design layer are now implemented. The practical reinforcement/constructability layer is now implemented for the focused V1 girder path. The next milestone is the independent verification and calculation-reporting campaign.
 
@@ -72,7 +74,7 @@ Stable code is migrated selectively from matahir01/RC-Bridge-Analysis-ANN. Gener
 ## Development sequence
 
 1. Common physical model and simple-span mechanics.
-2. Common full-width grillage, permanent actions and essential three-stage construction analysis.
+2. Common full-width grillage, permanent actions and essential three-stage construction analysis. **Implemented and strengthened with exact-station diaphragm/cross-beam point loading, load-time stiffness superposition and a stage/category permanent-action ledger.**
 3. Eurocode LM1 adapter and convergence-controlled search. **Implemented.**
 4. BS 5400 / BD 37/01 HA and HB adapters on the same grillage. **Implemented, including nominal HA-alone, HB-alone and HA+HB coexistence/application under 6.4.2.**
 5. Code-specific ULS/SLS combinations. **Implemented for Eurocode persistent ULS plus characteristic/frequent/quasi-permanent SLS, and for BS 5400 primary highway combinations 1-3 with separate structural-dead, surfacing and other-superimposed permanent factors and component-wise HA/HB/HA+HB governing envelopes.** BS combinations 4-5 remain outside the current primary-action set because they require secondary/accidental actions not yet modelled.
