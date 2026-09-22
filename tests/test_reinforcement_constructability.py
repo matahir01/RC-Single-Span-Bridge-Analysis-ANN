@@ -15,6 +15,8 @@ from rc_single_span.core.models import (
 from rc_single_span.design.bs5400_detailing import detailing_limits_bs5400
 from rc_single_span.design.detailing import (
     audit_provided_longitudinal_cage,
+    generate_longitudinal_bar_arrangements,
+    longitudinal_cage_effective_depth_m,
     select_longitudinal_bar_arrangement,
 )
 from rc_single_span.design.project import (
@@ -337,3 +339,46 @@ def test_bs5400_project_detailing_can_recommend_valid_steel_even_when_provided_e
     assert exterior.provided_link_spacing_ok
     assert exterior.side_face_steel_ok
     assert "explicit" in exterior.limits.minimum_main_ratio_basis
+
+
+def test_candidate_generator_keeps_larger_cages_available_for_sls_recheck() -> None:
+    candidates = generate_longitudinal_bar_arrangements(
+        minimum_area_mm2=6600.0,
+        web_width_mm=400.0,
+        cover_mm=50.0,
+        link_diameter_mm=12.0,
+        minimum_clear_spacing_mm=32.0,
+        available_diameters_mm=(20.0, 25.0, 32.0),
+        maximum_layers=4,
+        diameter_governs_clear_spacing=True,
+    )
+
+    assert candidates
+    assert candidates[0].provided_area_mm2 >= 6600.0
+    assert any(item.provided_area_mm2 > 10000.0 for item in candidates)
+    assert any(item.bar_diameter_mm == pytest.approx(32.0) for item in candidates)
+
+
+def test_candidate_effective_depth_comes_from_real_multilayer_cage_centroid() -> None:
+    arrangement = select_longitudinal_bar_arrangement(
+        required_area_mm2=12800.0,
+        web_width_mm=400.0,
+        cover_mm=50.0,
+        link_diameter_mm=12.0,
+        minimum_clear_spacing_mm=32.0,
+        available_diameters_mm=(32.0,),
+        maximum_layers=4,
+        preferred_vertical_clear_spacing_mm=40.0,
+        diameter_governs_clear_spacing=True,
+    )
+    effective_depth = longitudinal_cage_effective_depth_m(
+        arrangement,
+        section_total_depth_mm=1450.0,
+        cover_mm=50.0,
+        link_diameter_mm=12.0,
+    )
+
+    # 4Y32 x 4 layers at 72 mm vertical pitch: bar-centre levels are
+    # 78, 150, 222 and 294 mm from the soffit, centroid = 186 mm.
+    assert arrangement.bars_per_layer == (4, 4, 4, 4)
+    assert effective_depth == pytest.approx((1450.0 - 186.0) / 1000.0)
