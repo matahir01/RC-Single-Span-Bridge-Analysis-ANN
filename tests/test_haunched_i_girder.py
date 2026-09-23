@@ -154,6 +154,6 @@ def test_20m_benchmark_permanent_actions_are_fully_staged_and_auditable() -> Non
 
 
 def test_i_girder_longitudinal_cages_use_physical_flange_widths() -> None:
-    bridge = reference_bridge_20m_i()
-    assert girder_tension_cage_width_m(bridge.geometry) == pytest.approx(0.40)
-    assert girder_compression_cage_width_m(bridge.geometry) == pytest.approx(0.40)
+    geometry = _geometry()
+    assert girder_tension_cage_width_m(geometry) == pytest.approx(0.40)
+    assert girder_compression_cage_width_m(geometry) == pytest.approx(0.40)
