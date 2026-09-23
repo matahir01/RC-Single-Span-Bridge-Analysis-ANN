@@ -31,6 +31,7 @@ from rc_single_span.design.project import (
     EurocodeSLSBasis,
 )
 from rc_single_span.design.project_detailing import (
+    BS5400DetailingInputs,
     BS5400GirderDetailingResult,
     EC2GirderDetailingResult,
 )
@@ -373,6 +374,7 @@ def run_bs5400_advanced_stage_d(
     details: tuple[BS5400GirderDetailingResult, ...],
     *,
     design_inputs: BS5400DesignInputs,
+    detailing_inputs: BS5400DetailingInputs,
     inputs: AdvancedStageDInputs,
 ) -> tuple[AdvancedGirderDetailingResult, ...]:
     _validate_inputs(project, inputs)
@@ -474,7 +476,7 @@ def run_bs5400_advanced_stage_d(
                     project,
                     girder_index=index,
                     arrangement=tension,
-                    cover_mm=detail.limits.minimum_clear_bar_spacing_mm,
+                    cover_mm=detailing_inputs.provided_cover_mm,
                     link_diameter_mm=detail.selected_links.link_diameter_mm,
                     es_mpa=design_inputs.es_mpa,
                     ecm_mpa=design_inputs.ec_modified_mpa,
@@ -496,7 +498,7 @@ def run_bs5400_advanced_stage_d(
                     end_zone_depth_mm=inputs.end_zone_depth_mm,
                     longitudinal_bar_count=tension.bar_count,
                     longitudinal_bar_diameter_mm=tension.bar_diameter_mm,
-                    cover_mm=40.0,
+                    cover_mm=detailing_inputs.provided_cover_mm,
                     link_diameter_mm=detail.selected_links.link_diameter_mm,
                     link_spacing_mm=detail.selected_links.spacing_mm,
                     maximum_link_spacing_mm=detail.limits.maximum_link_spacing_mm,
@@ -536,7 +538,7 @@ def run_bs5400_advanced_stage_d(
                     compression=selected.compression,
                     tension_depth_m=selected.actual_effective_depth_m,
                     compression_depth_m=selected.actual_compression_depth_m,
-                    cover_mm=40.0,
+                    cover_mm=detailing_inputs.provided_cover_mm,
                     es_mpa=design_inputs.es_mpa,
                     ec_modified_mpa=design_inputs.ec_modified_mpa,
                     tension_zone_width_m=(
