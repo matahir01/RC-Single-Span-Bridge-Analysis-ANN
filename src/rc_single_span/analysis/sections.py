@@ -551,3 +551,29 @@ def girder_web_width_m(geometry: SingleSpanBridgeGeometry) -> float:
     if isinstance(profile, IGirderProfile):
         return float(profile.web_width_m)
     raise TypeError("Unsupported girder profile.")
+
+
+def girder_tension_cage_width_m(geometry: SingleSpanBridgeGeometry) -> float:
+    """Return the physical width available to the bottom longitudinal cage."""
+
+    profile = geometry.girder_profile
+    if isinstance(profile, RectangularGirderProfile):
+        return float(profile.width_m)
+    if isinstance(profile, TGirderProfile):
+        return float(profile.web_width_m)
+    if isinstance(profile, IGirderProfile):
+        return float(profile.bottom_flange_width_m)
+    raise TypeError("Unsupported girder profile.")
+
+
+def girder_compression_cage_width_m(geometry: SingleSpanBridgeGeometry) -> float:
+    """Return the physical precast width available to a top compression cage."""
+
+    profile = geometry.girder_profile
+    if isinstance(profile, RectangularGirderProfile):
+        return float(profile.width_m)
+    if isinstance(profile, TGirderProfile):
+        return float(profile.flange_width_m)
+    if isinstance(profile, IGirderProfile):
+        return float(profile.top_flange_width_m)
+    raise TypeError("Unsupported girder profile.")
