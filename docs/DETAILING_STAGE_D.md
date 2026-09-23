@@ -110,21 +110,41 @@ curtailment plan for the selected discrete cage.
 
 Reduced LM1 searches are deliberately not allowed to certify curtailment.
 
-## Stage D still outstanding
+## Advanced Stage D implementation
 
-The following items remain before Stage D can be called complete:
+The previously outstanding Stage D mechanics are now implemented as explicit,
+auditable checks rather than hidden assumptions:
 
-1. add code-specific support anchorage, tension-shift and bar-termination rules
-   to the curtailment planner;
-2. implement the actual bridge fatigue traffic/loading path and convert it to
-   reinforcement stress ranges per candidate cage;
-3. integrate construction-stage steel stress/resistance checks;
-4. add lap/splice zoning and local bearing/end-zone congestion checks;
-5. extend the doubly reinforced selected-cage path through the relevant SLS
-   crack/stress checks before it can be promoted to a final drawing schedule.
+1. support anchorage, tension shift and bar termination are applied to the
+   station-demand curtailment plan. The Eurocode path calculates
+   `a_l = z(cot(theta)-cot(alpha))/2`; the BS path requires an explicitly
+   verified legacy-code tension-shift length rather than inventing one;
+2. an explicit moving-axle fatigue vehicle can now be swept longitudinally and
+   converted to a cracked-section reinforcement stress range. An EN 1991-2
+   FLM3 axle train helper is provided, while transverse girder distribution,
+   resistance range and fatigue factors remain project inputs;
+3. construction-stage reinforcement stress checks now accumulate permanent
+   actions by load-time stage and evaluate steel stress on the participating
+   stage section;
+4. lap/splice zoning now excludes supports/end zones, limits the fraction of
+   bars spliced together and restricts laps to configured lower-demand zones;
+5. local bearing/end-zone checks now report bearing pressure, longitudinal-bar
+   clear spacing, link spacing and a local reinforcement congestion ratio;
+6. selected doubly reinforced cages now receive a cracked transformed-section
+   SLS check with both top and bottom cages included. EC2 crack control uses the
+   resulting tension-steel stress; the BS path retains the repository's
+   existing mean-strain/crack geometry framework.
 
-Until those are complete, Stage D outputs are engineering detailing inputs and
-verified sub-checks, not a final construction drawing schedule.
+`stage_d_project.py` wires these checks into Eurocode and BS project-level
+detailing results. Inputs that cannot safely be inferred — fatigue transverse
+distribution, fatigue resistance/detail category, allowable construction-stage
+steel stress, bearing geometry/resistance, splice limits and the verified BS
+tension-shift/fatigue model — remain explicit. A result is marked complete only
+when every configured advanced check resolves and passes.
+
+Stage D can therefore be treated as implemented infrastructure, but it is not
+a substitute for project-specific code parameters, independent verification or
+drawing review.
 
 ## BS 5400 exact common-grid reinforcement zoning
 
