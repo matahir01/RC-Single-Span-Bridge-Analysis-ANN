@@ -53,7 +53,10 @@ from rc_single_span.design.project import (
     EurocodeSLSBasis,
 )
 from rc_single_span.design.reinforcement_envelope import (
+    BS5400GirderReinforcementEnvelope,
     EC2GirderReinforcementEnvelope,
+    build_bs5400_curtailment_plan_from_envelope,
+    build_bs5400_station_reinforcement_envelope,
     build_ec2_curtailment_plan_from_envelope,
     build_ec2_station_reinforcement_envelope,
 )
@@ -66,6 +69,7 @@ from rc_single_span.traffic.combinations import (
     BS5400GirderCombinationResult,
     EurocodeGirderCombinationResult,
 )
+from rc_single_span.traffic.bs5400 import BS5400NominalTrafficSuite
 from rc_single_span.traffic.lm1 import LM1SearchResult
 
 
@@ -139,6 +143,7 @@ class BS5400DetailingInputs:
     available_side_face_diameters_mm: tuple[float, ...] = (10.0, 12.0, 16.0, 20.0)
     maximum_side_face_spacing_mm: float | None = None
     compression_steel_depth_m: float | None = None
+    curtailment_anchorage_length_mm: float | None = None
 
 
 @dataclass(frozen=True)
@@ -186,6 +191,8 @@ class BS5400GirderDetailingResult:
     side_face_steel_ok: bool | None
     recommended_side_face_each_face: FaceReinforcementArrangement | None
     doubly_reinforced_requirement: DoublyReinforcedRequirement | None
+    reinforcement_envelope: BS5400GirderReinforcementEnvelope | None
+    curtailment_plan: CurtailmentPlan | None
     longitudinal_synthesis: LongitudinalSynthesisResult | None
 
 
@@ -542,6 +549,7 @@ def run_bs5400_project_detailing(
     *,
     design_inputs: BS5400DesignInputs,
     detailing_inputs: BS5400DetailingInputs,
+    traffic: BS5400NominalTrafficSuite | None = None,
 ) -> tuple[BS5400GirderDetailingResult, ...]:
     if len(combinations) != len(design_results):
         raise ValueError("BS 5400 combinations and design results are inconsistent.")
@@ -791,6 +799,31 @@ def run_bs5400_project_detailing(
                 maximum_spacing_mm=detailing_inputs.maximum_side_face_spacing_mm,
             )
 
+        reinforcement_envelope: BS5400GirderReinforcementEnvelope | None = None
+        curtailment_plan: CurtailmentPlan | None = None
+        if traffic is not None:
+            reinforcement_envelope = build_bs5400_station_reinforcement_envelope(
+                project,
+                traffic,
+                girder_index=index,
+                effective_depth_m=design_inputs.effective_depth_m,
+                minimum_area_mm2=limits.minimum_main_steel_mm2,
+            )
+            if (
+                selected_longitudinal is not None
+                and detailing_inputs.curtailment_anchorage_length_mm is not None
+                and reinforcement_envelope.singly_reinforced_complete
+                and reinforcement_envelope.traffic_search_exhaustive
+            ):
+                curtailment_plan = build_bs5400_curtailment_plan_from_envelope(
+                    reinforcement_envelope,
+                    span_m=float(project.geometry.span_m),
+                    arrangement=selected_longitudinal,
+                    anchorage_length_mm=(
+                        detailing_inputs.curtailment_anchorage_length_mm
+                    ),
+                )
+
         results.append(
             BS5400GirderDetailingResult(
                 girder_index=index,
@@ -812,6 +845,8 @@ def run_bs5400_project_detailing(
                 side_face_steel_ok=side_face_ok,
                 recommended_side_face_each_face=recommended_side_face,
                 doubly_reinforced_requirement=doubly_requirement,
+                reinforcement_envelope=reinforcement_envelope,
+                curtailment_plan=curtailment_plan,
                 longitudinal_synthesis=longitudinal_synthesis,
             )
         )
