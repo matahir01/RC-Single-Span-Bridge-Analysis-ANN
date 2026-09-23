@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from rc_single_span.analysis.sections import (
     final_composite_concrete_layers,
+    girder_compression_cage_width_m,
     girder_tension_cage_width_m,
     girder_web_width_m,
 )
@@ -29,6 +30,11 @@ from rc_single_span.design.doubly_reinforced import (
     DoublyReinforcedRequirement,
     required_doubly_reinforced_steel_bs5400,
     required_doubly_reinforced_steel_ec2,
+)
+from rc_single_span.design.doubly_reinforced_detailing import (
+    DoublyReinforcedCageSelection,
+    select_doubly_reinforced_cages_bs5400,
+    select_doubly_reinforced_cages_ec2,
 )
 from rc_single_span.design.eurocode import required_steel_area_layered_ec2
 from rc_single_span.design.eurocode_detailing import (
@@ -166,6 +172,7 @@ class EC2GirderDetailingResult:
     cover_check: EC2CoverCheck
     anchorage: EC2AnchorageResult | None
     doubly_reinforced_requirement: DoublyReinforcedRequirement | None
+    doubly_reinforced_cage_selection: DoublyReinforcedCageSelection | None
     reinforcement_envelope: EC2GirderReinforcementEnvelope | None
     curtailment_plan: CurtailmentPlan | None
     longitudinal_synthesis: LongitudinalSynthesisResult | None
@@ -192,6 +199,7 @@ class BS5400GirderDetailingResult:
     side_face_steel_ok: bool | None
     recommended_side_face_each_face: FaceReinforcementArrangement | None
     doubly_reinforced_requirement: DoublyReinforcedRequirement | None
+    doubly_reinforced_cage_selection: DoublyReinforcedCageSelection | None
     reinforcement_envelope: BS5400GirderReinforcementEnvelope | None
     curtailment_plan: CurtailmentPlan | None
     longitudinal_synthesis: LongitudinalSynthesisResult | None
@@ -245,6 +253,10 @@ def run_eurocode_project_detailing(
     web_width_m = girder_web_width_m(project.geometry)
     web_width_mm = web_width_m * 1000.0
     tension_cage_width_mm = girder_tension_cage_width_m(project.geometry) * 1000.0
+    compression_cage_width_mm = (
+        girder_compression_cage_width_m(project.geometry) * 1000.0
+    )
+    clear_base = max(20.0, detailing_inputs.aggregate_size_mm + 5.0)
     provided_area = _provided_area(project)
     results: list[EC2GirderDetailingResult] = []
 
@@ -306,8 +318,8 @@ def run_eurocode_project_detailing(
                     )
                     required_issue = (
                         f"{required_issue} A doubly reinforced requirement was "
-                        "resolved separately; automatic discrete top/bottom cage "
-                        "integration is still pending Stage D completion."
+                        "resolved; discrete top/bottom cage selection and final "
+                        "combined ULS verification are attempted after link selection."
                     )
                 except ValueError as doubly_exc:
                     required_issue = (
@@ -334,6 +346,43 @@ def run_eurocode_project_detailing(
             available_spacings_mm=detailing_inputs.available_link_spacings_mm,
         )
 
+        doubly_cage_selection: DoublyReinforcedCageSelection | None = None
+        if doubly_requirement is not None:
+            try:
+                doubly_cage_selection = select_doubly_reinforced_cages_ec2(
+                    requirement=doubly_requirement,
+                    layers=layers,
+                    total_depth_m=project.geometry.total_structural_depth_m,
+                    tension_width_mm=tension_cage_width_mm,
+                    compression_width_mm=compression_cage_width_mm,
+                    cover_mm=detailing_inputs.provided_cover_mm,
+                    link_diameter_mm=selected_links.link_diameter_mm,
+                    minimum_clear_spacing_mm=clear_base,
+                    fck_mpa=fck,
+                    fyk_mpa=fyk,
+                    maximum_neutral_axis_ratio=(
+                        design_inputs.maximum_neutral_axis_ratio
+                    ),
+                    available_diameters_mm=(
+                        detailing_inputs.available_longitudinal_diameters_mm
+                    ),
+                    maximum_layers=detailing_inputs.maximum_longitudinal_layers,
+                    preferred_vertical_clear_spacing_mm=(
+                        detailing_inputs.preferred_vertical_clear_spacing_mm
+                    ),
+                    diameter_governs_clear_spacing=True,
+                    es_mpa=design_inputs.es_mpa,
+                )
+                required_issue = (
+                    f"{required_issue} Discrete doubly reinforced cages were "
+                    "selected and passed the final combined ULS recheck."
+                )
+            except ValueError as cage_exc:
+                required_issue = (
+                    f"{required_issue} Discrete doubly reinforced cage selection "
+                    f"remains unresolved: {cage_exc}"
+                )
+
         selected_longitudinal: LongitudinalBarArrangement | None = None
         recommended_cage: ProvidedCageAudit | None = None
         governing_required: float | None = None
@@ -343,10 +392,6 @@ def run_eurocode_project_detailing(
             governing_required = max(
                 required_flexural,
                 longitudinal_limits.minimum_tension_steel_mm2,
-            )
-            clear_base = max(
-                20.0,
-                detailing_inputs.aggregate_size_mm + 5.0,
             )
             if design_inputs.sls_basis is EurocodeSLSBasis.CHARACTERISTIC:
                 sls_moment = (
@@ -536,6 +581,7 @@ def run_eurocode_project_detailing(
                 cover_check=cover_check,
                 anchorage=anchorage,
                 doubly_reinforced_requirement=doubly_requirement,
+                doubly_reinforced_cage_selection=doubly_cage_selection,
                 reinforcement_envelope=reinforcement_envelope,
                 curtailment_plan=curtailment_plan,
                 longitudinal_synthesis=longitudinal_synthesis,
@@ -563,6 +609,9 @@ def run_bs5400_project_detailing(
     web_width_m = girder_web_width_m(project.geometry)
     web_width_mm = web_width_m * 1000.0
     tension_cage_width_mm = girder_tension_cage_width_m(project.geometry) * 1000.0
+    compression_cage_width_mm = (
+        girder_compression_cage_width_m(project.geometry) * 1000.0
+    )
     provided_area = _provided_area(project)
     results: list[BS5400GirderDetailingResult] = []
 
@@ -624,8 +673,8 @@ def run_bs5400_project_detailing(
                     )
                     required_issue = (
                         f"{required_issue} A doubly reinforced requirement was "
-                        "resolved separately; automatic discrete top/bottom cage "
-                        "integration is still pending Stage D completion."
+                        "resolved; discrete top/bottom cage selection and final "
+                        "combined ULS verification are attempted after link selection."
                     )
                 except ValueError as doubly_exc:
                     required_issue = (
@@ -647,6 +696,39 @@ def run_bs5400_project_detailing(
             available_legs=detailing_inputs.available_link_legs,
             available_spacings_mm=detailing_inputs.available_link_spacings_mm,
         )
+
+        doubly_cage_selection: DoublyReinforcedCageSelection | None = None
+        if doubly_requirement is not None:
+            try:
+                doubly_cage_selection = select_doubly_reinforced_cages_bs5400(
+                    requirement=doubly_requirement,
+                    layers=layers,
+                    total_depth_m=project.geometry.total_structural_depth_m,
+                    tension_width_mm=tension_cage_width_mm,
+                    compression_width_mm=compression_cage_width_mm,
+                    cover_mm=detailing_inputs.provided_cover_mm,
+                    link_diameter_mm=selected_links.link_diameter_mm,
+                    minimum_clear_spacing_mm=limits.minimum_clear_bar_spacing_mm,
+                    fcu_mpa=fcu,
+                    fy_mpa=fy,
+                    available_diameters_mm=(
+                        detailing_inputs.available_longitudinal_diameters_mm
+                    ),
+                    maximum_layers=detailing_inputs.maximum_longitudinal_layers,
+                    preferred_vertical_clear_spacing_mm=(
+                        detailing_inputs.preferred_vertical_clear_spacing_mm
+                    ),
+                    diameter_governs_clear_spacing=False,
+                )
+                required_issue = (
+                    f"{required_issue} Discrete doubly reinforced cages were "
+                    "selected and passed the final combined ULS recheck."
+                )
+            except ValueError as cage_exc:
+                required_issue = (
+                    f"{required_issue} Discrete doubly reinforced cage selection "
+                    f"remains unresolved: {cage_exc}"
+                )
 
         selected_longitudinal: LongitudinalBarArrangement | None = None
         recommended_cage: ProvidedCageAudit | None = None
@@ -848,6 +930,7 @@ def run_bs5400_project_detailing(
                 side_face_steel_ok=side_face_ok,
                 recommended_side_face_each_face=recommended_side_face,
                 doubly_reinforced_requirement=doubly_requirement,
+                doubly_reinforced_cage_selection=doubly_cage_selection,
                 reinforcement_envelope=reinforcement_envelope,
                 curtailment_plan=curtailment_plan,
                 longitudinal_synthesis=longitudinal_synthesis,
