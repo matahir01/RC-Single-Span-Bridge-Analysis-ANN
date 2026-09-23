@@ -562,6 +562,7 @@ def run_bs5400_project_detailing(
     fy = float(project.materials.fyk_mpa)
     web_width_m = girder_web_width_m(project.geometry)
     web_width_mm = web_width_m * 1000.0
+    tension_cage_width_mm = girder_tension_cage_width_m(project.geometry) * 1000.0
     provided_area = _provided_area(project)
     results: list[BS5400GirderDetailingResult] = []
 
