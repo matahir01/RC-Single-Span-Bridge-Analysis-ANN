@@ -175,7 +175,7 @@ def test_lap_zoning_and_end_zone_checks_are_explicit() -> None:
         preliminary=preliminary,
         rules=rules,
     )
-    laps = build_lap_splice_zones(
+    restricted_laps = build_lap_splice_zones(
         span_m=20.0,
         termination=termination,
         lap_length_m=1.2,
@@ -183,7 +183,17 @@ def test_lap_zoning_and_end_zone_checks_are_explicit() -> None:
         maximum_splice_fraction=0.5,
         maximum_demand_ratio_for_splicing=0.7,
     )
-    assert laps
+    assert restricted_laps
+    assert not any(item.permitted for item in restricted_laps)
+
+    laps = build_lap_splice_zones(
+        span_m=20.0,
+        termination=termination,
+        lap_length_m=1.2,
+        end_exclusion_m=0.0,
+        maximum_splice_fraction=0.5,
+        maximum_demand_ratio_for_splicing=0.7,
+    )
     assert any(item.permitted for item in laps)
 
     end = check_local_bearing_end_zone_congestion(
