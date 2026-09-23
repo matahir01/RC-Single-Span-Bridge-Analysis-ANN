@@ -103,6 +103,7 @@ class BS5400CaseResult:
 class HASearchResult:
     girders: tuple[BS5400GirderGoverningEnvelope, ...]
     station_moments: tuple[BS5400GirderStationMomentEnvelope, ...]
+    design_stations_m: tuple[float, ...]
     cases: tuple[BS5400CaseResult, ...]
     evaluated_case_count: int
     longitudinal_step_m: float
@@ -113,6 +114,7 @@ class HASearchResult:
 class HBSearchResult:
     girders: tuple[BS5400GirderGoverningEnvelope, ...]
     station_moments: tuple[BS5400GirderStationMomentEnvelope, ...]
+    design_stations_m: tuple[float, ...]
     cases: tuple[BS5400CaseResult, ...]
     evaluated_case_count: int
     longitudinal_step_m: float
@@ -158,6 +160,37 @@ def _merge_coordinates(values: tuple[float, ...]) -> tuple[float, ...]:
         if not result or abs(value - result[-1]) > 1.0e-9:
             result.append(value)
     return tuple(result)
+
+
+def _validated_design_stations(
+    project: BridgeProject,
+    stations_m: tuple[float, ...],
+) -> tuple[float, ...]:
+    if not stations_m:
+        return ()
+    span = float(project.geometry.span_m)
+    values = _merge_coordinates((0.0, *stations_m, span))
+    if values[0] < -1.0e-9 or values[-1] > span + 1.0e-9:
+        raise ValueError("A BS 5400 design station lies outside the physical span.")
+    return tuple(min(max(value, 0.0), span) for value in values)
+
+
+def common_bs5400_design_stations(
+    project: BridgeProject,
+    *,
+    step_m: float,
+) -> tuple[float, ...]:
+    """Return a common exact x-grid for HA, HB and HA+HB reinforcement zoning."""
+
+    if step_m <= 0.0:
+        raise ValueError("BS 5400 common design-station step must be positive.")
+    span = float(project.geometry.span_m)
+    values = [0.0, span]
+    x_m = 0.0
+    while x_m <= span + 1.0e-9:
+        values.append(round(min(x_m, span), 12))
+        x_m += step_m
+    return _merge_coordinates(tuple(values))
 
 
 def _kel_positions(span_m: float, step_m: float) -> tuple[float, ...]:
@@ -466,6 +499,7 @@ def run_ha_grillage_search(
     longitudinal_step_m: float = 1.0,
     max_exhaustive_kel_combinations: int = 5000,
     retain_all_cases: bool = False,
+    design_stations_m: tuple[float, ...] = (),
 ) -> HASearchResult:
     placements, exhaustive = generate_ha_search_placements(
         project,
@@ -476,10 +510,15 @@ def run_ha_grillage_search(
         raise RuntimeError("HA search generated no candidate placements.")
 
     slots = _ha_lane_slots(project)
+    common_design_stations = _validated_design_stations(
+        project,
+        design_stations_m,
+    )
     x_grid = _merge_coordinates(
         (
             0.0,
             float(project.geometry.span_m),
+            *common_design_stations,
             *(lane.kel_x_m for placement in placements for lane in placement.lanes),
         )
     )
@@ -549,6 +588,7 @@ def run_ha_grillage_search(
     return HASearchResult(
         girders=_final_envelopes(governing),
         station_moments=_final_station_moments(station_governing),
+        design_stations_m=common_design_stations,
         cases=(
             tuple(all_cases)
             if retain_all_cases
@@ -640,8 +680,10 @@ def run_hb_grillage_search(
     longitudinal_step_m: float = 1.0,
     transverse_step_m: float = 0.5,
     retain_all_cases: bool = False,
+    design_stations_m: tuple[float, ...] = (),
 ) -> HBSearchResult:
     centres = _hb_centres(project, transverse_step_m)
+    common_design_stations = _validated_design_stations(project, design_stations_m)
     governing: list[dict[str, object]] = []
     station_governing: list[dict[str, object]] = []
     all_cases: list[BS5400CaseResult] = []
@@ -680,7 +722,9 @@ def run_hb_grillage_search(
 
         build = build_final_composite_grillage(
             project,
-            stations_m=_merge_coordinates(tuple(x_grid_values)),
+            stations_m=_merge_coordinates(
+                (*tuple(x_grid_values), *common_design_stations)
+            ),
             additional_y_lines_m=_merge_coordinates(tuple(y_grid_values)),
         )
         prepared = prepare_vertical_grillage(build.model)
@@ -741,6 +785,7 @@ def run_hb_grillage_search(
     return HBSearchResult(
         girders=_final_envelopes(governing),
         station_moments=_final_station_moments(station_governing),
+        design_stations_m=common_design_stations,
         cases=(
             tuple(all_cases)
             if retain_all_cases
@@ -763,21 +808,39 @@ def run_bs5400_nominal_traffic_suite(
     combined_hb_longitudinal_step_m: float = 2.0,
     combined_hb_transverse_step_m: float = 1.0,
     combined_ha_kel_step_m: float = 2.0,
+    design_station_step_m: float | None = None,
 ) -> BS5400NominalTrafficSuite:
     from rc_single_span.traffic.bs5400_combined import (
         run_ha_hb_combined_grillage_search,
+    )
+
+    resolved_design_step = (
+        min(
+            ha_longitudinal_step_m,
+            hb_longitudinal_step_m,
+            combined_hb_longitudinal_step_m,
+            combined_ha_kel_step_m,
+        )
+        if design_station_step_m is None
+        else design_station_step_m
+    )
+    design_stations = common_bs5400_design_stations(
+        project,
+        step_m=resolved_design_step,
     )
 
     return BS5400NominalTrafficSuite(
         ha=run_ha_grillage_search(
             project,
             longitudinal_step_m=ha_longitudinal_step_m,
+            design_stations_m=design_stations,
         ),
         hb=run_hb_grillage_search(
             project,
             units=hb_units,
             longitudinal_step_m=hb_longitudinal_step_m,
             transverse_step_m=hb_transverse_step_m,
+            design_stations_m=design_stations,
         ),
         ha_hb=run_ha_hb_combined_grillage_search(
             project,
@@ -785,6 +848,7 @@ def run_bs5400_nominal_traffic_suite(
             hb_longitudinal_step_m=combined_hb_longitudinal_step_m,
             hb_transverse_step_m=combined_hb_transverse_step_m,
             ha_kel_step_m=combined_ha_kel_step_m,
+            design_stations_m=design_stations,
         ),
         application_status=(
             "Nominal HA-alone, HB-alone and BD 37/01 6.4.2 HA+HB coexistence searches "
