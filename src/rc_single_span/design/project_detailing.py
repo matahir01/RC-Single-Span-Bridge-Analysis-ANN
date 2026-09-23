@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from rc_single_span.analysis.sections import (
     final_composite_concrete_layers,
+    girder_tension_cage_width_m,
     girder_web_width_m,
 )
 from rc_single_span.codes.eurocode.combinations import EurocodeCombinationFactors
@@ -243,6 +244,7 @@ def run_eurocode_project_detailing(
     fyk = float(project.materials.fyk_mpa)
     web_width_m = girder_web_width_m(project.geometry)
     web_width_mm = web_width_m * 1000.0
+    tension_cage_width_mm = girder_tension_cage_width_m(project.geometry) * 1000.0
     provided_area = _provided_area(project)
     results: list[EC2GirderDetailingResult] = []
 
@@ -382,7 +384,7 @@ def run_eurocode_project_detailing(
                 ),
                 cover_mm=detailing_inputs.provided_cover_mm,
                 link_diameter_mm=selected_links.link_diameter_mm,
-                web_width_mm=web_width_mm,
+                web_width_mm=tension_cage_width_mm,
                 minimum_clear_spacing_mm=clear_base,
                 available_diameters_mm=(
                     detailing_inputs.available_longitudinal_diameters_mm
@@ -404,7 +406,7 @@ def run_eurocode_project_detailing(
                 )
                 recommended_cage = audit_provided_longitudinal_cage(
                     reinforcement=_recommended_reinforcement(selected_longitudinal),
-                    web_width_mm=web_width_mm,
+                    web_width_mm=tension_cage_width_mm,
                     cover_mm=detailing_inputs.provided_cover_mm,
                     link_diameter_mm=selected_links.link_diameter_mm,
                     minimum_clear_spacing_mm=clear_base,
@@ -436,7 +438,7 @@ def run_eurocode_project_detailing(
         ):
             provided_cage = audit_provided_longitudinal_cage(
                 reinforcement=project.provided_longitudinal_reinforcement,
-                web_width_mm=web_width_mm,
+                web_width_mm=tension_cage_width_mm,
                 cover_mm=detailing_inputs.provided_cover_mm,
                 link_diameter_mm=detailing_inputs.provided_link_diameter_mm,
                 minimum_clear_spacing_mm=max(
@@ -689,7 +691,7 @@ def run_bs5400_project_detailing(
                 fy_mpa=fy,
                 cover_mm=detailing_inputs.provided_cover_mm,
                 link_diameter_mm=selected_links.link_diameter_mm,
-                web_width_mm=web_width_mm,
+                web_width_mm=tension_cage_width_mm,
                 minimum_clear_spacing_mm=limits.minimum_clear_bar_spacing_mm,
                 maximum_tension_bar_spacing_mm=(
                     limits.maximum_tension_bar_spacing_mm
@@ -722,7 +724,7 @@ def run_bs5400_project_detailing(
                 )
                 recommended_cage = audit_provided_longitudinal_cage(
                     reinforcement=_recommended_reinforcement(selected_longitudinal),
-                    web_width_mm=web_width_mm,
+                    web_width_mm=tension_cage_width_mm,
                     cover_mm=detailing_inputs.provided_cover_mm,
                     link_diameter_mm=selected_links.link_diameter_mm,
                     minimum_clear_spacing_mm=limits.minimum_clear_bar_spacing_mm,
@@ -754,7 +756,7 @@ def run_bs5400_project_detailing(
         ):
             provided_cage = audit_provided_longitudinal_cage(
                 reinforcement=project.provided_longitudinal_reinforcement,
-                web_width_mm=web_width_mm,
+                web_width_mm=tension_cage_width_mm,
                 cover_mm=detailing_inputs.provided_cover_mm,
                 link_diameter_mm=detailing_inputs.provided_link_diameter_mm,
                 minimum_clear_spacing_mm=limits.minimum_clear_bar_spacing_mm,
