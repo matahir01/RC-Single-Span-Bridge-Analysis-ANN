@@ -40,9 +40,10 @@ bar-continuation zones. The routine:
 - extends cut-offs by the supplied anchorage length away from the high-demand
   region.
 
-The routine intentionally does not invent a bending-moment envelope. Full
-project integration therefore still requires a station-wise ULS steel-demand
-envelope from the common grillage/combinations.
+The routine intentionally does not invent a bending-moment envelope. It is now
+fed directly by the implemented EC2 LM1 station-demand envelope and by the BS
+5400 common-grid HA/HB/HA+HB station-demand envelope when those traffic searches
+are supplied to project detailing.
 
 ### 4. Reinforcement fatigue stress-range checker
 
@@ -75,9 +76,14 @@ For BS 5400, the same layered limiting concrete-block basis used by the
 repository's existing singly reinforced check is retained, and the excess
 moment is carried by an explicit design-stress compression/tension couple.
 
-Both routines report force-equilibrium and moment residuals. They are
-requirement solvers only at this stage; automatic discrete top-compression-bar
-selection and final combined-cage verification remain to be integrated.
+Both requirement routines report force-equilibrium and moment residuals. The
+detailer now continues beyond the continuous requirement: it generates
+discrete bottom-tension and top-compression cage candidates, calculates each
+multilayer cage centroid, updates the actual d and d', solves final combined
+force equilibrium, and verifies the selected pair at ULS. EC2 uses
+strain-compatible steel stresses capped at fyd; the BS 5400 path retains the
+repository's explicit legacy design-stress basis. A cage pair is not accepted
+merely because each separate provided area exceeds the continuous requirement.
 
 ### 6. Station-wise Eurocode ULS reinforcement envelope
 
@@ -108,31 +114,32 @@ Reduced LM1 searches are deliberately not allowed to certify curtailment.
 
 The following items remain before Stage D can be called complete:
 
-1. normalize the now-available HA, HB and HA+HB station-moment envelopes onto
-   a common BS 5400 design-station basis and combine them with the
-   traffic-specific gamma_fL/permanent factors for final BS curtailment;
-2. integrate the doubly reinforced requirement into automatic bottom/top cage
-   selection using the actual discrete cage centroids;
-3. run a final combined doubly reinforced resistance check on the selected
-   bottom and compression cages;
-4. add code-specific support anchorage, tension-shift and bar-termination rules
+1. add code-specific support anchorage, tension-shift and bar-termination rules
    to the curtailment planner;
-5. implement the actual bridge fatigue traffic/loading path and convert it to
+2. implement the actual bridge fatigue traffic/loading path and convert it to
    reinforcement stress ranges per candidate cage;
-6. integrate construction-stage steel stress/resistance checks;
-7. add lap/splice zoning and local bearing/end-zone congestion checks.
+3. integrate construction-stage steel stress/resistance checks;
+4. add lap/splice zoning and local bearing/end-zone congestion checks;
+5. extend the doubly reinforced selected-cage path through the relevant SLS
+   crack/stress checks before it can be promoted to a final drawing schedule.
 
 Until those are complete, Stage D outputs are engineering detailing inputs and
 verified sub-checks, not a final construction drawing schedule.
 
-## BS 5400 station-envelope groundwork
+## BS 5400 exact common-grid reinforcement zoning
 
-The HA-alone, HB-alone and HA+HB common-grillage searches now also retain a
-governing longitudinal bending-moment envelope at every generated girder
-station, with governing case IDs and member IDs. This removes the previous
-single-global-moment limitation from the BS traffic engines.
+The HA-alone, HB-alone and HA+HB common-grillage searches retain a governing
+longitudinal bending-moment envelope at every generated girder station, with
+governing case IDs and member IDs. For reinforcement zoning the three searches
+are now also supplied with the same explicit design-station x-grid. Those
+coordinates are inserted into each actual grillage topology, so their moments
+are solved at exact common stations rather than interpolated between different
+traffic grids.
 
-The three BS searches do not necessarily use identical x-grids, so the program
-does not yet merge them into one bar-curtailment schedule. That merge is being
-kept explicit rather than interpolating dissimilar search grids and calling the
-result exact.
+At every common station the BS detailing path evaluates permanent actions with
+their category-specific ULS factors and compares HA, HB and HA+HB with the
+traffic-specific gamma_fL values for combinations 1-3. The layered BS flexural
+solver then produces A_s(x), retaining minimum main steel where it governs.
+When the search is exhaustive, the singly reinforced envelope is complete, a
+longitudinal cage is selected, and a BS anchorage length is supplied explicitly,
+the result can feed the preliminary bar-continuation/curtailment plan.
