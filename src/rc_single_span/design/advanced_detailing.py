@@ -19,7 +19,10 @@ from rc_single_span.analysis.simple_span import (
     simple_span_mixed_response_at_x,
 )
 from rc_single_span.core.models import BridgeProject, PermanentActionStage
-from rc_single_span.design.bs5400 import controlling_surface_distance_mm
+from rc_single_span.design.bs5400 import (
+    _mean_strain_bs5400,
+    controlling_surface_distance_mm,
+)
 from rc_single_span.design.detailing import (
     LongitudinalBarArrangement,
     longitudinal_cage_centroid_from_face_m,
@@ -843,12 +846,20 @@ def check_doubly_reinforced_sls_bs5400(
         if epsilon_s <= 0.0
         else epsilon_s * (crack_point_depth_mm - x_mm) / (d_mm - x_mm)
     )
-    # Same explicit BS mean-strain structure used in the singly reinforced path.
-    h1 = h_mm - x_mm
-    a_cr = tension_zone_width_m * h1
-    rho = tension.provided_area_mm2 / max(a_cr, 1.0)
-    tension_stiffening = min(0.55 * rho, 0.5)
-    mean_strain = max(epsilon_1 * (1.0 - tension_stiffening), 0.0)
+    if epsilon_s <= 0.0 or epsilon_1 <= 0.0:
+        mean_strain = 0.0
+    else:
+        mean_strain = _mean_strain_bs5400(
+            epsilon_1=epsilon_1,
+            epsilon_s=epsilon_s,
+            tension_zone_width_mm=tension_zone_width_m * 1000.0,
+            overall_depth_mm=h_mm,
+            crack_point_depth_mm=crack_point_depth_mm,
+            compression_depth_mm=x_mm,
+            steel_area_mm2=tension.provided_area_mm2,
+            permanent_moment_knm=permanent_moment_knm,
+            live_moment_knm=live_moment_knm,
+        )
     spacing = tension.bar_diameter_mm + tension.clear_horizontal_spacing_mm
     acr = controlling_surface_distance_mm(
         bar_spacing_mm=spacing,
