@@ -15,6 +15,7 @@ from rc_single_span.core.models import (
 from rc_single_span.traffic.bs5400 import (
     HBSearchPlacement,
     _require_vertical_equilibrium,
+    common_bs5400_design_stations,
     traffic_equilibrium_tolerance_kn,
 )
 from rc_single_span.traffic.bs5400_combined import (
@@ -164,20 +165,24 @@ def test_unoccupied_lane_retains_normal_ha_udl_and_kel() -> None:
 
 
 def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium() -> None:
+    project = _project()
+    design_stations = common_bs5400_design_stations(project, step_m=5.0)
     result = run_ha_hb_combined_grillage_search(
-        _project(),
+        project,
         units=30.0,
         hb_longitudinal_step_m=15.0,
         hb_transverse_step_m=3.5,
         ha_kel_step_m=15.0,
         max_exhaustive_kel_combinations=100,
         max_exhaustive_ha_assignments=100,
+        design_stations_m=design_stations,
     )
     assert result.evaluated_case_count > 0
     assert result.ha_assignment_search_exhaustive
     assert result.kel_combinations_exhaustive
     assert len(result.girders) == 7
     assert len(result.station_moments) == 7
+    assert result.design_stations_m == pytest.approx(design_stations)
     assert max(
         item.moment_knm.value for item in result.station_moments[3].stations
     ) > 0.0
