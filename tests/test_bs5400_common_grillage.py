@@ -18,6 +18,7 @@ from rc_single_span.traffic.bs5400 import (
     HBSearchPlacement,
     build_ha_plan_loads,
     build_hb_plan_loads,
+    common_bs5400_design_stations,
     run_ha_grillage_search,
     run_hb_grillage_search,
 )
@@ -167,3 +168,29 @@ def test_hb_search_checks_all_five_vehicle_lengths_and_transverse_positions() ->
             1.0e-6,
             1.0e-8 * scale,
         )
+
+
+def test_common_bs_design_stations_are_injected_exactly_into_ha_and_hb_searches() -> None:
+    project = _project()
+    stations = common_bs5400_design_stations(project, step_m=5.0)
+
+    ha = run_ha_grillage_search(
+        project,
+        longitudinal_step_m=15.0,
+        max_exhaustive_kel_combinations=100,
+        design_stations_m=stations,
+    )
+    hb = run_hb_grillage_search(
+        project,
+        units=30.0,
+        longitudinal_step_m=15.0,
+        transverse_step_m=3.5,
+        design_stations_m=stations,
+    )
+
+    assert ha.design_stations_m == pytest.approx(stations)
+    assert hb.design_stations_m == pytest.approx(stations)
+    for result in (ha, hb):
+        for girder in result.station_moments:
+            available = {round(item.x_m, 9) for item in girder.stations}
+            assert all(round(x_m, 9) in available for x_m in stations)
