@@ -6,6 +6,8 @@ import pytest
 from rc_single_span.analysis.permanent import permanent_load_summary_by_stage
 from rc_single_span.analysis.sections import (
     final_composite_concrete_layers,
+    girder_compression_cage_width_m,
+    girder_tension_cage_width_m,
     precast_girder_properties,
 )
 from rc_single_span.core.models import (
@@ -149,3 +151,9 @@ def test_20m_benchmark_permanent_actions_are_fully_staged_and_auditable() -> Non
 
     total = sum(item.total_kn for item in summaries)
     assert total == pytest.approx(3860.35)
+
+
+def test_i_girder_longitudinal_cages_use_physical_flange_widths() -> None:
+    bridge = reference_bridge_20m_i()
+    assert girder_tension_cage_width_m(bridge.geometry) == pytest.approx(0.40)
+    assert girder_compression_cage_width_m(bridge.geometry) == pytest.approx(0.40)
