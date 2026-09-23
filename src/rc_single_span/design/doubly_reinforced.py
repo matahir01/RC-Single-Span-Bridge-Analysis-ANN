@@ -7,6 +7,26 @@ from rc_single_span.design.layered import compression_block_properties, validate
 
 
 @dataclass(frozen=True)
+class DoublyReinforcedCheckResult:
+    design_moment_knm: float
+    resistance_knm: float
+    utilization: float
+    neutral_axis_m: float
+    effective_depth_m: float
+    compression_steel_depth_m: float
+    tension_steel_area_mm2: float
+    compression_steel_area_mm2: float
+    tension_steel_stress_mpa: float
+    compression_steel_stress_mpa: float
+    concrete_compression_force_kn: float
+    compression_steel_force_kn: float
+    tension_steel_force_kn: float
+    force_equilibrium_residual_kn: float
+    passes: bool
+    basis: str
+
+
+@dataclass(frozen=True)
 class DoublyReinforcedRequirement:
     design_moment_knm: float
     limiting_concrete_moment_knm: float
@@ -265,5 +285,274 @@ def required_doubly_reinforced_steel_bs5400(
         basis=(
             "BS 5400 layered limiting concrete block plus explicit design-stress "
             "compression-steel/additional-tension-steel couple."
+        ),
+    )
+
+
+def _bisect_force_equilibrium(
+    *,
+    lower_m: float,
+    upper_m: float,
+    residual,
+) -> float:
+    f_lower = residual(lower_m)
+    f_upper = residual(upper_m)
+    if abs(f_lower) <= 1.0e-6:
+        return lower_m
+    if abs(f_upper) <= 1.0e-6:
+        return upper_m
+    if f_lower * f_upper > 0.0:
+        raise ValueError(
+            "Doubly reinforced force equilibrium is not bracketed within the "
+            "configured neutral-axis range."
+        )
+    low, high = lower_m, upper_m
+    for _ in range(120):
+        mid = 0.5 * (low + high)
+        value = residual(mid)
+        if abs(value) <= 1.0e-3:
+            return mid
+        if f_lower * value <= 0.0:
+            high = mid
+            f_upper = value
+        else:
+            low = mid
+            f_lower = value
+    return 0.5 * (low + high)
+
+
+def check_doubly_reinforced_ec2(
+    *,
+    med_knm: float,
+    layers: tuple[ConcreteLayer, ...],
+    effective_depth_m: float,
+    compression_steel_depth_m: float,
+    tension_steel_area_mm2: float,
+    compression_steel_area_mm2: float,
+    fck_mpa: float,
+    fyk_mpa: float,
+    maximum_neutral_axis_ratio: float,
+    gamma_c: float = 1.50,
+    gamma_s: float = 1.15,
+    alpha_cc: float = 1.0,
+    lambda_block: float = 0.8,
+    es_mpa: float = 200000.0,
+    ultimate_concrete_strain: float = 0.0035,
+) -> DoublyReinforcedCheckResult:
+    """Verify a discrete EC2 top/bottom cage using strain compatibility."""
+
+    positive = (
+        effective_depth_m,
+        compression_steel_depth_m,
+        tension_steel_area_mm2,
+        compression_steel_area_mm2,
+        fck_mpa,
+        fyk_mpa,
+        maximum_neutral_axis_ratio,
+        gamma_c,
+        gamma_s,
+        alpha_cc,
+        lambda_block,
+        es_mpa,
+        ultimate_concrete_strain,
+    )
+    if med_knm < 0.0 or any(value <= 0.0 for value in positive):
+        raise ValueError("EC2 doubly reinforced check inputs are invalid.")
+    if compression_steel_depth_m >= effective_depth_m:
+        raise ValueError("Compression steel must lie above tension steel.")
+    if not 0.0 < maximum_neutral_axis_ratio <= 1.0:
+        raise ValueError("maximum_neutral_axis_ratio must lie in (0, 1].")
+    if not 0.0 < lambda_block <= 1.0:
+        raise ValueError("lambda_block must lie in (0, 1].")
+
+    ordered = validate_layers(layers, steel_depth_m=effective_depth_m)
+    fyd = fyk_mpa / gamma_s
+    concrete_stress = alpha_cc * fck_mpa / gamma_c
+    x_upper = maximum_neutral_axis_ratio * effective_depth_m
+    if compression_steel_depth_m >= x_upper:
+        raise ValueError(
+            "Compression cage centroid lies outside the permitted compression zone."
+        )
+    x_lower = compression_steel_depth_m * (1.0 + 1.0e-9)
+
+    def state(x_m: float):
+        area_m2, centroid_m = compression_block_properties(
+            ordered,
+            block_depth_m=lambda_block * x_m,
+        )
+        concrete_force_n = concrete_stress * area_m2 * 1.0e6
+        compression_strain = ultimate_concrete_strain * (
+            x_m - compression_steel_depth_m
+        ) / x_m
+        tension_strain = ultimate_concrete_strain * (
+            effective_depth_m - x_m
+        ) / x_m
+        compression_stress = min(es_mpa * compression_strain, fyd)
+        tension_stress = min(es_mpa * tension_strain, fyd)
+        compression_force_n = compression_steel_area_mm2 * compression_stress
+        tension_force_n = tension_steel_area_mm2 * tension_stress
+        residual_n = concrete_force_n + compression_force_n - tension_force_n
+        return (
+            residual_n,
+            area_m2,
+            centroid_m,
+            concrete_force_n,
+            compression_force_n,
+            tension_force_n,
+            compression_stress,
+            tension_stress,
+        )
+
+    x_m = _bisect_force_equilibrium(
+        lower_m=x_lower,
+        upper_m=x_upper,
+        residual=lambda value: state(value)[0],
+    )
+    (
+        residual_n,
+        _,
+        centroid_m,
+        concrete_force_n,
+        compression_force_n,
+        tension_force_n,
+        compression_stress,
+        tension_stress,
+    ) = state(x_m)
+    resistance = (
+        concrete_force_n * (effective_depth_m - centroid_m)
+        + compression_force_n
+        * (effective_depth_m - compression_steel_depth_m)
+    ) / 1000.0
+    utilization = 0.0 if resistance <= 0.0 and med_knm == 0.0 else med_knm / resistance
+
+    return DoublyReinforcedCheckResult(
+        design_moment_knm=med_knm,
+        resistance_knm=resistance,
+        utilization=utilization,
+        neutral_axis_m=x_m,
+        effective_depth_m=effective_depth_m,
+        compression_steel_depth_m=compression_steel_depth_m,
+        tension_steel_area_mm2=tension_steel_area_mm2,
+        compression_steel_area_mm2=compression_steel_area_mm2,
+        tension_steel_stress_mpa=tension_stress,
+        compression_steel_stress_mpa=compression_stress,
+        concrete_compression_force_kn=concrete_force_n / 1000.0,
+        compression_steel_force_kn=compression_force_n / 1000.0,
+        tension_steel_force_kn=tension_force_n / 1000.0,
+        force_equilibrium_residual_kn=residual_n / 1000.0,
+        passes=resistance + 1.0e-9 >= med_knm,
+        basis=(
+            "EC2 layered concrete compression block with discrete top and bottom "
+            "steel stresses from strain compatibility, capped at fyd."
+        ),
+    )
+
+
+def check_doubly_reinforced_bs5400(
+    *,
+    med_knm: float,
+    layers: tuple[ConcreteLayer, ...],
+    effective_depth_m: float,
+    compression_steel_depth_m: float,
+    tension_steel_area_mm2: float,
+    compression_steel_area_mm2: float,
+    fcu_mpa: float,
+    fy_mpa: float,
+    maximum_neutral_axis_ratio: float = 0.50,
+    maximum_lever_arm_ratio: float = 0.95,
+    concrete_block_stress_factor: float = 0.40,
+    tension_steel_design_factor: float = 0.87,
+    compression_steel_design_factor: float = 0.87,
+) -> DoublyReinforcedCheckResult:
+    """Verify a discrete BS 5400 top/bottom cage on the repository's legacy basis."""
+
+    positive = (
+        effective_depth_m,
+        compression_steel_depth_m,
+        tension_steel_area_mm2,
+        compression_steel_area_mm2,
+        fcu_mpa,
+        fy_mpa,
+        maximum_neutral_axis_ratio,
+        maximum_lever_arm_ratio,
+        concrete_block_stress_factor,
+        tension_steel_design_factor,
+        compression_steel_design_factor,
+    )
+    if med_knm < 0.0 or any(value <= 0.0 for value in positive):
+        raise ValueError("BS 5400 doubly reinforced check inputs are invalid.")
+    if compression_steel_depth_m >= effective_depth_m:
+        raise ValueError("Compression steel must lie above tension steel.")
+
+    ordered = validate_layers(layers, steel_depth_m=effective_depth_m)
+    x_upper = maximum_neutral_axis_ratio * effective_depth_m
+    if compression_steel_depth_m >= x_upper:
+        raise ValueError(
+            "Compression cage centroid lies outside the permitted compression zone."
+        )
+    x_lower = compression_steel_depth_m * (1.0 + 1.0e-9)
+    tension_stress = tension_steel_design_factor * fy_mpa
+    compression_stress = compression_steel_design_factor * fy_mpa
+    concrete_stress = concrete_block_stress_factor * fcu_mpa
+
+    def state(x_m: float):
+        area_m2, centroid_m = compression_block_properties(
+            ordered,
+            block_depth_m=x_m,
+        )
+        concrete_force_n = concrete_stress * area_m2 * 1.0e6
+        compression_force_n = compression_steel_area_mm2 * compression_stress
+        tension_force_n = tension_steel_area_mm2 * tension_stress
+        residual_n = concrete_force_n + compression_force_n - tension_force_n
+        return (
+            residual_n,
+            centroid_m,
+            concrete_force_n,
+            compression_force_n,
+            tension_force_n,
+        )
+
+    x_m = _bisect_force_equilibrium(
+        lower_m=x_lower,
+        upper_m=x_upper,
+        residual=lambda value: state(value)[0],
+    )
+    (
+        residual_n,
+        centroid_m,
+        concrete_force_n,
+        compression_force_n,
+        tension_force_n,
+    ) = state(x_m)
+    concrete_lever = min(
+        effective_depth_m - centroid_m,
+        maximum_lever_arm_ratio * effective_depth_m,
+    )
+    resistance = (
+        concrete_force_n * concrete_lever
+        + compression_force_n
+        * (effective_depth_m - compression_steel_depth_m)
+    ) / 1000.0
+    utilization = 0.0 if resistance <= 0.0 and med_knm == 0.0 else med_knm / resistance
+
+    return DoublyReinforcedCheckResult(
+        design_moment_knm=med_knm,
+        resistance_knm=resistance,
+        utilization=utilization,
+        neutral_axis_m=x_m,
+        effective_depth_m=effective_depth_m,
+        compression_steel_depth_m=compression_steel_depth_m,
+        tension_steel_area_mm2=tension_steel_area_mm2,
+        compression_steel_area_mm2=compression_steel_area_mm2,
+        tension_steel_stress_mpa=tension_stress,
+        compression_steel_stress_mpa=compression_stress,
+        concrete_compression_force_kn=concrete_force_n / 1000.0,
+        compression_steel_force_kn=compression_force_n / 1000.0,
+        tension_steel_force_kn=tension_force_n / 1000.0,
+        force_equilibrium_residual_kn=residual_n / 1000.0,
+        passes=resistance + 1.0e-9 >= med_knm,
+        basis=(
+            "BS 5400 layered concrete compression block with explicit legacy "
+            "design stresses for the discrete top and bottom steel cages."
         ),
     )
