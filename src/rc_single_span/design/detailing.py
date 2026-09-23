@@ -174,6 +174,31 @@ def generate_longitudinal_bar_arrangements(
     )
 
 
+def longitudinal_cage_centroid_from_face_m(
+    arrangement: LongitudinalBarArrangement,
+    *,
+    cover_mm: float,
+    link_diameter_mm: float,
+) -> float:
+    """Return a multilayer cage centroid measured inward from one concrete face."""
+
+    if min(cover_mm, link_diameter_mm) <= 0.0:
+        raise ValueError("Cage-centroid geometry must be positive.")
+
+    diameter = arrangement.bar_diameter_mm
+    first_center = cover_mm + link_diameter_mm + diameter / 2.0
+    pitch = diameter + arrangement.clear_vertical_spacing_mm
+    weighted = 0.0
+    total_bars = 0
+    for index, count in enumerate(arrangement.bars_per_layer):
+        center = first_center + index * pitch
+        weighted += count * center
+        total_bars += count
+    if total_bars <= 0:
+        raise ValueError("Longitudinal arrangement contains no bars.")
+    return weighted / total_bars / 1000.0
+
+
 def longitudinal_cage_effective_depth_m(
     arrangement: LongitudinalBarArrangement,
     *,
@@ -183,26 +208,17 @@ def longitudinal_cage_effective_depth_m(
 ) -> float:
     """Return the steel-area centroid depth from the top of the full section."""
 
-    if min(section_total_depth_mm, cover_mm, link_diameter_mm) <= 0.0:
-        raise ValueError("Cage-centroid geometry must be positive.")
-
-    diameter = arrangement.bar_diameter_mm
-    first_center_from_bottom = cover_mm + link_diameter_mm + diameter / 2.0
-    pitch = diameter + arrangement.clear_vertical_spacing_mm
-    weighted = 0.0
-    total_bars = 0
-    for index, count in enumerate(arrangement.bars_per_layer):
-        center = first_center_from_bottom + index * pitch
-        weighted += count * center
-        total_bars += count
-    if total_bars <= 0:
-        raise ValueError("Longitudinal arrangement contains no bars.")
-
-    centroid_from_bottom = weighted / total_bars
-    effective_depth_mm = section_total_depth_mm - centroid_from_bottom
-    if effective_depth_mm <= 0.0:
+    if section_total_depth_mm <= 0.0:
+        raise ValueError("section_total_depth_mm must be positive.")
+    centroid_from_bottom_m = longitudinal_cage_centroid_from_face_m(
+        arrangement,
+        cover_mm=cover_mm,
+        link_diameter_mm=link_diameter_mm,
+    )
+    effective_depth_m = section_total_depth_mm / 1000.0 - centroid_from_bottom_m
+    if effective_depth_m <= 0.0:
         raise ValueError("Longitudinal cage centroid lies outside the section.")
-    return effective_depth_mm / 1000.0
+    return effective_depth_m
 
 
 def select_longitudinal_bar_arrangement(
