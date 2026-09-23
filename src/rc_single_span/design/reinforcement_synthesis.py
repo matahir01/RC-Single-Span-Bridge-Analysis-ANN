@@ -195,10 +195,10 @@ def synthesize_ec2_longitudinal_reinforcement(
     selected = min(passing, key=_candidate_rank) if passing else None
 
     outstanding = (
-        "fatigue-specific longitudinal reinforcement check",
-        "construction-stage reinforcement stress/check",
-        "anchorage and curtailment",
-        "drawing-level congestion and local end-zone detailing",
+        "advanced Stage D fatigue result",
+        "advanced Stage D construction-stage steel-stress result",
+        "advanced Stage D support/termination and lap-splice result",
+        "advanced Stage D local bearing/end-zone congestion result",
     )
     demands = (
         SteelDemandComponent(
@@ -230,12 +230,12 @@ def synthesize_ec2_longitudinal_reinforcement(
         SteelDemandComponent(
             "fatigue",
             None,
-            "Pending a dedicated fatigue load/equivalent stress-range design path; no steel area is invented.",
+            "Implemented in advanced Stage D; this base synthesis remains preliminary until a project-specific fatigue vehicle/distribution/resistance result is supplied.",
         ),
         SteelDemandComponent(
             "construction stage",
             None,
-            "Pending a dedicated reinforcement stress/resistance check for load-time construction stages.",
+            "Implemented in advanced Stage D using cumulative load-time permanent actions and stage-specific participating concrete; project-specific allowable steel stress is still required.",
         ),
     )
     return LongitudinalSynthesisResult(
@@ -392,11 +392,11 @@ def synthesize_bs5400_longitudinal_reinforcement(
     selected = min(passing, key=_candidate_rank) if passing else None
 
     outstanding = (
-        "fatigue-specific longitudinal reinforcement check",
-        "construction-stage reinforcement stress/check",
-        "anchorage and curtailment",
-        "side-face reinforcement integration into the final cage",
-        "drawing-level congestion and local end-zone detailing",
+        "advanced Stage D fatigue result",
+        "advanced Stage D construction-stage steel-stress result",
+        "advanced Stage D support/termination and lap-splice result",
+        "side-face reinforcement integration into the final drawing cage",
+        "advanced Stage D local bearing/end-zone congestion result",
     )
     demands = (
         SteelDemandComponent(
@@ -428,12 +428,12 @@ def synthesize_bs5400_longitudinal_reinforcement(
         SteelDemandComponent(
             "fatigue",
             None,
-            "Pending a dedicated fatigue stress-range design path; no steel area is invented.",
+            "Implemented in advanced Stage D; BS fatigue still requires an explicit verified fatigue vehicle/model and resistance basis.",
         ),
         SteelDemandComponent(
             "construction stage",
             None,
-            "Pending a dedicated reinforcement stress/resistance check for load-time construction stages.",
+            "Implemented in advanced Stage D using cumulative load-time permanent actions and stage-specific participating concrete; project-specific allowable steel stress is still required.",
         ),
     )
     return LongitudinalSynthesisResult(
