@@ -49,6 +49,7 @@ from rc_single_span.traffic.bs5400 import (
     _require_vertical_equilibrium,
     _update_governing,
     _update_station_moment_governing,
+    _validated_design_stations,
     build_hb_plan_loads,
 )
 
@@ -106,6 +107,7 @@ class HAHBCombinedCaseResult:
 class HAHBCombinedSearchResult:
     girders: tuple[BS5400GirderGoverningEnvelope, ...]
     station_moments: tuple[BS5400GirderStationMomentEnvelope, ...]
+    design_stations_m: tuple[float, ...]
     cases: tuple[HAHBCombinedCaseResult, ...]
     evaluated_case_count: int
     hb_units: float
@@ -503,6 +505,7 @@ def run_ha_hb_combined_grillage_search(
     max_exhaustive_kel_combinations: int = 5000,
     max_exhaustive_ha_assignments: int = 500,
     retain_all_cases: bool = False,
+    design_stations_m: tuple[float, ...] = (),
 ) -> HAHBCombinedSearchResult:
     """Search nominal HA+HB coexistence under BD 37/01 6.4.2.
 
@@ -512,6 +515,7 @@ def run_ha_hb_combined_grillage_search(
     """
 
     centres = _hb_centres(project, hb_transverse_step_m)
+    common_design_stations = _validated_design_stations(project, design_stations_m)
     governing: list[dict[str, object]] = []
     station_governing: list[dict[str, object]] = []
     all_cases: list[HAHBCombinedCaseResult] = []
@@ -567,6 +571,7 @@ def run_ha_hb_combined_grillage_search(
             project,
             placements_tuple,
         )
+        x_grid = _merge_coordinates((*x_grid, *common_design_stations))
         build = build_final_composite_grillage(
             project,
             stations_m=x_grid,
@@ -652,6 +657,7 @@ def run_ha_hb_combined_grillage_search(
     return HAHBCombinedSearchResult(
         girders=_final_envelopes(governing),
         station_moments=_final_station_moments(station_governing),
+        design_stations_m=common_design_stations,
         cases=(
             tuple(all_cases)
             if retain_all_cases
