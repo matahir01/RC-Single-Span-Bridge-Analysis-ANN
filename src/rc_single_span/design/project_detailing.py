@@ -65,11 +65,11 @@ from rc_single_span.design.reinforcement_synthesis import (
     synthesize_bs5400_longitudinal_reinforcement,
     synthesize_ec2_longitudinal_reinforcement,
 )
+from rc_single_span.traffic.bs5400 import BS5400NominalTrafficSuite
 from rc_single_span.traffic.combinations import (
     BS5400GirderCombinationResult,
     EurocodeGirderCombinationResult,
 )
-from rc_single_span.traffic.bs5400 import BS5400NominalTrafficSuite
 from rc_single_span.traffic.lm1 import LM1SearchResult
 
 
