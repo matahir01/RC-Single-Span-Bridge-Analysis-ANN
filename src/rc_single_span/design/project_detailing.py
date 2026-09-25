@@ -294,6 +294,7 @@ def run_eurocode_project_detailing(
                 fck_mpa=fck,
                 fyk_mpa=fyk,
                 maximum_neutral_axis_ratio=design_inputs.maximum_neutral_axis_ratio,
+                alpha_cc=design_inputs.alpha_cc,
             )
         except ValueError as exc:
             required_flexural = None
@@ -310,6 +311,7 @@ def run_eurocode_project_detailing(
                             detailing_inputs.compression_steel_depth_m
                         ),
                         fck_mpa=fck,
+                        alpha_cc=design_inputs.alpha_cc,
                         fyk_mpa=fyk,
                         maximum_neutral_axis_ratio=(
                             design_inputs.maximum_neutral_axis_ratio
@@ -372,6 +374,7 @@ def run_eurocode_project_detailing(
                     ),
                     diameter_governs_clear_spacing=True,
                     es_mpa=design_inputs.es_mpa,
+                    alpha_cc=design_inputs.alpha_cc,
                 )
                 required_issue = (
                     f"{required_issue} Discrete doubly reinforced cages were "
@@ -443,6 +446,7 @@ def run_eurocode_project_detailing(
                 fct_eff_mpa=design_inputs.fct_eff_mpa,
                 crack_limit_mm=design_inputs.crack_limit_mm,
                 deflection_passes=design.deflection.passes,
+                alpha_cc=design_inputs.alpha_cc,
             )
             if longitudinal_synthesis.selected is not None:
                 selected_longitudinal = longitudinal_synthesis.selected.arrangement
