@@ -103,8 +103,11 @@ def traffic_campaign():
 
 def test_traffic_campaign_packages_all_four_actions(traffic_campaign) -> None:
     assert traffic_campaign.passes_internal_checks
-    assert {item.action for item in traffic_campaign.cases} == set(TrafficAction)
-    assert all(traffic_campaign.cases_for(action) for action in TrafficAction)
+    expected_actions = {
+        TrafficAction.LM1, TrafficAction.HA, TrafficAction.HB, TrafficAction.HA_HB,
+    }
+    assert {item.action for item in traffic_campaign.cases} == expected_actions
+    assert all(traffic_campaign.cases_for(action) for action in expected_actions)
     assert traffic_campaign.lm1.evaluated_case_count == 100
     assert traffic_campaign.ha.evaluated_case_count == 40
     assert traffic_campaign.hb.evaluated_case_count == 129
