@@ -108,6 +108,8 @@ def test_writer_emits_complete_full_width_campaign(tmp_path) -> None:
     assert index["permanent_component_model_count"] == 4
     assert index["governing_traffic_model_count"] == len(result.traffic_campaign.cases)
     assert index["combination_rule_count"] == 22
+
+
     expected_combination_instances = sum(
         len(result.traffic_campaign.cases_for(rule.traffic_action))
         for rule in result.combination_rules
@@ -118,6 +120,7 @@ def test_writer_emits_complete_full_width_campaign(tmp_path) -> None:
     assert index["external_verification_status"] == "pending"
     assert index["eurocode_sls_factors"] == {
         "psi1_traffic": 0.75,
+        "psi1_udl_traffic": None,
         "psi2_traffic": 0.0,
     }
 
@@ -155,6 +158,33 @@ def test_writer_emits_complete_full_width_campaign(tmp_path) -> None:
     assert "load-time stiffness" in matrix["application_note"]
     assert len(result.written_files) > expected_model_count * 4
 
+
+
+def test_writer_exports_weighted_frequent_lm1_cases_and_source_ids(tmp_path) -> None:
+    output = tmp_path / "weighted-frequent"
+    result = write_full_bridge_verification_bundle(
+        _project(), output,
+        elastic_modulus_basis="explicit benchmark value",
+        eurocode_sls_factors=EurocodeServiceabilityFactors(
+            psi1_traffic=0.75, psi2_traffic=0.0, psi1_udl_traffic=0.4,
+        ),
+        longitudinal_divisions=6,
+        traffic_config=_coarse_config(),
+    )
+    index = json.loads(result.index_path.read_text(encoding="utf-8"))
+    weighted = index["traffic_search"]["lm1_frequent"]
+    assert weighted["retained_governing_case_count"] > 0
+    assert weighted["tandem_factor"] == 0.75
+    assert weighted["udl_factor"] == 0.4
+    matrix = json.loads((output / "combination_application_matrix.json").read_text())
+    frequent = [row for row in matrix["instances"]
+                if row["rule_id"] == "ec_sls_frequent"]
+    assert len(frequent) == weighted["retained_governing_case_count"]
+    assert all(row["traffic_action"] == "lm1_frequent" for row in frequent)
+    assert all(any(term["source_kind"] == "traffic_case"
+                   and term["source_key"].startswith("lm1_frequent_")
+                   and term["factor"] == 1.0 for term in row["terms"])
+               for row in frequent)
 
 def test_writer_refuses_nonempty_output_directory(tmp_path) -> None:
     output = tmp_path / "existing"
