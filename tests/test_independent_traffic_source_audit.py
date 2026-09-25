@@ -9,6 +9,11 @@ from pathlib import Path
 
 import pytest
 
+from rc_single_span.codes.common import LoadEffects
+from rc_single_span.codes.eurocode.combinations import (
+    EurocodeServiceabilityFactors,
+    frequent_sls,
+)
 from rc_single_span.codes.eurocode.lm1 import (
     lm1_characteristic_lane_load,
     lm1_remaining_area_udl_kn_m2,
@@ -19,7 +24,9 @@ from rc_single_span.traffic.lm1 import (
     LM1RemainingAreaPlacement,
     LM1SearchPlacement,
     build_lm1_plan_loads,
+    frequent_lm1_adjustments,
 )
+from rc_single_span.verification.full_bridge_campaign import build_cross_stage_combination_rules
 
 
 def reference_bridge_15m():
@@ -69,3 +76,27 @@ def test_jrc_table_3_8_requires_distinct_frequent_factors_for_lm1() -> None:
     assert source_based_frequent_kn == pytest.approx(972.0)
     assert current_aggregate_factor_kn == pytest.approx(1166.25)
     assert source_based_frequent_kn != current_aggregate_factor_kn
+
+
+def test_frequent_load_generation_weights_tandem_and_udl_before_analysis() -> None:
+    factors = EurocodeServiceabilityFactors(0.75, 0.0, psi1_udl_traffic=0.40)
+    adjustments = frequent_lm1_adjustments(factors)
+    project = reference_bridge_15m()
+    placement = LM1SearchPlacement(
+        1,
+        (LM1LanePlacement(1, -3.5, -0.5, 7.0),
+         LM1LanePlacement(2, -0.5, 2.5, 7.0)),
+        (LM1RemainingAreaPlacement(2.5, 3.5),),
+    )
+    points, areas = build_lm1_plan_loads(project, placement, factors=adjustments)
+    assert sum(p.magnitude_kn for p in points) == pytest.approx(750.0)
+    assert sum((a.x_end_m - a.x_start_m) * (a.y_end_m - a.y_start_m)
+               * a.pressure_kn_m2 for a in areas) == pytest.approx(222.0)
+
+
+def test_scalar_frequent_and_staad_export_reject_distinct_lm1_factors() -> None:
+    factors = EurocodeServiceabilityFactors(0.75, 0.0, psi1_udl_traffic=0.40)
+    with pytest.raises(ValueError, match="separately weighted"):
+        frequent_sls(LoadEffects(), LoadEffects(moment_knm=10.0), factors)
+    with pytest.raises(ValueError, match="distinct weighted LM1"):
+        build_cross_stage_combination_rules(eurocode_sls_factors=factors)
