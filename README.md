@@ -101,5 +101,11 @@ Eurocode/BS 5400 combination matrices. The complete generated evidence tree
 is retained losslessly as `full-seven-girder-staad-bundle.zip` with a committed
 SHA-256 checksum. The production reference search retained 18 LM1, 14 HA, 13 HB
 and 15 HA+HB governing cases, giving 60 full-width traffic models and 324
-rule-by-case combination applications. External STAAD verification remains
-pending.
+rule-by-case combination applications. Genuine STAAD outputs for all 67 models were compared against 367,104
+expected result fields with no comparison failures; see
+`docs/STAAD_EXTERNAL_VERIFICATION_2026-09-25.md`. This closes the reference
+bridge's structural-response comparison only. The independent code loading
+audit in `docs/CODE_LOADING_INDEPENDENT_AUDIT.md` identifies a blocking
+Eurocode frequent-SLS issue: the tandem and UDL components require different
+recommended factors and a new governing search. Code loading and RC design
+remain unverified; the deterministic phase is **NO-GO** for release.
