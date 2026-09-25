@@ -24,12 +24,20 @@ class EurocodeCombinationFactors:
 class EurocodeServiceabilityFactors:
     psi1_traffic: float
     psi2_traffic: float
+    psi1_udl_traffic: float | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.psi1_traffic <= 1.0:
             raise ValueError("psi1_traffic must lie between 0 and 1.")
         if not 0.0 <= self.psi2_traffic <= 1.0:
             raise ValueError("psi2_traffic must lie between 0 and 1.")
+        if self.psi1_udl_traffic is not None and not 0.0 <= self.psi1_udl_traffic <= 1.0:
+            raise ValueError("psi1_udl_traffic must lie between 0 and 1.")
+
+    @property
+    def frequent_components_differ(self) -> bool:
+        return (self.psi1_udl_traffic is not None
+                and self.psi1_udl_traffic != self.psi1_traffic)
 
 
 @dataclass(frozen=True)
@@ -77,6 +85,8 @@ def frequent_sls(
     traffic: LoadEffects,
     factors: EurocodeServiceabilityFactors,
 ) -> FactoredCombination:
+    if factors.frequent_components_differ:
+        raise ValueError("Distinct tandem and UDL frequent factors require a separately weighted LM1 search.")
     return FactoredCombination(
         name="EN 1990 frequent SLS",
         effects=permanent + traffic.scaled(factors.psi1_traffic),
