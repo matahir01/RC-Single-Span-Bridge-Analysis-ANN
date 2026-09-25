@@ -26,7 +26,10 @@ from rc_single_span.traffic.lm1 import (
     build_lm1_plan_loads,
     frequent_lm1_adjustments,
 )
-from rc_single_span.verification.full_bridge_campaign import build_cross_stage_combination_rules
+from rc_single_span.verification.full_bridge_campaign import (
+    TrafficAction,
+    build_cross_stage_combination_rules,
+)
 
 
 def reference_bridge_15m():
@@ -94,9 +97,11 @@ def test_frequent_load_generation_weights_tandem_and_udl_before_analysis() -> No
                * a.pressure_kn_m2 for a in areas) == pytest.approx(222.0)
 
 
-def test_scalar_frequent_and_staad_export_reject_distinct_lm1_factors() -> None:
+def test_scalar_frequent_rejects_distinct_lm1_factors_and_export_selects_weighted_case() -> None:
     factors = EurocodeServiceabilityFactors(0.75, 0.0, psi1_udl_traffic=0.40)
     with pytest.raises(ValueError, match="separately weighted"):
         frequent_sls(LoadEffects(), LoadEffects(moment_knm=10.0), factors)
-    with pytest.raises(ValueError, match="distinct weighted LM1"):
-        build_cross_stage_combination_rules(eurocode_sls_factors=factors)
+    rule = next(r for r in build_cross_stage_combination_rules(eurocode_sls_factors=factors)
+                if r.rule_id == "ec_sls_frequent")
+    assert rule.traffic_action is TrafficAction.LM1_FREQUENT
+    assert rule.traffic_factor == 1.0
