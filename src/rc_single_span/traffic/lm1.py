@@ -20,6 +20,7 @@ from rc_single_span.analysis.traffic_envelope import (
     native_traffic_girder_envelope,
     native_traffic_girder_station_moments,
 )
+from rc_single_span.codes.eurocode.combinations import EurocodeServiceabilityFactors
 from rc_single_span.codes.eurocode.lm1 import (
     LM1AdjustmentFactors,
     lm1_characteristic_lane_load,
@@ -30,6 +31,28 @@ from rc_single_span.core.models import BridgeProject
 
 LM1_AXLE_SPACING_M = 1.2
 LM1_TRANSVERSE_WHEEL_SPACING_M = 2.0
+
+
+def frequent_lm1_adjustments(
+    serviceability: EurocodeServiceabilityFactors,
+    characteristic: LM1AdjustmentFactors | None = None,
+) -> LM1AdjustmentFactors:
+    """Apply separate frequent TS and UDL factors before searching placements."""
+    if serviceability.psi1_udl_traffic is None:
+        raise ValueError("Explicit frequent UDL factor is required for a weighted LM1 search.")
+    original = characteristic or LM1AdjustmentFactors()
+    tandem = serviceability.psi1_traffic
+    udl = serviceability.psi1_udl_traffic
+    return LM1AdjustmentFactors(
+        alpha_q1=original.alpha_q1 * udl,
+        alpha_q2=original.alpha_q2 * udl,
+        alpha_q3=original.alpha_q3 * udl,
+        alpha_q_other=original.alpha_q_other * udl,
+        alpha_q_remaining=original.alpha_q_remaining * udl,
+        alpha_Q1=original.alpha_Q1 * tandem,
+        alpha_Q2=original.alpha_Q2 * tandem,
+        alpha_Q3=original.alpha_Q3 * tandem,
+    )
 
 
 @dataclass(frozen=True)
