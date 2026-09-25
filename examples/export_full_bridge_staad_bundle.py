@@ -92,11 +92,12 @@ def main() -> None:
             combined_ha_kel_step_m=args.combined_ha_kel_step_m,
         ),
     )
+    actions = sorted({case.action.value for case in result.traffic_campaign.cases})
     print(f"Wrote {len(result.written_files)} files to {result.output_directory}")
     print(f"Full-width stage models: {len(result.stage_suite.stages)}")
     print(
         "Governing traffic models: "
-        f"{len(result.traffic_campaign.cases)} across LM1, HA, HB and HA+HB"
+        f"{len(result.traffic_campaign.cases)} across {', '.join(actions)}"
     )
     print(f"Combination rules: {len(result.combination_rules)}")
     print("Internal checks: PASS")
