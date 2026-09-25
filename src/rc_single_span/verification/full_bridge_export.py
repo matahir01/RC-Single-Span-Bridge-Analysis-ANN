@@ -134,10 +134,13 @@ def _source_case_ids(
 ) -> tuple[int, int, int]:
     search = {
         TrafficAction.LM1: campaign.lm1,
+        TrafficAction.LM1_FREQUENT: campaign.lm1_frequent,
         TrafficAction.HA: campaign.ha,
         TrafficAction.HB: campaign.hb,
         TrafficAction.HA_HB: campaign.ha_hb,
     }[action]
+    if search is None:
+        raise ValueError("Frequent LM1 source cases are absent.")
     girder = search.girders[girder_index - 1]
     return (
         girder.moment_knm.case_id,
@@ -172,7 +175,7 @@ def _combination_envelopes_csv(
     )
 
     for item in eurocode:
-        source_ids = _source_case_ids(
+        characteristic_ids = _source_case_ids(
             campaign,
             action=TrafficAction.LM1,
             girder_index=item.girder_index,
@@ -184,13 +187,21 @@ def _combination_envelopes_csv(
             ("ec_sls_quasi_permanent", item.combinations.quasi_permanent_sls),
         )
         for rule_id, combination in rows:
+            frequent = rule_id == "ec_sls_frequent" and campaign.lm1_frequent is not None
+            source_ids = (
+                _source_case_ids(
+                    campaign, action=TrafficAction.LM1_FREQUENT,
+                    girder_index=item.girder_index,
+                ) if frequent else characteristic_ids
+            )
             writer.writerow(
                 (
                     "Eurocode",
                     item.girder_index,
                     rule_id,
                     combination.name,
-                    TrafficAction.LM1.value,
+                    (TrafficAction.LM1_FREQUENT.value if frequent
+                     else TrafficAction.LM1.value),
                     "moment;shear;torsion",
                     format(combination.effects.moment_knm, ".17g"),
                     format(combination.effects.shear_kn, ".17g"),
@@ -446,6 +457,7 @@ def write_full_bridge_verification_bundle(
     campaign = run_full_bridge_traffic_campaign(
         project,
         config=traffic_config,
+        eurocode_sls_factors=eurocode_sls_factors,
     )
     rules = build_cross_stage_combination_rules(
         eurocode_sls_factors=eurocode_sls_factors,
@@ -456,6 +468,7 @@ def write_full_bridge_verification_bundle(
         campaign.lm1,
         sls_factors=eurocode_sls_factors,
         uls_factors=eurocode_uls_factors,
+        frequent_traffic=campaign.lm1_frequent,
     )
     bs_suite = BS5400NominalTrafficSuite(
         ha=campaign.ha,
@@ -610,6 +623,7 @@ def write_full_bridge_verification_bundle(
         "combination_instance_count": instance_count,
         "eurocode_sls_factors": {
             "psi1_traffic": eurocode_sls_factors.psi1_traffic,
+            "psi1_udl_traffic": eurocode_sls_factors.psi1_udl_traffic,
             "psi2_traffic": eurocode_sls_factors.psi2_traffic,
         },
         "eurocode_uls_factors": {
@@ -631,6 +645,17 @@ def write_full_bridge_verification_bundle(
                 "tandem_combinations_exhaustive": (campaign.lm1.tandem_combinations_exhaustive),
                 "search_strategy": campaign.lm1.search_strategy,
             },
+            "lm1_frequent": (
+                None if campaign.lm1_frequent is None else {
+                    "evaluated_case_count": campaign.lm1_frequent.evaluated_case_count,
+                    "retained_governing_case_count": len(
+                        campaign.cases_for(TrafficAction.LM1_FREQUENT)
+                    ),
+                    "longitudinal_step_m": campaign.lm1_frequent.longitudinal_step_m,
+                    "tandem_factor": eurocode_sls_factors.psi1_traffic,
+                    "udl_factor": eurocode_sls_factors.psi1_udl_traffic,
+                }
+            ),
             "ha": {
                 "evaluated_case_count": campaign.ha.evaluated_case_count,
                 "retained_governing_case_count": len(campaign.cases_for(TrafficAction.HA)),
