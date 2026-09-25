@@ -15,6 +15,7 @@ from rc_single_span.core.models import (
 )
 from rc_single_span.verification.package import build_staad_verification_package
 from rc_single_span.verification.staad_export import (
+    _staad_member_force_print_commands,
     export_staad_std,
     staad_support_restraints,
 )
@@ -147,3 +148,19 @@ def test_staad_verification_package_is_traceable_and_does_not_claim_acceptance()
     assert "not independent verification by itself" in manifest["verification_note"]
     assert "direct_global_mapping" in package.expected_results_csv
     assert "PRINT MEMBER FORCES GLOBAL" in package.external_results_template_csv
+
+
+def test_staad_member_force_print_commands_do_not_drop_four_digit_ids() -> None:
+    member_ids = list(range(1009, 1611))
+    commands = _staad_member_force_print_commands(member_ids)
+
+    assert commands
+    assert all(len(line) <= 100 for line in commands)
+    recovered = [
+        int(token)
+        for line in commands
+        for token in line.split()[5:]
+    ]
+    assert recovered == member_ids
+    assert 1032 in recovered
+    assert 1608 in recovered
