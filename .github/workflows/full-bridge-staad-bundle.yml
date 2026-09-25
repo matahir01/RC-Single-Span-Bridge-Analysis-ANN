@@ -12,9 +12,14 @@ on:
         required: true
         type: string
       psi1_traffic:
-        description: "Project/National Annex traffic psi1"
+        description: "Project/National Annex frequent tandem-system factor"
         required: true
         default: "0.75"
+        type: string
+      psi1_udl_traffic:
+        description: "Project/National Annex frequent UDL factor"
+        required: true
+        default: "0.40"
         type: string
       psi2_traffic:
         description: "Project/National Annex traffic psi2"
@@ -48,6 +53,7 @@ jobs:
           --elastic-modulus-mpa "${{ inputs.elastic_modulus_mpa }}"
           --elastic-modulus-basis "${{ inputs.elastic_modulus_basis }}"
           --psi1-traffic "${{ inputs.psi1_traffic }}"
+          --psi1-udl-traffic "${{ inputs.psi1_udl_traffic }}"
           --psi2-traffic "${{ inputs.psi2_traffic }}"
           --gamma-g-unfavourable "${{ inputs.gamma_g_unfavourable }}"
           --gamma-q-traffic "${{ inputs.gamma_q_traffic }}"
