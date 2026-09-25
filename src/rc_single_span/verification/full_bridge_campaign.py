@@ -41,6 +41,7 @@ from rc_single_span.traffic.bs5400_combined import (
 from rc_single_span.traffic.lm1 import (
     LM1CaseResult,
     LM1SearchResult,
+    frequent_lm1_adjustments,
     run_lm1_grillage_search,
 )
 from rc_single_span.verification.full_bridge import (
@@ -55,6 +56,7 @@ from rc_single_span.verification.package import (
 
 class TrafficAction(str, Enum):
     LM1 = "lm1"
+    LM1_FREQUENT = "lm1_frequent"
     HA = "ha"
     HB = "hb"
     HA_HB = "ha_hb"
@@ -126,6 +128,7 @@ class FullBridgeTrafficCampaign:
     hb: HBSearchResult
     ha_hb: HAHBCombinedSearchResult
     cases: tuple[FullBridgeTrafficCaseVerification, ...]
+    lm1_frequent: LM1SearchResult | None = None
 
     @property
     def passes_internal_checks(self) -> bool:
@@ -250,6 +253,7 @@ def build_full_bridge_traffic_campaign(
     ha: HASearchResult,
     hb: HBSearchResult,
     ha_hb: HAHBCombinedSearchResult,
+    lm1_frequent: LM1SearchResult | None = None,
 ) -> FullBridgeTrafficCampaign:
     """Package every retained governing traffic placement as a seven-girder model."""
 
@@ -263,6 +267,10 @@ def build_full_bridge_traffic_campaign(
         ...,
     ] = (
         (TrafficAction.LM1, "EN 1991-2", lm1, lm1.cases),
+        *((
+            (TrafficAction.LM1_FREQUENT, "EN 1991-2 frequent LM1", lm1_frequent,
+             lm1_frequent.cases),
+        ) if lm1_frequent is not None else ()),
         (TrafficAction.HA, "BD 37/01", ha, ha.cases),
         (TrafficAction.HB, "BD 37/01", hb, hb.cases),
         (TrafficAction.HA_HB, "BD 37/01", ha_hb, ha_hb.cases),
@@ -313,7 +321,7 @@ def build_full_bridge_traffic_campaign(
                 )
             )
 
-    campaign = FullBridgeTrafficCampaign(lm1, ha, hb, ha_hb, tuple(packaged))
+    campaign = FullBridgeTrafficCampaign(lm1, ha, hb, ha_hb, tuple(packaged), lm1_frequent)
     if not campaign.passes_internal_checks:
         raise RuntimeError("Full-bridge traffic campaign failed an internal check.")
     return campaign
@@ -323,6 +331,7 @@ def run_full_bridge_traffic_campaign(
     project: BridgeProject,
     *,
     config: FullBridgeTrafficSearchConfig | None = None,
+    eurocode_sls_factors: EurocodeServiceabilityFactors | None = None,
 ) -> FullBridgeTrafficCampaign:
     """Search, retain and package governing LM1, HA, HB and HA+HB cases."""
 
@@ -332,6 +341,17 @@ def run_full_bridge_traffic_campaign(
         longitudinal_step_m=current.lm1_longitudinal_step_m,
         max_exhaustive_tandem_combinations=(current.lm1_max_exhaustive_tandem_combinations),
         retain_all_cases=False,
+    )
+    lm1_frequent = (
+        run_lm1_grillage_search(
+            project,
+            factors=frequent_lm1_adjustments(eurocode_sls_factors),
+            longitudinal_step_m=current.lm1_longitudinal_step_m,
+            max_exhaustive_tandem_combinations=current.lm1_max_exhaustive_tandem_combinations,
+            retain_all_cases=False,
+        )
+        if eurocode_sls_factors is not None
+        and eurocode_sls_factors.frequent_components_differ else None
     )
     ha = run_ha_grillage_search(
         project,
@@ -362,6 +382,7 @@ def run_full_bridge_traffic_campaign(
         ha=ha,
         hb=hb,
         ha_hb=ha_hb,
+        lm1_frequent=lm1_frequent,
     )
 
 
@@ -449,11 +470,6 @@ def build_cross_stage_combination_rules(
 ) -> tuple[CrossStageCombinationRule, ...]:
     """Return auditable response-superposition factors for both code profiles."""
 
-    if eurocode_sls_factors.frequent_components_differ:
-        raise ValueError(
-            "STAAD combination export requires distinct weighted LM1 traffic cases "
-            "for frequent tandem and UDL factors."
-        )
 
     ec_uls = eurocode_uls_factors or EurocodeCombinationFactors()
     all_categories = tuple(PermanentLoadCategory)
@@ -482,9 +498,11 @@ def build_cross_stage_combination_rules(
             "ec_sls_frequent",
             "EN 1990 / EN 1991-2",
             "Frequent SLS",
-            TrafficAction.LM1,
+            (TrafficAction.LM1_FREQUENT
+             if eurocode_sls_factors.frequent_components_differ else TrafficAction.LM1),
             ec_permanent(1.0),
-            eurocode_sls_factors.psi1_traffic,
+            (1.0 if eurocode_sls_factors.frequent_components_differ
+             else eurocode_sls_factors.psi1_traffic),
         ),
         CrossStageCombinationRule(
             "ec_sls_quasi_permanent",
