@@ -25,6 +25,7 @@ from rc_single_span.traffic.lm1 import (
     LM1SearchPlacement,
     _lead_positions,
     build_lm1_plan_loads,
+    favourable_udl_regions,
     frequent_lm1_adjustments,
 )
 from rc_single_span.verification.full_bridge_campaign import (
@@ -147,3 +148,32 @@ def test_en1991_2_general_effect_tandem_geometry_is_central_and_complete() -> No
     assert sorted({round(p.x_m, 9) for p in lane_1}) == [5.0, 6.2]
     assert sorted({round(p.y_m, 9) for p in lane_1}) == [-3.0, -1.0]
     assert {p.magnitude_kn for p in lane_1} == {150.0}
+
+
+def test_udl_influence_regions_are_response_specific_and_keep_tandems() -> None:
+    project = reference_bridge_15m()
+    placement = LM1SearchPlacement(
+        1,
+        (LM1LanePlacement(1, -3.5, -0.5, 7.0),
+         LM1LanePlacement(2, -0.5, 2.5, 7.0)),
+        (LM1RemainingAreaPlacement(2.5, 3.5),),
+    )
+    cells = (
+        ((0.0, 7.0, -3.5, -0.5), 12.0),
+        ((7.0, 15.0, -3.5, -0.5), -4.0),
+        ((0.0, 15.0, -0.5, 2.5), 3.0),
+    )
+    positive = favourable_udl_regions(cells)
+    negative = favourable_udl_regions(cells, sign=-1)
+    assert positive == (cells[0][0], cells[2][0])
+    assert negative == (cells[1][0],)
+    points, patches = build_lm1_plan_loads(project, placement, udl_regions=positive)
+    assert len(points) == 8
+    assert [(a.x_start_m, a.x_end_m, a.pressure_kn_m2) for a in patches] == [
+        (0.0, 7.0, 9.0), (0.0, 15.0, 2.5)
+    ]
+    with pytest.raises(ValueError, match="overlap"):
+        build_lm1_plan_loads(project, placement, udl_regions=(cells[0][0], cells[0][0]))
+    with pytest.raises(ValueError, match="one loaded strip"):
+        build_lm1_plan_loads(project, placement,
+                             udl_regions=((0.0, 5.0, -1.0, 1.0),))

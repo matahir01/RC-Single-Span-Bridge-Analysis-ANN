@@ -80,6 +80,23 @@ class LM1SearchPlacement:
     remaining: tuple[LM1RemainingAreaPlacement, ...]
 
 
+def favourable_udl_regions(
+    cell_effects: tuple[tuple[tuple[float, float, float, float], float], ...],
+    *,
+    sign: int = 1,
+) -> tuple[tuple[float, float, float, float], ...]:
+    """Select cells with favourable influence for one signed linear response.
+
+    ``cell_effects`` pairs each candidate cell's plan bounds with the signed
+    response to that cell's actual UDL pressure. Generate these responses with
+    the same grillage, stiffness and load factors as the tandem search. A
+    separate selection is required for each girder, station and response sign.
+    """
+    if sign not in (-1, 1):
+        raise ValueError("Influence response sign must be +1 or -1.")
+    return tuple(bounds for bounds, effect in cell_effects if sign * effect > 0.0)
+
+
 @dataclass(frozen=True)
 class GoverningComponent:
     value: float
@@ -328,27 +345,50 @@ def build_lm1_plan_loads(
     placement: LM1SearchPlacement,
     *,
     factors: LM1AdjustmentFactors | None = None,
+    udl_regions: tuple[tuple[float, float, float, float], ...] | None = None,
 ) -> tuple[tuple[PlanPointLoad, ...], tuple[PlanAreaLoad, ...]]:
+    """Build a tandem placement and optionally crop its UDL to selected regions.
+
+    Regions are (x_start, x_end, y_start, y_end) in metres. They must be
+    contained within the loaded carriageway and may not overlap. The default
+    preserves the historical full-length UDL for existing verification files.
+    The caller must select regions for the *particular signed response* using
+    its influence surface; this function does not infer favourable regions.
+    """
     span = float(project.geometry.span_m)
     points: list[PlanPointLoad] = []
     areas: list[PlanAreaLoad] = []
     adjustment = factors or LM1AdjustmentFactors()
+
+    if udl_regions is not None:
+        bounds = tuple(
+            (lane.y_start_m, lane.y_end_m) for lane in placement.lanes
+        ) + tuple((area.y_start_m, area.y_end_m) for area in placement.remaining)
+        for x1, x2, y1, y2 in udl_regions:
+            if not (0.0 <= x1 < x2 <= span):
+                raise ValueError("LM1 UDL region must lie within the span.")
+            if not any(a <= y1 < y2 <= b for a, b in bounds):
+                raise ValueError("LM1 UDL region must lie within one loaded strip.")
+        for i, (x1, x2, y1, y2) in enumerate(udl_regions):
+            for xx1, xx2, yy1, yy2 in udl_regions[i + 1:]:
+                if min(x2, xx2) > max(x1, xx1) and min(y2, yy2) > max(y1, yy1):
+                    raise ValueError("LM1 UDL regions may not overlap.")
+
+    def add_udl(y1: float, y2: float, pressure: float, label: str) -> None:
+        if udl_regions is None:
+            areas.append(PlanAreaLoad(0.0, span, y1, y2, pressure, label=label))
+            return
+        for x1, x2, yy1, yy2 in udl_regions:
+            if y1 <= yy1 < yy2 <= y2:
+                areas.append(PlanAreaLoad(x1, x2, yy1, yy2, pressure, label=label))
 
     for lane_placement in placement.lanes:
         lane = lm1_characteristic_lane_load(
             lane_placement.lane_number,
             adjustment,
         )
-        areas.append(
-            PlanAreaLoad(
-                0.0,
-                span,
-                lane_placement.y_start_m,
-                lane_placement.y_end_m,
-                lane.udl_kn_m2,
-                label=f"LM1 lane {lane_placement.lane_number} UDL",
-            )
-        )
+        add_udl(lane_placement.y_start_m, lane_placement.y_end_m,
+                lane.udl_kn_m2, f"LM1 lane {lane_placement.lane_number} UDL")
         if lane.axle_load_kn <= 0.0:
             continue
         wheel_y = (
@@ -388,16 +428,8 @@ def build_lm1_plan_loads(
 
     remaining_pressure = lm1_remaining_area_udl_kn_m2(adjustment)
     for index, remaining in enumerate(placement.remaining, start=1):
-        areas.append(
-            PlanAreaLoad(
-                0.0,
-                span,
-                remaining.y_start_m,
-                remaining.y_end_m,
-                remaining_pressure,
-                label=f"LM1 remaining area {index}",
-            )
-        )
+        add_udl(remaining.y_start_m, remaining.y_end_m,
+                remaining_pressure, f"LM1 remaining area {index}")
     return tuple(points), tuple(areas)
 
 
