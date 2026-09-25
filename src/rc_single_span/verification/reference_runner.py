@@ -52,6 +52,7 @@ from rc_single_span.traffic.lm1 import (
     frequent_lm1_adjustments,
     run_lm1_grillage_search,
 )
+from rc_single_span.traffic.lm1_influence import run_lm1_influence_grillage_search
 from rc_single_span.verification.deflection import (
     CombinedDeflectionEnvelope,
     combined_deflection_envelope,
@@ -74,6 +75,7 @@ class ReferenceRunConfig:
     max_exhaustive_kel_combinations: int = 5000
     max_exhaustive_ha_assignments: int = 500
     retain_all_cases: bool = True
+    lm1_udl_influence_surface: bool = False
 
     def __post_init__(self) -> None:
         positive = (
@@ -262,21 +264,28 @@ def run_reference_project(
 
     resolved = _with_elastic_modulus(project, config.elastic_modulus_mpa)
     construction = run_construction_stage_analysis(resolved)
-    lm1 = run_lm1_grillage_search(
+    lm1_search = (
+        run_lm1_influence_grillage_search
+        if config.lm1_udl_influence_surface else run_lm1_grillage_search
+    )
+    lm1_kwargs = {} if config.lm1_udl_influence_surface else {
+        "retain_all_cases": config.retain_all_cases,
+    }
+    lm1 = lm1_search(
         resolved,
         longitudinal_step_m=config.lm1_longitudinal_step_m,
         max_exhaustive_tandem_combinations=(
             config.max_exhaustive_tandem_combinations
         ),
-        retain_all_cases=config.retain_all_cases,
+        **lm1_kwargs,
     )
     frequent_lm1 = (
-        run_lm1_grillage_search(
+        lm1_search(
             resolved,
             factors=frequent_lm1_adjustments(config.eurocode_sls_factors),
             longitudinal_step_m=config.lm1_longitudinal_step_m,
             max_exhaustive_tandem_combinations=config.max_exhaustive_tandem_combinations,
-            retain_all_cases=config.retain_all_cases,
+            **lm1_kwargs,
         )
         if config.eurocode_sls_factors.frequent_components_differ else None
     )
