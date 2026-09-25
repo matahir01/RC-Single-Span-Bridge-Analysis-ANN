@@ -230,8 +230,8 @@ def test_packaging_uses_the_shared_sparse_equilibrium_guard() -> None:
         model=None,
         analysis=SimpleNamespace(
             total_applied_vertical_load_kn=-1352.61162,
-            total_vertical_reaction_kn=1352.61062,
-            vertical_equilibrium_residual_kn=-1.0e-3,
+            total_vertical_reaction_kn=1352.60162,
+            vertical_equilibrium_residual_kn=-1.0e-2,
         ),
         staad_package=None,
     )
