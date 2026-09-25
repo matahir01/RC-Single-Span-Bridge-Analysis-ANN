@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from rc_single_span.analysis.permanent import (
     PermanentLoadCategory,
@@ -74,12 +74,18 @@ def build_eurocode_project_combinations(
     *,
     sls_factors: EurocodeServiceabilityFactors,
     uls_factors: EurocodeCombinationFactors | None = None,
+    frequent_traffic: LM1SearchResult | None = None,
 ) -> tuple[EurocodeGirderCombinationResult, ...]:
     """Combine the common permanent actions with the LM1 envelope by girder."""
 
     expected = int(project.geometry.girder_count)
     if len(traffic.girders) != expected:
         raise ValueError("LM1 result girder count does not match the physical bridge.")
+    if sls_factors.frequent_components_differ:
+        if frequent_traffic is None or len(frequent_traffic.girders) != expected:
+            raise ValueError("Distinct frequent LM1 factors require a complete weighted search result.")
+    elif frequent_traffic is not None:
+        raise ValueError("A separate frequent search is only required for distinct tandem/UDL factors.")
 
     results: list[EurocodeGirderCombinationResult] = []
     for girder in traffic.girders:
@@ -88,15 +94,35 @@ def build_eurocode_project_combinations(
             girder_index=girder.girder_index,
         )
         traffic_effects = _envelope_effects(girder)
+        combination_set = build_eurocode_combination_set(
+            permanent,
+            traffic_effects,
+            sls_factors=(
+                EurocodeServiceabilityFactors(1.0, sls_factors.psi2_traffic)
+                if frequent_traffic is not None else sls_factors
+            ),
+            uls_factors=uls_factors,
+        )
+        if frequent_traffic is not None:
+            weighted_girder = frequent_traffic.girders[girder.girder_index - 1]
+            if weighted_girder.girder_index != girder.girder_index:
+                raise ValueError("Weighted LM1 result girder order does not match characteristic result.")
+            combination_set = replace(
+                combination_set,
+                frequent_sls=FactoredCombination(
+                    name="EN 1990 frequent SLS",
+                    effects=permanent + _envelope_effects(weighted_girder),
+                    factors={
+                        "G": 1.0,
+                        "Q_tandem": sls_factors.psi1_traffic,
+                        "q_udl": sls_factors.psi1_udl_traffic,
+                    },
+                ),
+            )
         results.append(
             EurocodeGirderCombinationResult(
                 girder_index=girder.girder_index,
-                combinations=build_eurocode_combination_set(
-                    permanent,
-                    traffic_effects,
-                    sls_factors=sls_factors,
-                    uls_factors=uls_factors,
-                ),
+                combinations=combination_set,
             )
         )
     return tuple(results)
