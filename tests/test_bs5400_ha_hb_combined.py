@@ -189,11 +189,6 @@ def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium() -> 
     assert result.cases
     assert result.checked_inner_axle_spacings_m == pytest.approx((6.0, 11.0, 16.0, 21.0, 26.0))
     for case in result.cases:
-        scale = max(
-            abs(case.analysis.total_applied_vertical_load_kn),
-            abs(case.analysis.total_vertical_reaction_kn),
-            1.0,
-        )
         assert abs(case.analysis.vertical_equilibrium_residual_kn) <= (
             traffic_equilibrium_tolerance_kn(case.analysis)
         )
