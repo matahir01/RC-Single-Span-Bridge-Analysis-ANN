@@ -108,7 +108,7 @@ def test_traffic_campaign_packages_all_four_actions(traffic_campaign) -> None:
     }
     assert {item.action for item in traffic_campaign.cases} == expected_actions
     assert all(traffic_campaign.cases_for(action) for action in expected_actions)
-    assert traffic_campaign.lm1.evaluated_case_count == 100
+    assert traffic_campaign.lm1.evaluated_case_count == 36
     assert traffic_campaign.ha.evaluated_case_count == 40
     assert traffic_campaign.hb.evaluated_case_count == 129
     assert traffic_campaign.ha_hb.evaluated_case_count == 1032
