@@ -449,6 +449,12 @@ def build_cross_stage_combination_rules(
 ) -> tuple[CrossStageCombinationRule, ...]:
     """Return auditable response-superposition factors for both code profiles."""
 
+    if eurocode_sls_factors.frequent_components_differ:
+        raise ValueError(
+            "STAAD combination export requires distinct weighted LM1 traffic cases "
+            "for frequent tandem and UDL factors."
+        )
+
     ec_uls = eurocode_uls_factors or EurocodeCombinationFactors()
     all_categories = tuple(PermanentLoadCategory)
 
