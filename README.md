@@ -99,18 +99,26 @@ use the connected transverse deck grillage. The repository keeps all 67 STAAD
 Eurocode/BS 5400 combination matrices. The complete generated evidence tree
 (including internal expected-result tables and empty external-return templates)
 is retained losslessly as `full-seven-girder-staad-bundle.zip` with a committed
-SHA-256 checksum. The production reference search retained 18 LM1, 14 HA, 13 HB
+SHA-256 checksum. The historical production reference search retained 18 LM1, 14 HA, 13 HB
 and 15 HA+HB governing cases, giving 60 full-width traffic models and 324
-rule-by-case combination applications. Genuine STAAD outputs for all 67 models were compared against 367,104
-expected result fields with no comparison failures; see
-`docs/STAAD_EXTERNAL_VERIFICATION_2026-09-25.md`. This closes the reference
-bridge's structural-response comparison only. The independent code loading
-audit in `docs/CODE_LOADING_INDEPENDENT_AUDIT.md` identifies a blocking
-Eurocode frequent-SLS issue: the tandem and UDL components require different
-recommended factors. The reference runner and full-width STAAD exporter now
-produce a separately weighted search and comparison cases. Independent checks
-against the archived BD 37/01 traffic rules, a JRC EC2 shear example and the
-owner-supplied Ragana BS shear example are recorded in the audit. The new
-weighted cases still need genuine external STAAD returns; RC design, project
-basis and other source checks remain open. The deterministic phase is **NO-GO**
-for release.
+rule-by-case combination applications. Genuine STAAD outputs for that 67-model
+campaign showed strong numerical agreement; see
+`docs/STAAD_EXTERNAL_VERIFICATION_2026-09-25.md`.
+
+The frequent-SLS correction is now externally tested. A fresh weighted campaign
+using separate LM1 tandem-system and UDL factors retained 17 weighted frequent
+cases. Genuine STAAD returns matched all **46,189/46,189** expected fields for
+those 17 models with **zero engineering comparison failures**. During the same
+83-model return review, the completeness-safe comparator exposed a pre-existing
+STAAD output-list defect in the HB and HA+HB files: overlong four-digit member
+ID print commands omitted 3,300 member-end fields even though every field that
+was printed agreed within tolerance. The exporter now chunks member-result
+commands by character length and regression-tests four-digit IDs. Only the 13
+HB and 15 HA+HB models require a corrected completeness rerun; see
+`docs/STAAD_WEIGHTED_FREQUENT_EXTERNAL_VERIFICATION_2026-09-25.md`.
+
+The independent code-loading audit in
+`docs/CODE_LOADING_INDEPENDENT_AUDIT.md` still leaves project-basis, National
+Annex/action-grouping and RC design-equation checks open. The deterministic
+phase therefore remains **NO-GO** for release until those gates and the 28-model
+BS output completeness rerun are closed.
