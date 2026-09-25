@@ -7,11 +7,12 @@ Reference: 15 m single-span, seven-girder bridge
 ## Result
 
 > **Follow-up evidence note:** the later weighted-campaign review found that the
-> same HB and HA+HB STAAD input family can truncate selected four-digit member
-> IDs in overlong `PRINT MEMBER FORCES GLOBAL LIST` commands. The numerical
-> agreement recorded below remains useful, but the HB/HA+HB *field-completeness*
-> claim is under review until those 28 models are rerun with the corrected
-> character-length chunking. See
+> same HB and HA+HB STAAD input family could truncate selected four-digit member
+> IDs in overlong `PRINT MEMBER FORCES GLOBAL LIST` commands. The exporter was
+> corrected to use character-length chunking and the affected 28 models were
+> rerun. Their corrected returns contain all 284,291 expected fields with zero
+> engineering comparison failures. The current 83-model campaign is complete at
+> 410,576/410,576 fields; see
 > `STAAD_WEIGHTED_FREQUENT_EXTERNAL_VERIFICATION_2026-09-25.md`.
 
 **PASS for the structural-response comparison across all 67 exported models.** All 367,104 expected result fields were present in the genuine STAAD `.ANL` outputs; no engineering comparison tolerance was exceeded. This is structural-solver verification for this reference bridge, not independent verification of traffic code rules, RC design equations, detailing, or arbitrary input geometries.
