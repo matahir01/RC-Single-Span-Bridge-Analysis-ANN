@@ -291,6 +291,7 @@ def required_steel_area_layered_ec2(
     fck_mpa: float,
     fyk_mpa: float,
     maximum_neutral_axis_ratio: float,
+    alpha_cc: float = 1.0,
     tolerance_knm: float = 0.01,
 ) -> float:
     """Solve the least tension-steel area meeting M_Ed within the configured x/d limit."""
@@ -301,6 +302,8 @@ def required_steel_area_layered_ec2(
         return 0.0
     if not 0.0 < maximum_neutral_axis_ratio <= 1.0:
         raise ValueError("maximum_neutral_axis_ratio must lie in (0, 1].")
+    if alpha_cc <= 0.0:
+        raise ValueError("alpha_cc must be positive.")
 
     lower = 1.0
     upper = 1000.0
@@ -318,6 +321,7 @@ def required_steel_area_layered_ec2(
                 fck_mpa=fck_mpa,
                 fyk_mpa=fyk_mpa,
                 maximum_neutral_axis_ratio=maximum_neutral_axis_ratio,
+                alpha_cc=alpha_cc,
             )
         except ValueError as exc:
             if (
@@ -352,6 +356,7 @@ def required_steel_area_layered_ec2(
                     fck_mpa=fck_mpa,
                     fyk_mpa=fyk_mpa,
                     maximum_neutral_axis_ratio=maximum_neutral_axis_ratio,
+                    alpha_cc=alpha_cc,
                 )
             except ValueError as exc:
                 if (
@@ -382,6 +387,7 @@ def required_steel_area_layered_ec2(
                 fck_mpa=fck_mpa,
                 fyk_mpa=fyk_mpa,
                 maximum_neutral_axis_ratio=maximum_neutral_axis_ratio,
+                alpha_cc=alpha_cc,
             )
         except ValueError as exc:
             if (
