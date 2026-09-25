@@ -23,6 +23,7 @@ from rc_single_span.traffic.lm1 import (
     LM1LanePlacement,
     LM1RemainingAreaPlacement,
     LM1SearchPlacement,
+    _lead_positions,
     build_lm1_plan_loads,
     frequent_lm1_adjustments,
 )
@@ -105,3 +106,44 @@ def test_scalar_frequent_rejects_distinct_lm1_factors_and_export_selects_weighte
                 if r.rule_id == "ec_sls_frequent")
     assert rule.traffic_action is TrafficAction.LM1_FREQUENT
     assert rule.traffic_factor == 1.0
+
+
+def test_en1991_2_lm1_search_uses_complete_tandem_systems_only() -> None:
+    """EN 1991-2 4.3.2(1)(a): only complete tandem systems are admissible."""
+
+    positions = _lead_positions(15.0, 1.2)
+    assert positions[0] == pytest.approx(0.0)
+    assert positions[-1] == pytest.approx(13.8)
+    assert all(0.0 <= x <= 13.8 for x in positions)
+
+    project = reference_bridge_15m()
+    invalid = LM1SearchPlacement(
+        1,
+        (
+            LM1LanePlacement(1, -3.5, -0.5, -1.2),
+            LM1LanePlacement(2, -0.5, 2.5, 7.0),
+        ),
+        (LM1RemainingAreaPlacement(2.5, 3.5),),
+    )
+    with pytest.raises(ValueError, match="both axles"):
+        build_lm1_plan_loads(project, invalid)
+
+
+def test_en1991_2_general_effect_tandem_geometry_is_central_and_complete() -> None:
+    """Pin the 1.2 m axle spacing, 2.0 m wheel spacing and half-axle wheel loads."""
+
+    project = reference_bridge_15m()
+    placement = LM1SearchPlacement(
+        1,
+        (
+            LM1LanePlacement(1, -3.5, -0.5, 5.0),
+            LM1LanePlacement(2, -0.5, 2.5, 7.0),
+        ),
+        (LM1RemainingAreaPlacement(2.5, 3.5),),
+    )
+    points, _ = build_lm1_plan_loads(project, placement)
+    lane_1 = [p for p in points if "LM1 lane 1" in p.label]
+    assert len(lane_1) == 4
+    assert sorted({round(p.x_m, 9) for p in lane_1}) == [5.0, 6.2]
+    assert sorted({round(p.y_m, 9) for p in lane_1}) == [-3.0, -1.0]
+    assert {p.magnitude_kn for p in lane_1} == {150.0}
