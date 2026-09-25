@@ -165,14 +165,21 @@ def _merge_coordinates(values: tuple[float, ...]) -> tuple[float, ...]:
 def _lead_positions(span_m: float, step_m: float) -> tuple[float, ...]:
     if step_m <= 0.0:
         raise ValueError("LM1 longitudinal search step must be positive.")
-    start = -LM1_AXLE_SPACING_M
-    values = [start, 0.0, span_m - LM1_AXLE_SPACING_M, span_m]
+    if span_m < LM1_AXLE_SPACING_M:
+        raise ValueError("Span is too short to place a complete LM1 tandem system.")
+
+    # EN 1991-2 LM1 requires complete tandem systems. The lead axle may therefore
+    # range only from the start of the span to L - 1.2 m; positions that leave
+    # one axle outside the bridge are not admissible search cases.
+    start = 0.0
+    end = span_m - LM1_AXLE_SPACING_M
+    values = [start, end]
     x = start
-    while x <= span_m + 1.0e-9:
+    while x <= end + 1.0e-9:
         values.append(round(x, 12))
         x += step_m
     return _merge_coordinates(
-        tuple(min(max(value, start), span_m) for value in values)
+        tuple(min(max(value, start), end) for value in values)
     )
 
 
@@ -353,16 +360,18 @@ def build_lm1_plan_loads(
             or wheel_y[1] > lane_placement.y_end_m + 1.0e-9
         ):
             raise ValueError("LM1 tandem wheel centres do not fit in the notional lane.")
+        lead_x = lane_placement.tandem_lead_x_m
+        trailing_x = lead_x + LM1_AXLE_SPACING_M
+        if lead_x < -1.0e-9 or trailing_x > span + 1.0e-9:
+            raise ValueError(
+                "LM1 tandem placement must keep both axles on the loaded length."
+            )
+
         wheel_load = lane.axle_load_kn / 2.0
         for axle_number, axle_x in enumerate(
-            (
-                lane_placement.tandem_lead_x_m,
-                lane_placement.tandem_lead_x_m + LM1_AXLE_SPACING_M,
-            ),
+            (lead_x, trailing_x),
             start=1,
         ):
-            if not -1.0e-9 <= axle_x <= span + 1.0e-9:
-                continue
             x_m = min(max(axle_x, 0.0), span)
             for wheel_number, y_m in enumerate(wheel_y, start=1):
                 points.append(
