@@ -89,6 +89,7 @@ def synthesize_ec2_longitudinal_reinforcement(
     fct_eff_mpa: float,
     crack_limit_mm: float,
     deflection_passes: bool | None,
+    alpha_cc: float = 1.0,
 ) -> LongitudinalSynthesisResult:
     if min(required_uls_area_mm2, minimum_area_mm2, maximum_area_mm2) <= 0.0:
         raise ValueError("EC2 steel-demand limits must be positive.")
@@ -131,6 +132,7 @@ def synthesize_ec2_longitudinal_reinforcement(
                 fck_mpa=fck_mpa,
                 fyk_mpa=fyk_mpa,
                 maximum_neutral_axis_ratio=maximum_neutral_axis_ratio,
+                alpha_cc=alpha_cc,
             )
             flexure_utilization = flexure.utilization
             flexure_passes = (
