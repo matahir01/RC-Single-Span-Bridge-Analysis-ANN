@@ -113,9 +113,12 @@ those 17 models with **zero engineering comparison failures**. During the same
 STAAD output-list defect in the HB and HA+HB files: overlong four-digit member
 ID print commands omitted 3,300 member-end fields even though every field that
 was printed agreed within tolerance. The exporter now chunks member-result
-commands by character length and regression-tests four-digit IDs. Only the 13
-HB and 15 HA+HB models require a corrected completeness rerun; see
-`docs/STAAD_WEIGHTED_FREQUENT_EXTERNAL_VERIFICATION_2026-09-25.md`.
+commands by character length and regression-tests four-digit IDs. The affected
+13 HB and 15 HA+HB models were rerun with the corrected exporter and matched all
+**284,291/284,291** expected fields with **zero comparison failures**. The full
+current STAAD campaign is therefore complete at **83/83 models and
+410,576/410,576 expected fields**, with zero engineering comparison failures;
+see `docs/STAAD_WEIGHTED_FREQUENT_EXTERNAL_VERIFICATION_2026-09-25.md`.
 
 The independent code-loading audit in
 `docs/CODE_LOADING_INDEPENDENT_AUDIT.md` still leaves project-basis, National
