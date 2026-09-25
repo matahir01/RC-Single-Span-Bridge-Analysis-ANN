@@ -101,6 +101,7 @@ def select_doubly_reinforced_cages_ec2(
     preferred_vertical_clear_spacing_mm: float | None = None,
     diameter_governs_clear_spacing: bool = True,
     es_mpa: float = 200000.0,
+    alpha_cc: float = 1.0,
 ) -> DoublyReinforcedCageSelection:
     """Select discrete EC2 tension/compression cages and verify actual centroids."""
 
@@ -157,6 +158,7 @@ def select_doubly_reinforced_cages_ec2(
                     fyk_mpa=fyk_mpa,
                     maximum_neutral_axis_ratio=maximum_neutral_axis_ratio,
                     es_mpa=es_mpa,
+                    alpha_cc=alpha_cc,
                 )
             except ValueError:
                 continue
