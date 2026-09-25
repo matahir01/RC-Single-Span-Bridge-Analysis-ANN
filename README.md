@@ -122,6 +122,6 @@ see `docs/STAAD_WEIGHTED_FREQUENT_EXTERNAL_VERIFICATION_2026-09-25.md`.
 
 The independent code-loading audit in
 `docs/CODE_LOADING_INDEPENDENT_AUDIT.md` still leaves project-basis, National
-Annex/action-grouping and RC design-equation checks open. The deterministic
-phase therefore remains **NO-GO** for release until those gates and the 28-model
-BS output completeness rerun are closed.
+Annex/action-grouping and RC design-equation checks open. The corrected 28-model
+BS rerun is already closed; the deterministic phase remains **NO-GO** only for
+the remaining code-loading and RC-design verification gates.
