@@ -107,8 +107,10 @@ expected result fields with no comparison failures; see
 bridge's structural-response comparison only. The independent code loading
 audit in `docs/CODE_LOADING_INDEPENDENT_AUDIT.md` identifies a blocking
 Eurocode frequent-SLS issue: the tandem and UDL components require different
-recommended factors. The reference runner now supports a separately weighted
-governing search, while the STAAD combination export rejects distinct factors
-until the matching external traffic cases are generated and checked. Code
-loading and RC design remain unverified; the deterministic phase is **NO-GO**
+recommended factors. The reference runner and full-width STAAD exporter now
+produce a separately weighted search and comparison cases. Independent checks
+against the archived BD 37/01 traffic rules, a JRC EC2 shear example and the
+owner-supplied Ragana BS shear example are recorded in the audit. The new
+weighted cases still need genuine external STAAD returns; RC design, project
+basis and other source checks remain open. The deterministic phase is **NO-GO**
 for release.
