@@ -28,6 +28,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--elastic-modulus-mpa", type=float, required=True)
     parser.add_argument("--elastic-modulus-basis", required=True)
     parser.add_argument("--psi1-traffic", type=float, required=True)
+    parser.add_argument("--psi1-udl-traffic", type=float,
+                        help="Frequent UDL factor; distinct from tandem requires weighted LM1 cases.")
     parser.add_argument("--psi2-traffic", type=float, required=True)
     parser.add_argument("--gamma-g-unfavourable", type=float, default=1.35)
     parser.add_argument("--gamma-g-favourable", type=float, default=1.00)
@@ -70,6 +72,7 @@ def main() -> None:
         eurocode_sls_factors=EurocodeServiceabilityFactors(
             psi1_traffic=args.psi1_traffic,
             psi2_traffic=args.psi2_traffic,
+            psi1_udl_traffic=args.psi1_udl_traffic,
         ),
         eurocode_uls_factors=EurocodeCombinationFactors(
             gamma_g_unfavourable=args.gamma_g_unfavourable,
