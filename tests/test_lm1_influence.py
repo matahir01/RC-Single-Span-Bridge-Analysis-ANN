@@ -18,6 +18,8 @@ from rc_single_span.traffic.lm1_influence import (
     run_lm1_influence_grillage_search,
 )
 from rc_single_span.traffic.lm1 import run_lm1_grillage_search
+from rc_single_span.traffic.combinations import build_eurocode_project_combinations
+from rc_single_span.codes.eurocode.combinations import EurocodeServiceabilityFactors
 from test_lm1_common_grillage import _project
 
 
@@ -107,3 +109,9 @@ def test_influence_envelope_contains_valid_cases_and_covers_full_udl() -> None:
         assert len(new.station_moments[after.girder_index - 1].stations) > 1
     assert all(abs(case.analysis.vertical_equilibrium_residual_kn) < 1e-6
                for case in new.cases)
+    combinations = build_eurocode_project_combinations(
+        project, new, sls_factors=EurocodeServiceabilityFactors(0.75, 0.0),
+    )
+    assert len(combinations) == 7
+    assert all(item.combinations.persistent_uls.effects.moment_knm > 0
+               for item in combinations)
