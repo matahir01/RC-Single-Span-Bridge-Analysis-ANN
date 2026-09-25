@@ -47,7 +47,11 @@ from rc_single_span.traffic.combinations import (
     build_bs5400_project_combinations,
     build_eurocode_project_combinations,
 )
-from rc_single_span.traffic.lm1 import LM1SearchResult, run_lm1_grillage_search
+from rc_single_span.traffic.lm1 import (
+    LM1SearchResult,
+    frequent_lm1_adjustments,
+    run_lm1_grillage_search,
+)
 from rc_single_span.verification.deflection import (
     CombinedDeflectionEnvelope,
     combined_deflection_envelope,
@@ -266,11 +270,22 @@ def run_reference_project(
         ),
         retain_all_cases=config.retain_all_cases,
     )
+    frequent_lm1 = (
+        run_lm1_grillage_search(
+            resolved,
+            factors=frequent_lm1_adjustments(config.eurocode_sls_factors),
+            longitudinal_step_m=config.lm1_longitudinal_step_m,
+            max_exhaustive_tandem_combinations=config.max_exhaustive_tandem_combinations,
+            retain_all_cases=config.retain_all_cases,
+        )
+        if config.eurocode_sls_factors.frequent_components_differ else None
+    )
     bs_traffic = _bs_suite(resolved, config)
     ec_combinations = build_eurocode_project_combinations(
         resolved,
         lm1,
         sls_factors=config.eurocode_sls_factors,
+        frequent_traffic=frequent_lm1,
     )
     bs_combinations = build_bs5400_project_combinations(
         resolved,
