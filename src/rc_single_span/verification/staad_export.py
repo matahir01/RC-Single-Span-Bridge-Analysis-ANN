@@ -62,6 +62,43 @@ def _chunks(values: list[int], size: int) -> list[str]:
     ]
 
 
+def _staad_member_force_print_commands(
+    member_ids: list[int],
+    *,
+    max_line_length: int = 100,
+) -> list[str]:
+    """Return lossless GLOBAL member-force print commands for STAAD.
+
+    STAAD.Pro can split overlong LIST commands in its input echo. With large
+    four-digit member IDs that split can truncate the final ID on a line, which
+    silently omits member results from the .ANL evidence file. Build commands by
+    character length rather than by a fixed number of IDs so every requested
+    member remains inside a conservative line-length budget.
+    """
+
+    prefix = "PRINT MEMBER FORCES GLOBAL LIST"
+    if max_line_length <= len(prefix) + 1:
+        raise ValueError("STAAD print-command line length is too small.")
+
+    commands: list[str] = []
+    current = prefix
+    for member_id in sorted(set(member_ids)):
+        candidate = f"{current} {member_id}"
+        if len(candidate) > max_line_length:
+            if current == prefix:
+                raise ValueError("A STAAD member ID cannot fit in the print command.")
+            commands.append(current)
+            current = f"{prefix} {member_id}"
+            if len(current) > max_line_length:
+                raise ValueError("A STAAD member ID cannot fit in the print command.")
+        else:
+            current = candidate
+
+    if current != prefix:
+        commands.append(current)
+    return commands
+
+
 def _support_restraints(model: StructuralModel) -> tuple[StaadSupportRestraint, ...]:
     """Map the vertical-only native support set into a stable 3D STAAD model.
 
@@ -245,11 +282,6 @@ def export_staad_std(model: StructuralModel) -> str:
 
     lines.extend(("PERFORM ANALYSIS", "PRINT SUPPORT REACTION ALL"))
     member_ids = [beam.member_id for beam in model.beams]
-    for start in range(0, len(member_ids), 24):
-        chunk = member_ids[start : start + 24]
-        lines.append(
-            "PRINT MEMBER FORCES GLOBAL LIST "
-            + " ".join(str(value) for value in chunk)
-        )
+    lines.extend(_staad_member_force_print_commands(member_ids))
     lines.extend(("PRINT JOINT DISPLACEMENTS ALL", "FINISH"))
     return "\n".join(lines) + "\n"
