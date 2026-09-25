@@ -1,0 +1,54 @@
+name: Weighted frequent LM1 STAAD bundle
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/weighted-frequent-staad-bundle.yml"
+      - "examples/export_full_bridge_staad_bundle.py"
+      - "examples/reference_bridge_15m.py"
+      - "src/rc_single_span/traffic/**"
+      - "src/rc_single_span/verification/**"
+      - "src/rc_single_span/codes/eurocode/**"
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Export weighted frequent LM1 verification campaign
+        run: >
+          python examples/export_full_bridge_staad_bundle.py
+          --elastic-modulus-mpa "31000"
+          --elastic-modulus-basis "EN 1992-1-1:2004+A1:2014 Table 3.1; normal-weight C25/30 Ecm = 31 GPa verification assumption"
+          --psi1-traffic "0.75"
+          --psi1-udl-traffic "0.40"
+          --psi2-traffic "0.00"
+          --gamma-g-unfavourable "1.35"
+          --gamma-q-traffic "1.35"
+          --repository-sha "${{ github.sha }}"
+          --output-dir generated_weighted_frequent_staad_bundle
+      - name: Confirm weighted frequent cases exist
+        run: >
+          python -c "import json, pathlib;
+          p=pathlib.Path('generated_weighted_frequent_staad_bundle/bundle_index.json');
+          d=json.loads(p.read_text());
+          w=d['traffic_search']['lm1_frequent'];
+          assert w['retained_governing_case_count'] > 0;
+          assert w['tandem_factor'] == 0.75;
+          assert w['udl_factor'] == 0.4;
+          print('Weighted LM1 retained cases:', w['retained_governing_case_count'])"
+      - name: Upload weighted verification bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: weighted-frequent-lm1-staad-bundle
+          path: generated_weighted_frequent_staad_bundle
+          if-no-files-found: error
+          retention-days: 14
