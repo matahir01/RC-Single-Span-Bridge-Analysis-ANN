@@ -67,6 +67,11 @@ class EC2DesignInputs:
     ecm_mpa: float | None = None
     deflection_limit_mm: float | None = None
     sls_basis: EurocodeSLSBasis = EurocodeSLSBasis.CHARACTERISTIC
+    alpha_cc: float = 1.0
+
+    def __post_init__(self) -> None:
+        if not 0.0 < self.alpha_cc <= 1.0:
+            raise ValueError("alpha_cc must lie in (0, 1].")
 
 
 @dataclass(frozen=True)
@@ -191,6 +196,7 @@ def run_eurocode_project_design(
                 fck_mpa=fck,
                 fyk_mpa=fyk,
                 maximum_neutral_axis_ratio=inputs.maximum_neutral_axis_ratio,
+                alpha_cc=inputs.alpha_cc,
             )
         except ValueError as exc:
             message = str(exc)
@@ -208,6 +214,7 @@ def run_eurocode_project_design(
             longitudinal_steel_area_mm2=steel_area,
             fck_mpa=fck,
             fyk_mpa=fyk,
+            alpha_cc=inputs.alpha_cc,
         )
         cracking = check_crack_width_ec2(
             layers=layers,
