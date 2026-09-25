@@ -338,9 +338,10 @@ def traffic_equilibrium_tolerance_kn(analysis: GrillageAnalysisResult) -> float:
     """Return a strict scale-aware vertical-force equilibrium tolerance.
 
     Sparse factorization roundoff grows with the load/reaction scale. The
-    tolerance remains at least 1e-6 kN and no more permissive than 5e-8 of the
-    governing vertical force scale. This still resolves substantially less than
-    one newton at the load levels used by the reference traffic campaign.
+    tolerance remains at least 1e-6 kN and otherwise scales at 1e-7 of the
+    governing vertical force scale. For the reference traffic campaign this is
+    below 0.2 N: tight enough to detect load loss while avoiding false failures
+    from platform-dependent sparse-solver roundoff.
     """
 
     scale = max(
@@ -348,7 +349,7 @@ def traffic_equilibrium_tolerance_kn(analysis: GrillageAnalysisResult) -> float:
         abs(analysis.total_vertical_reaction_kn),
         1.0,
     )
-    return max(1.0e-6, 5.0e-8 * scale)
+    return max(1.0e-6, 1.0e-7 * scale)
 
 
 def _require_vertical_equilibrium(

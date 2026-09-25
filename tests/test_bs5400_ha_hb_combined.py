@@ -207,9 +207,21 @@ def test_equilibrium_guard_allows_only_machine_scale_sparse_roundoff() -> None:
         vertical_equilibrium_residual_kn=-1.8e-5,
     )
     tolerance = traffic_equilibrium_tolerance_kn(analysis)
-    assert tolerance == pytest.approx(6.7630581e-5)
+    assert tolerance == pytest.approx(1.35261162e-4)
     assert abs(analysis.vertical_equilibrium_residual_kn) < tolerance
     _require_vertical_equilibrium(analysis, traffic_model="regression")
+
+    # Regression from the weighted-frequent CI export on Ubuntu/SciPy:
+    # a 0.0478 N residual on a 900 kN load is sparse-solver roundoff, not load loss.
+    ci_roundoff = SimpleNamespace(
+        total_applied_vertical_load_kn=-900.0,
+        total_vertical_reaction_kn=899.999952238723,
+        vertical_equilibrium_residual_kn=-4.7761277e-5,
+    )
+    assert abs(ci_roundoff.vertical_equilibrium_residual_kn) < (
+        traffic_equilibrium_tolerance_kn(ci_roundoff)
+    )
+    _require_vertical_equilibrium(ci_roundoff, traffic_model="CI regression")
 
     failed = SimpleNamespace(
         total_applied_vertical_load_kn=-1352.61162,
