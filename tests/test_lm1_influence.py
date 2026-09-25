@@ -15,7 +15,9 @@ from rc_single_span.traffic.lm1 import (
 from rc_single_span.traffic.lm1_influence import (
     optimize_lm1_udl_for_response,
     run_lm1_signed_response_search,
+    run_lm1_influence_grillage_search,
 )
+from rc_single_span.traffic.lm1 import run_lm1_grillage_search
 from test_lm1_common_grillage import _project
 
 
@@ -88,3 +90,20 @@ def test_signed_response_search_returns_resolved_governing_case() -> None:
     assert positive.influence.analysis.vertical_equilibrium_residual_kn == pytest.approx(
         0.0, abs=1e-6,
     )
+
+
+def test_influence_envelope_contains_valid_cases_and_covers_full_udl() -> None:
+    project = _project(carriageway_width_m=3.0)
+    old = run_lm1_grillage_search(project, longitudinal_step_m=7.5)
+    new = run_lm1_influence_grillage_search(project, longitudinal_step_m=7.5)
+    by_id = {case.placement.case_id: case for case in new.cases}
+    assert len(by_id) == len(new.cases)
+    assert new.evaluated_case_count == old.evaluated_case_count
+    for before, after in zip(old.girders, new.girders, strict=True):
+        for field in ("moment_knm", "shear_kn", "torsion_knm", "deflection_mm"):
+            component = getattr(after, field)
+            assert component.value >= getattr(before, field).value - 1e-7
+            assert component.case_id in by_id
+        assert len(new.station_moments[after.girder_index - 1].stations) > 1
+    assert all(abs(case.analysis.vertical_equilibrium_residual_kn) < 1e-6
+               for case in new.cases)
