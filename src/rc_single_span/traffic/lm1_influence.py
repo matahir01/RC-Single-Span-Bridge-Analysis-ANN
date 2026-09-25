@@ -12,6 +12,11 @@ from typing import Callable
 
 from rc_single_span.analysis.grillage_solver import GrillageAnalysisResult
 from rc_single_span.analysis.grillage import build_final_composite_grillage
+from rc_single_span.analysis.traffic_envelope import (
+    _longitudinal_groups,
+    girder_vertical_displacement_mm,
+    native_traffic_girder_envelope,
+)
 from rc_single_span.analysis.plan_loads import PlanAreaLoad, build_plan_load_case
 from rc_single_span.analysis.prepared_grillage import (
     PreparedVerticalGrillage,
@@ -25,13 +30,22 @@ from rc_single_span.codes.eurocode.lm1 import (
 )
 from rc_single_span.core.models import BridgeProject
 from rc_single_span.traffic.lm1 import (
+    GoverningComponent,
+    LM1CaseResult,
+    LM1GirderGoverningEnvelope,
+    LM1GirderStationMomentEnvelope,
+    LM1SearchResult,
     LM1SearchPlacement,
+    LM1StationMomentEnvelope,
     _fixed_search_grid,
+    _lead_positions,
+    _position_vectors,
     build_lm1_plan_loads,
     favourable_udl_regions,
     generate_lm1_search_placements,
 )
 from rc_single_span.analysis.prepared_grillage import prepare_vertical_grillage
+from rc_single_span.codes.eurocode.lm1 import notional_lane_layout
 
 Bounds = tuple[float, float, float, float]
 
@@ -58,6 +72,49 @@ class LM1SignedResponseSearchResult:
     placement: LM1SearchPlacement
     influence: LM1InfluenceResult
     evaluated_tandem_placements: int
+
+
+@dataclass(frozen=True)
+class LM1InfluenceContext:
+    project: BridgeProject
+    placements: tuple[LM1SearchPlacement, ...]
+    model: StructuralModel
+    prepared: PreparedVerticalGrillage
+    surface: LM1UDLInfluenceSurface
+    tandem_analyses: tuple[GrillageAnalysisResult, ...]
+    pressures: tuple[tuple[float, ...], ...]
+    factors: LM1AdjustmentFactors
+
+    def maximize(
+        self,
+        response: Callable[[GrillageAnalysisResult], float],
+        *,
+        sign: int = 1,
+    ) -> LM1SignedResponseSearchResult:
+        if sign not in (-1, 1):
+            raise ValueError("Influence response sign must be +1 or -1.")
+        unit = tuple(response(result) for result in self.surface.unit_analyses)
+        best: tuple[float, int] | None = None
+        for index, (tandem, pressures) in enumerate(
+            zip(self.tandem_analyses, self.pressures, strict=True)
+        ):
+            value = sign * response(tandem) + sum(
+                max(0.0, sign * pressure * effect)
+                for pressure, effect in zip(pressures, unit, strict=True)
+            )
+            if best is None or value > best[0]:
+                best = (value, index)
+        assert best is not None
+        placement = self.placements[best[1]]
+        influence = optimize_lm1_udl_for_response(
+            self.project, placement, self.model, self.prepared, response,
+            sign=sign, factors=self.factors, surface=self.surface,
+        )
+        if abs(sign * influence.response - best[0]) > 1.0e-6 * max(1.0, abs(best[0])):
+            raise RuntimeError("LM1 influence superposition and re-solved case disagree.")
+        return LM1SignedResponseSearchResult(
+            placement, influence, len(self.placements),
+        )
 
 
 def prepare_lm1_udl_influence_surface(
@@ -177,8 +234,21 @@ def run_lm1_signed_response_search(
     The selected case is re-solved and its actual member/nodal results returned.
     A full design envelope calls this for both signs at every checked station.
     """
-    if sign not in (-1, 1):
-        raise ValueError("Influence response sign must be +1 or -1.")
+    context = prepare_lm1_influence_context(
+        project, factors=factors, longitudinal_step_m=longitudinal_step_m,
+        max_exhaustive_tandem_combinations=max_exhaustive_tandem_combinations,
+    )
+    return context.maximize(response, sign=sign)
+
+
+def prepare_lm1_influence_context(
+    project: BridgeProject,
+    *,
+    factors: LM1AdjustmentFactors | None = None,
+    longitudinal_step_m: float = 1.2,
+    max_exhaustive_tandem_combinations: int = 5000,
+) -> LM1InfluenceContext:
+    """Prepare the shared influence surface and complete tandem solutions."""
     placements = generate_lm1_search_placements(
         project, longitudinal_step_m=longitudinal_step_m,
         max_exhaustive_tandem_combinations=max_exhaustive_tandem_combinations,
@@ -191,9 +261,9 @@ def run_lm1_signed_response_search(
     ).model
     prepared = prepare_vertical_grillage(model)
     surface = prepare_lm1_udl_influence_surface(model, prepared)
-    unit_effects = tuple(response(result) for result in surface.unit_analyses)
     adjustment = factors or LM1AdjustmentFactors()
-    best: tuple[float, LM1SearchPlacement] | None = None
+    tandems = []
+    all_pressures = []
     for placement in placements:
         active = {
             (cell.x_start_m, cell.x_end_m, cell.y_start_m, cell.y_end_m):
@@ -207,20 +277,169 @@ def run_lm1_signed_response_search(
             model, load_case_id=placement.case_id, name="LM1 complete tandems",
             point_loads=points,
         )
-        tandem_result = solve_prepared_vertical_grillage(
+        tandems.append(solve_prepared_vertical_grillage(
             prepared, replace(model, load_cases=(tandem,)),
-        )
-        value = sign * response(tandem_result) + sum(
-            max(0.0, sign * active.get(bounds, 0.0) * unit)
-            for bounds, unit in zip(surface.cells, unit_effects, strict=True)
-        )
-        if best is None or value > best[0]:
-            best = (value, placement)
-    assert best is not None
-    influence = optimize_lm1_udl_for_response(
-        project, best[1], model, prepared, response,
-        sign=sign, factors=adjustment, surface=surface,
+        ))
+        all_pressures.append(tuple(active.get(bounds, 0.0) for bounds in surface.cells))
+    return LM1InfluenceContext(
+        project, placements, model, prepared, surface,
+        tuple(tandems), tuple(all_pressures), adjustment,
     )
-    if abs(sign * influence.response - best[0]) > 1.0e-6 * max(1.0, abs(best[0])):
-        raise RuntimeError("LM1 influence superposition and re-solved case disagree.")
-    return LM1SignedResponseSearchResult(best[1], influence, len(placements))
+
+
+def run_lm1_influence_grillage_search(
+    project: BridgeProject,
+    *,
+    factors: LM1AdjustmentFactors | None = None,
+    longitudinal_step_m: float = 1.2,
+    max_exhaustive_tandem_combinations: int = 5000,
+) -> LM1SearchResult:
+    """Envelope member ends and fixed deflection stations with favourable UDL.
+
+    Every stored governing case is a re-solved physical TS + selected UDL
+    patch case. Deflection is sampled at nodes and quarter points of each
+    longitudinal element; refine the longitudinal grid for convergence.
+    """
+    context = prepare_lm1_influence_context(
+        project, factors=factors, longitudinal_step_m=longitudinal_step_m,
+        max_exhaustive_tandem_combinations=max_exhaustive_tandem_combinations,
+    )
+    groups = _longitudinal_groups(context.model)
+    nodes = {node.node_id: node for node in context.model.nodes}
+    registered: dict[tuple[int, tuple[Bounds, ...] | None], LM1CaseResult] = {}
+
+    def register(placement, regions, model, analysis):
+        key = (placement.case_id, regions)
+        if key not in registered:
+            case_id = len(context.placements) + len(registered) + 1
+            original_case = model.load_cases[0]
+            tagged_model = replace(model, load_cases=(
+                replace(original_case, load_case_id=case_id),
+            ))
+            tagged_analysis = replace(analysis, load_case_id=case_id)
+            tagged_placement = replace(placement, case_id=case_id)
+            registered[key] = LM1CaseResult(
+                tagged_placement, tagged_model, tagged_analysis,
+                native_traffic_girder_envelope(tagged_model, tagged_analysis),
+            )
+        return registered[key]
+
+    def checked(response, sign):
+        found = context.maximize(response, sign=sign)
+        case = register(
+            found.placement, found.influence.regions,
+            found.influence.model, found.influence.analysis,
+        )
+        return GoverningComponent(
+            sign * found.influence.response,
+            case.placement.case_id,
+            None,
+        )
+
+    full_udl_cases = []
+    for placement in context.placements:
+        points, areas = build_lm1_plan_loads(
+            project, placement, factors=context.factors,
+        )
+        case = build_plan_load_case(
+            context.model, load_case_id=placement.case_id,
+            name="LM1 full UDL comparison", point_loads=points,
+            area_loads=areas,
+        )
+        model = replace(context.model, load_cases=(case,))
+        analysis = solve_prepared_vertical_grillage(context.prepared, model)
+        full_udl_cases.append(register(placement, None, model, analysis))
+
+    girders = []
+    station_girders = []
+    for girder_index, (y_m, beams) in enumerate(groups, start=1):
+        best = {name: GoverningComponent(-1.0, 0, None)
+                for name in ("moment", "shear", "torsion", "deflection")}
+        stations: dict[float, GoverningComponent] = {}
+        deflection_position = 0.0
+        for beam in beams:
+            for end in ("i", "j"):
+                x_m = nodes[beam.node_i if end == "i" else beam.node_j].x_m
+                for name, attribute in (
+                    ("moment", f"{end}_vertical_bending_moment_knm"),
+                    ("shear", f"{end}_vertical_force_kn"),
+                    ("torsion", f"{end}_torsion_knm"),
+                ):
+                    def response(result, member_id=beam.member_id, attr=attribute):
+                        member = next(item for item in result.members
+                                      if item.member_id == member_id)
+                        return float(getattr(member, attr))
+
+                    for sign in (-1, 1):
+                        candidate = checked(response, sign)
+                        candidate = replace(candidate, member_id=beam.member_id)
+                        if candidate.value > best[name].value:
+                            best[name] = candidate
+                        if name == "moment" and candidate.value > stations.get(
+                            x_m, GoverningComponent(-1.0, 0, None)
+                        ).value:
+                            stations[x_m] = candidate
+        x_samples = {node.x_m for beam in beams for node in
+                     (nodes[beam.node_i], nodes[beam.node_j])}
+        for beam in beams:
+            x1, x2 = nodes[beam.node_i].x_m, nodes[beam.node_j].x_m
+            x_samples.update(x1 + (x2 - x1) * ratio for ratio in (.25, .5, .75))
+        for x_m in sorted(x_samples):
+            def response(result, x=x_m, girder=girder_index):
+                return girder_vertical_displacement_mm(
+                    context.model, result, girder_index=girder, x_m=x,
+                )
+
+            for sign in (-1, 1):
+                candidate = checked(response, sign)
+                case = next(item for item in registered.values()
+                            if item.placement.case_id == candidate.case_id)
+                exact = case.girders[girder_index - 1]
+                if exact.deflection_mm > best["deflection"].value:
+                    best["deflection"] = replace(
+                        candidate, value=exact.deflection_mm,
+                    )
+                    deflection_position = exact.deflection_position_m
+        for case in full_udl_cases:
+            exact = case.girders[girder_index - 1]
+            if exact.deflection_mm > best["deflection"].value:
+                best["deflection"] = GoverningComponent(
+                    exact.deflection_mm, case.placement.case_id, None,
+                )
+                deflection_position = exact.deflection_position_m
+        girders.append(LM1GirderGoverningEnvelope(
+            girder_index, y_m, best["moment"], best["shear"],
+            best["torsion"], best["deflection"], deflection_position,
+        ))
+        station_girders.append(LM1GirderStationMomentEnvelope(
+            girder_index, y_m, tuple(
+                LM1StationMomentEnvelope(x, item)
+                for x, item in sorted(stations.items())
+            ),
+        ))
+    lane_count = notional_lane_layout(
+        float(project.geometry.carriageway_width_m),
+    ).lane_count
+    _, exhaustive, theoretical = _position_vectors(
+        lane_count,
+        _lead_positions(float(project.geometry.span_m), longitudinal_step_m),
+        max_exhaustive_combinations=max_exhaustive_tandem_combinations,
+    )
+    needed = {
+        component.case_id
+        for girder in girders
+        for component in (girder.moment_knm, girder.shear_kn,
+                          girder.torsion_knm, girder.deflection_mm)
+    }
+    needed.update(
+        station.moment_knm.case_id
+        for girder in station_girders for station in girder.stations
+    )
+    return LM1SearchResult(
+        tuple(girders), tuple(station_girders),
+        tuple(case for case in registered.values()
+              if case.placement.case_id in needed),
+        len(context.placements), longitudinal_step_m,
+        exhaustive, theoretical,
+        "fixed-grid signed member-end and displacement influence-surface UDL",
+    )
