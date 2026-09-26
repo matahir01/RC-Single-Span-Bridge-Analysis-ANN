@@ -41,6 +41,7 @@ class CalculationSection:
 class CalculationReport:
     title: str
     project_name: str
+    code_basis: str
     sections: tuple[CalculationSection, ...]
     assumptions: tuple[str, ...] = ()
     warnings: tuple[str, ...] = ()
@@ -48,6 +49,8 @@ class CalculationReport:
     def __post_init__(self) -> None:
         if not self.title.strip() or not self.project_name.strip():
             raise ValueError("Calculation report title and project name are required.")
+        if not self.code_basis.strip():
+            raise ValueError("Calculation report code basis is required.")
         if not self.sections:
             raise ValueError("Calculation report requires at least one section.")
 
@@ -59,6 +62,8 @@ def render_markdown(report: CalculationReport) -> str:
         f"# {report.title}",
         "",
         f"**Project:** {report.project_name}",
+        "",
+        f"**Code basis:** {report.code_basis}",
         "",
     ]
     if report.assumptions:
