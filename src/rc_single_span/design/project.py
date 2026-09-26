@@ -66,12 +66,17 @@ class EC2DesignInputs:
     es_mpa: float = 200000.0
     ecm_mpa: float | None = None
     deflection_limit_mm: float | None = None
+    deflection_limit_basis: str | None = None
     sls_basis: EurocodeSLSBasis = EurocodeSLSBasis.CHARACTERISTIC
     alpha_cc: float = 1.0
 
     def __post_init__(self) -> None:
         if not 0.0 < self.alpha_cc <= 1.0:
             raise ValueError("alpha_cc must lie in (0, 1].")
+        if self.deflection_limit_mm is None and self.deflection_limit_basis is not None:
+            raise ValueError("deflection_limit_basis requires deflection_limit_mm.")
+        if self.deflection_limit_basis is not None and not self.deflection_limit_basis.strip():
+            raise ValueError("deflection_limit_basis must be non-empty when supplied.")
 
 
 @dataclass(frozen=True)
@@ -88,6 +93,13 @@ class BS5400DesignInputs:
     tension_zone_width_m: float | None = None
     shear_reinforcement_fyv_mpa: float | None = None
     deflection_limit_mm: float | None = None
+    deflection_limit_basis: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.deflection_limit_mm is None and self.deflection_limit_basis is not None:
+            raise ValueError("deflection_limit_basis requires deflection_limit_mm.")
+        if self.deflection_limit_basis is not None and not self.deflection_limit_basis.strip():
+            raise ValueError("deflection_limit_basis must be non-empty when supplied.")
 
 
 @dataclass(frozen=True)
@@ -244,6 +256,7 @@ def run_eurocode_project_design(
             traffic_characteristic_deflection_mm=traffic_envelope.deflection_mm.value,
             traffic_factor=traffic_factor,
             allowable_deflection_mm=inputs.deflection_limit_mm,
+            criterion_basis=inputs.deflection_limit_basis,
             status=(
                 f"{sls.name}: stage-aware permanent displacement evaluated at "
                 f"x={x_m:.6g} m plus the governing LM1 common-grillage traffic "
@@ -429,6 +442,7 @@ def run_bs5400_project_design(
                 traffic_characteristic_deflection_mm=envelope.deflection_mm.value,
                 traffic_factor=traffic_factor,
                 allowable_deflection_mm=inputs.deflection_limit_mm,
+                criterion_basis=inputs.deflection_limit_basis,
                 status=(
                     f"{_case_label(case)}: stage-aware BS permanent displacement "
                     f"evaluated at x={x_m:.6g} m plus the corresponding "
