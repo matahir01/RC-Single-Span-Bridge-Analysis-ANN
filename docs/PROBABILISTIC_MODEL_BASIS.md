@@ -4,154 +4,182 @@ Date: 26 September 2026
 
 ## Purpose and status
 
-This note records what can presently be justified from published reliability guidance and
-what still requires an explicit research decision before the 15 m RC-girder study is run as
-a thesis-quality probabilistic analysis.
-
-The deterministic bridge engine is already verified within its documented V1 scope. This
-note concerns the **probabilistic layer only**. A deterministic software GO does not turn a
-probability model, target reliability level or ANN result into an accepted research result.
+This note records the evidence basis for the stochastic layer of the 15 m RC-girder study.
+The deterministic bridge engine is already verified within its documented V1 scope; this
+note does **not** reopen that software gate. It controls a different question: whether the
+probability model, ANN surrogate, reliability estimates and RBDO conclusions are defensible
+for thesis/paper use.
 
 The principal generic source is the Joint Committee on Structural Safety (JCSS)
-Probabilistic Model Code (PMC). JCSS describes the PMC as a basis for reliability-based
-design of specific projects and for code calibration. Relevant stable documents are:
+Probabilistic Model Code (PMC):
 
-- JCSS, *Probabilistic Model Code, Part I: Basis of Design*:
-  https://www.jcss-lc.org/publications/jcsspmc/part_i.pdf
-- JCSS, *Part II: Load Models*:
-  https://www.jcss-lc.org/publications/jcsspmc/part_ii.pdf
-- JCSS, *Part III: Resistance Models*:
-  https://www.jcss-lc.org/publications/jcsspmc/part_iii.pdf
-- JCSS, *Concrete*:
-  https://www.jcss-lc.org/publications/jcsspmc/concrete.pdf
-- JCSS, *Static Properties of Reinforcing Steel*:
-  https://www.jcss-lc.org/publications/jcsspmc/rebar.pdf
-- JCSS, *Self Weight*:
-  https://www.jcss-lc.org/publications/jcsspmc/self_weight.pdf
-- JCSS, *Dimensions*:
-  https://www.jcss-lc.org/publications/jcsspmc/dimen00.pdf
-- JCSS, *Model Uncertainties*:
-  https://www.jcss-lc.org/publications/jcsspmc/modeluncertainties.pdf
+- Part I, Basis of Design: https://www.jcss-lc.org/publications/jcsspmc/part_i.pdf
+- Part II, Load Models: https://www.jcss-lc.org/publications/jcsspmc/part_ii.pdf
+- Part III, Resistance Models: https://www.jcss-lc.org/publications/jcsspmc/part_iii.pdf
+- Concrete: https://www.jcss-lc.org/publications/jcsspmc/concrete.pdf
+- Reinforcing steel: https://www.jcss-lc.org/publications/jcsspmc/rebar.pdf
+- Self weight: https://www.jcss-lc.org/publications/jcsspmc/self_weight.pdf
+- Dimensions: https://www.jcss-lc.org/publications/jcsspmc/dimen00.pdf
+- Model uncertainty: https://www.jcss-lc.org/publications/jcsspmc/modeluncertainties.pdf
 
-These are generic prior models. They do not override project test data, quality-control data,
-site-specific traffic information or an adopted national/authority reliability basis.
+These are generic prior models. Project test data, Nigerian traffic information and an
+adopted authority/National Annex basis take precedence when available.
 
 ## 1. Concrete compressive strength
 
-JCSS does **not** reduce concrete strength to a universal `mean = fck` plus a universal COV.
-Its concrete model is hierarchical/predictive and allows prior information to be updated by
-production/test information.
-
-For C35 concrete, JCSS Table 3.1.2 gives prior log-space parameters:
+JCSS does not reduce concrete strength to a universal `mean = fck` plus a universal COV.
+Its concrete model is hierarchical/predictive and permits updating with production/test data.
+For C35, the source gives the following prior log-space parameters:
 
 | Production type | m' | n' | s' | v' |
 | --- | ---: | ---: | ---: | ---: |
 | Ready mixed C35 | 3.85 | 3.0 | 0.09 | 10 |
 | Precast C35 | 3.95 | 3.0 | 0.08 | 10 |
 
-JCSS explicitly notes that these prior parameters may depend on geographical area and
-production technology. It also describes a lognormal approximation only under conditions on
-the updated predictive parameters; the full predictive model should therefore not be replaced
-silently by an arbitrary `COV = 0.10` model.
+Where the JCSS conditions for its lognormal approximation are met, the repository now
+computes the approximation directly rather than hard-coding a guessed COV:
 
-**Study decision:** keep `fck_mpa` configurable. Before final runs, either (a) implement/use
-the JCSS predictive model with a documented production category and any available updating
-data, or (b) adopt a clearly stated lognormal approximation derived from an accepted source
-and show sensitivity to that approximation. The illustrative JSON values are not yet accepted.
+`src/rc_single_span/research/source_profiles.py`
+
+For the un-updated priors this gives approximately:
+
+- ready-mixed C35: mean 47.35 MPa, COV 0.1237;
+- precast C35: mean 52.25 MPa, COV 0.1099.
+
+These are generic JCSS priors, not local Nigerian production measurements. The final study
+must state whether the adopted concrete-production basis is ready mixed, precast, locally
+updated, or treated by sensitivity analysis. Because the physical bridge contains a precast
+girder and cast-in-situ deck, a single concrete-strength variable is a modelling reduction
+that must be acknowledged if retained.
 
 ## 2. Reinforcing-steel yield strength and bar area
 
-The JCSS reinforcing-steel model is much more directly usable for the present study.
-For high-standard production it gives component standard deviations that combine to an
-overall yield-strength standard deviation of about **30 MPa**. Under controlled production,
-the global mean is given as approximately the nominal grade plus `2 sigma`. JCSS states that
-a normal distribution can be adopted for the tabulated reinforcing-steel quantities.
+For high-standard reinforcing-steel production, the JCSS model gives an overall yield-strength
+standard deviation of about 30 MPa. Under controlled production, the global mean is
+approximately nominal grade plus `2 sigma`, and a normal distribution may be adopted for the
+tabulated quantities. For a nominal 500 MPa product this corresponds to a generic mean near
+560 MPa before any optional diameter correction.
 
-For an S500/B500-type nominal grade, the generic JCSS default therefore corresponds to a
-global mean around **560 MPa** with standard deviation around **30 MPa**, subject to actual
-product/production evidence. This is more defensible as a generic prior than treating 500 MPa
-itself as the mean.
-
-For reinforcement area, JCSS gives the area ratio relative to nominal area with mean 1.0 and
-COV **0.02**. The source also indicates that yield stress and bar area may be treated as
-uncorrelated at the basic-variable level used there, while yield strengths of bars within one
-structure can be strongly correlated.
-
-**Study decision:** the final configuration should distinguish nominal design grade from the
-probabilistic mean. `steel_area_mm2` should normally be generated from the nominal selected
-cage times an area-ratio variable rather than interpreted as an unconstrained independent
-continuous quantity if the research question is about an as-built discrete cage.
+JCSS gives reinforcement-area ratio relative to nominal area with mean 1.0 and COV 0.02.
+The repository now exposes both source-derived profiles explicitly. If the research variable
+represents an as-built discrete cage, `steel_area_mm2` should be tied to the selected nominal
+cage rather than treated as an arbitrary unconstrained continuous area.
 
 ## 3. Dimensions and effective depth
 
-JCSS recommends normal models as reasonable for external reinforced-concrete dimensions.
-For dimensions up to roughly 1000 mm, its generic guidance gives a mean dimensional
-deviation of approximately `0.003 X_nom` (capped at about 3 mm) and a standard deviation
-approximately `4 mm + 0.006 X_nom` (capped at about 10 mm).
+For external reinforced-concrete dimensions up to roughly 1000 mm, the generic JCSS guidance
+supports a normal model with approximately:
 
-For effective depth, where no better information is available, JCSS gives the rough default
-for the deviation from nominal:
+- mean dimensional deviation `min(0.003 X_nom, 3 mm)`;
+- standard deviation `min(4 mm + 0.006 X_nom, 10 mm)`.
 
-- mean deviation approximately **+10 mm**;
-- standard deviation approximately **10 mm**.
+For effective depth, where better information is unavailable, JCSS gives the rough default
+for deviation from nominal as approximately +10 mm mean and 10 mm standard deviation.
 
-JCSS also warns that depth and reinforcement cover can be highly correlated and that cover
-statistics are strongly dependent on construction/spacer practice.
-
-**Study decision:** replace the illustrative percentage COVs for `web_width_m` and
-`effective_depth_m` with absolute-mm models derived from selected nominal geometry unless
-project quality-control measurements justify another model. If cover is introduced separately,
-dependence with effective depth must be handled explicitly rather than double-counted.
+These absolute-mm models are now implemented in `source_profiles.py`. They replace the idea
+that a convenient percentage COV should automatically be used for every dimension. JCSS also
+warns that depth/cover can be correlated; if cover is later added as a separate variable, the
+study must avoid double counting the same construction deviation.
 
 ## 4. Permanent action / self weight
 
-JCSS Part II models self-weight through material weight density and dimensions. For ordinary
-concrete it gives a mean weight density of **24 kN/m3** with COV **0.04**; high-strength
-concrete is listed around 24-26 kN/m3 with COV 0.03. Dimensions and density are random
-contributors to self weight.
+JCSS models self weight through material density and dimensions. Ordinary concrete is given a
+generic mean weight density of about 24 kN/m3 with COV 0.04. The bridge model, however, also
+contains surfacing, barriers/line actions and other superimposed permanent actions.
 
-A single `dead_load_factor` is therefore only a reduced model. It combines material density,
-geometry, surfacing, barriers and other permanent-action uncertainty into one multiplier.
-That may be acceptable for an ANN response-separation study, but its mean/COV must be
-derived from component permanent actions or supported by another accepted source.
+A single `dead_load_factor` is therefore a **reduced response-separation model**. It may be
+used only if its distribution is derived from the component permanent actions or supported by
+a cited alternative source. The helper `build_jcss_reference_variables(...)` deliberately
+requires the caller to provide `dead_load_factor`; it does not invent one.
 
-**Study decision:** do not retain the illustrative `dead_load_factor COV = 0.10` as a final
-number without derivation. A preferred model is component-based uncertainty for girder, deck,
-surfacing/barrier and other superimposed permanent actions, propagated to the baseline response.
+The deterministic engine already separates permanent-load categories, so a later thesis
+refinement can replace the scalar factor with category-specific stochastic factors without
+changing the deterministic loading engine.
 
 ## 5. Road traffic / LM1 uncertainty
 
-EN 1991-2 Load Model 1 is itself a calibrated characteristic traffic model. EN 1991-2 Table
-2.1 describes the characteristic LM1 basis, for alpha factors equal to 1, as approximately a
-**1000-year return-period** traffic action (equivalently about 5% probability of exceedance in
-50 years for the calibration traffic on main European roads). The Eurocode bridge worked
-examples also explain that LM1 was calibrated from measured European traffic and that the
-1000-year return period was deliberately used for the characteristic road-traffic model.
+BS EN 1991-2 Load Model 1 is a calibrated characteristic bridge traffic model. The Eurocode
+worked examples explain its calibration from measured European traffic and the long return
+period used for the characteristic road-traffic model. A lifetime traffic random variable is
+therefore **not** defensibly created by placing an arbitrary lognormal COV around `LM1 = 1.0`.
 
-A lifetime traffic random variable is consequently not well represented merely by putting an
-arbitrary lognormal COV around `LM1 = 1.0`. Published bridge-traffic reliability work commonly
-uses weigh-in-motion (WIM) records, traffic simulation and extreme-value extrapolation; for
-example, characteristic effects can be fitted/extrapolated using generalized extreme-value
-models and converted to LM1 alpha factors.
+Useful general bridge-traffic background includes:
 
-Useful background sources include:
-
-- JRC/Eurocodes, *Bridge Design - Eurocodes Worked Examples*:
+- JRC, *Bridge Design – Eurocodes Worked Examples*:
   https://eurocodes.jrc.ec.europa.eu/sites/default/files/2022-06/Bridge_Design-Eurocodes-Worked_examples.pdf
-- O'Brien et al., *The Effect of Traffic Growth on Characteristic Bridge Load Effects*,
-  Transportation Research Procedia 14 (2016), 3990-3999,
+- O'Brien et al. (2016), *The Effect of Traffic Growth on Characteristic Bridge Load Effects*,
+  Transportation Research Procedia 14, 3990-3999,
   https://doi.org/10.1016/j.trpro.2016.05.496
 
-**Study decision:** the illustrative `live_load_factor` lognormal model remains
-**UNRESOLVED**. Preferred evidence is Nigerian/site-specific WIM or other defensible traffic
-data. If unavailable, the thesis must identify the adopted proxy/calibration, retain LM1's
-calibration meaning, and perform sensitivity analysis rather than present a chosen COV as
-locally observed fact.
+### 5.1 Nigeria-specific traffic evidence now ingested
+
+The repository now contains a source-traceable Nigeria traffic evidence layer in
+`research/nigeria_traffic.py`.
+
+**Federal Ministry of Works Highway Manual.** Appendix A reports an extensive Nigerian
+Federal Road Network axle-load study completed in 2008 and explicitly states that overloading
+was rife. It provides representative ADT/heavy-vehicle flows. Examples relevant to northern
+corridors include:
+
+| Link | ADT | Heavy vehicles/day | Heavy vehicles |
+| --- | ---: | ---: | ---: |
+| Ilorin-Jebba | 5,000 | 2,200 | 44% |
+| Lokoja-Abuja | 9,000 | 900 | 10% |
+| Abuja-Kaduna | 8,000 | 800 | 10% |
+| Jos-Bauchi | 7,000 | 380 | 5% |
+| Bauchi-Yola | 4,200 | 370 | 9% |
+| Kaduna-Zaria | 11,000 | 920 | 8% |
+| Potisku-Maiduguri | 5,000 | 920 | 18% |
+| Maiduguri-Ngala | 3,000 | 1,000 | 33% |
+
+Source:
+https://www.fmw.gov.ng/themes/front_end_themes_01/images/uploads_images/1569354557.pdf
+
+The same manual gives pavement-oriented ESA/heavy-vehicle evidence showing the severity of
+overloading, but **ESAs are not converted directly into bridge LM1 effects** in this project.
+Pavement equivalency factors and bridge bending/shear extremes are different response problems.
+
+**Kaduna-Zaria WIM spectra.** Awosanya, Murana & Olowosulu (2024) publish portable-WIM axle
+spectra by axle configuration and direction. The paper reports 86/99 trucks southbound/
+northbound, with 229/268 counted axles and average 2.66/2.71 axles per truck. Its Table 3
+contains the complete binned frequencies for single-axle single-tyre, single-axle dual-tyre,
+tandem-dual and the very small tridem sample. Those bins are digitised in
+`kaduna_zaria_wim_spectra_2024()` and regression-tested against the published totals.
+
+Source:
+https://www.azojete.com.ng/index.php/azojete/article/view/937
+
+A newer open-access 2026 Nigerian WIM study also reports axle-load violations on the
+Lokoja-Abuja, Ilorin-Jebba and Abakaliki-Ogoja freight corridors:
+https://doi.org/10.1016/j.trip.2026.101946
+
+### 5.2 What the public Nigerian data do and do not allow
+
+The public sources establish that Nigerian heavy-vehicle loading and overloading cannot be
+represented responsibly by assuming European traffic statistics without qualification. They
+also provide real axle spectra and corridor flow evidence for sensitivity studies.
+
+They do **not**, in the currently available public tables, provide a complete vehicle-by-
+vehicle joint sequence containing all axle-group weights, axle spacings, inter-vehicle gaps and
+time ordering needed for a defensible 15 m bridge extreme-load simulation. The 2024 paper
+states that GVM and individual axle weights were measured, but the published tables provide
+aggregated axle spectra rather than the raw joint vehicle records.
+
+Consequently:
+
+- the repository does not convert pavement ESAL/ESA values into a bridge load multiplier;
+- the published axle bins are not recombined randomly and labelled as observed vehicles;
+- `nigeria_traffic_evidence().bridge_effect_calibration_ready` remains `False`;
+- a final Nigeria-specific bridge traffic calibration requires raw/joint WIM vehicle data or a
+  separately justified vehicle-generation model.
+
+If raw Nigerian WIM records cannot be obtained, the defensible fallback is a clearly labelled
+proxy scenario with sensitivity analysis, not a claim that an arbitrary COV is locally observed.
 
 ## 6. Model uncertainty
 
-JCSS recommends explicit model-uncertainty factors in reliability work. Its generic table gives,
-among other entries:
+JCSS recommends explicit model-uncertainty factors. Generic values now represented directly in
+the evaluator are:
 
 | Model uncertainty | Distribution | Mean | COV |
 | --- | --- | ---: | ---: |
@@ -160,51 +188,46 @@ among other entries:
 | Concrete bending resistance | Lognormal | 1.2 | 0.15 |
 | Concrete shear resistance | Lognormal | 1.0 | 0.10 |
 
-The research evaluator now represents these explicitly as:
+The research feature vector contains:
 
 - `moment_load_model_factor`;
 - `shear_load_model_factor`;
-- `flexure_resistance_model_factor`; and
+- `flexure_resistance_model_factor`;
 - `shear_resistance_model_factor`.
 
-Moment/shear action components are first formed from the permanent and traffic multipliers and
-then multiplied by the matching load-effect model factor. Physical flexural/shear resistance
-from the production BS EN/EC2 kernels is multiplied by the matching resistance-model factor.
-Both nominal and model-adjusted quantities remain available in evaluator output.
+Moment/shear demand is first assembled from permanent and traffic response components and then
+multiplied by its matching load-effect model factor. The physical BS EN/EC2 resistance is
+multiplied by the matching resistance-model factor. Nominal and adjusted values are retained in
+the evaluator output.
 
-A generic deflection model-error factor has **not** been created because the current JCSS values
-used here do not justify copying the moment/shear values into the SLS displacement model.
-
-**Study decision:** the software-capability blocker is closed, but applicability remains a
-methodology decision. Before final runs, verify that these generic JCSS factors do not double
-count uncertainties already represented in the material/action variables and state why the
-selected model-error variables are appropriate to this response-separation model.
+A generic deflection model-error factor has **not** been invented. Before final runs, the thesis
+must verify that the adopted JCSS factors do not double count uncertainty already represented
+elsewhere and explain their applicability to the response-separation model.
 
 ## 7. Dependence and correlation
 
-The software now contains a Gaussian-copula dependence model with a correlation matrix in
-latent standard-normal space. The matrix must be symmetric, positive definite, unit diagonal
-and ordered exactly like the random-variable vector. The same dependence model can be carried
-through LHS, convergence audits, ANN/direct validation, direct and surrogate Monte Carlo,
-FORM and RBDO reliability constraints.
+A Gaussian-copula dependence model is implemented. The declared matrix is in latent standard-
+normal space and must be symmetric, positive definite, unit diagonal and ordered exactly like
+the stochastic variables. The same dependence model is propagated through:
 
-FORM continues to search in independent standard-normal `u` space. A Cholesky transform maps
-that vector to the correlated latent-normal vector before the marginal transforms. This keeps
-the reliability-index geometry explicit.
+- LHS dataset generation;
+- sample-size convergence;
+- fresh direct-vs-ANN validation;
+- direct Monte Carlo;
+- ANN Monte Carlo;
+- FORM; and
+- RBDO FORM constraints.
 
-JCSS evidence still shows that independence is not automatically appropriate for all physical
-variables; dimensions/cover may be correlated and steel properties within a structure can be
-strongly correlated.
+FORM still searches in independent standard-normal `u` space; the Cholesky transform maps
+that vector to correlated latent normals before the marginal transforms.
 
-**Study decision:** the **software mechanism is implemented**, but the coefficients remain
-unresolved. Independence must be justified variable-by-variable. The disabled identity matrix
-in the example configuration is only a placeholder and must not be reported as empirical
-independence.
+The **software mechanism is implemented**, but final coefficients are unresolved. The disabled
+identity matrix in the example configuration is only a placeholder and must not be reported as
+empirical independence.
 
 ## 8. Target reliability index
 
-Source-pinned EN 1990 Annex C/JRC ULS reference targets are implemented explicitly rather than
-hidden in the optimizer:
+Source-pinned EN 1990 Annex C/JRC ULS reference targets are implemented explicitly:
 
 | Consequence class | beta, 1 year | beta, 50 years |
 | --- | ---: | ---: |
@@ -212,40 +235,51 @@ hidden in the optimizer:
 | CC2 | 4.7 | 3.8 |
 | CC3 | 5.2 | 4.3 |
 
-The European Commission JRC reliability material summarizes these EN 1990 targets and notes
-that reliability differentiation / National Annex choices remain part of the adopted basis.
+Verified JRC background page:
+https://eurocodes.jrc.ec.europa.eu/publications/reliability-background-eurocodes
 
-Useful source:
+**Study decision:** use CC2 / 50 years / beta = 3.8 as the central thesis reference scenario,
+with CC1 and CC3 50-year targets retained for sensitivity. This is a research scenario, not an
+automatic classification of a real Nigerian bridge. A real project still requires the class,
+reference period and National Annex/authority basis actually adopted for that project.
 
-- European Commission JRC, reliability requirements / EN 1990 Annex C material:
-  https://eurocodes.jrc.ec.europa.eu/publications/reliability-backgrounds
+## 9. Current source-backed software status
 
-**Study decision:** use **CC2, 50 years, beta = 3.8 as the central thesis reference scenario**,
-with CC1 and CC3 50-year values retained for sensitivity reporting. This is a research scenario,
-not an automatic classification of a real bridge. A real project still requires the consequence
-class/reference period required by its authority and adopted National Annex.
+The following research mechanisms are now implemented and tested:
 
-## 9. Recommended staged probability-model closure
+- JCSS C35 source-prior helpers for ready-mixed and precast production;
+- JCSS B500-type yield-strength and reinforcement-area profiles;
+- JCSS dimensional/effective-depth profiles;
+- explicit JCSS moment/shear load-effect and resistance-model uncertainty variables;
+- Gaussian-copula dependent LHS, Monte Carlo, FORM and RBDO constraints;
+- EN 1990/JRC target-reliability profiles;
+- Nigerian Federal Road Network flow evidence; and
+- digitised Kaduna-Zaria WIM axle spectra with published count totals pinned by tests.
 
-Before the example configuration can be changed from `assumptions_confirmed=false`, close the
-following in order:
+`build_jcss_reference_variables(...)` assembles the source-backed variables in the exact ANN
+feature order but intentionally requires the final `dead_load_factor` and `live_load_factor`
+models as explicit inputs. This keeps unresolved action models visible instead of allowing a
+helper to manufacture them.
 
-1. select the production basis for concrete strength and document any local/test updating;
-2. adopt the reinforcement yield/area model consistent with the selected B500 product basis;
-3. replace percentage dimensional COVs with source/project-based dimensional deviations;
-4. derive permanent-action uncertainty from its components;
-5. choose and justify the road-traffic extreme/load-model uncertainty treatment;
-6. verify applicability/no-double-counting of the now-implemented JCSS model-error factors;
-7. adopt source-justified dependence coefficients or document a defensible independence model;
+## 10. Remaining probability-model closure work
+
+Before `assumptions_confirmed` can become `true` for the final thesis study:
+
+1. select the concrete-production treatment and state how precast girder/cast deck differences
+   are represented;
+2. confirm the B500 production/diameter treatment and selected nominal reinforcement cage;
+3. adopt the source-derived dimensional models or replace them with project QC measurements;
+4. derive the permanent-action factor from the actual permanent components or adopt a cited
+   alternative;
+5. obtain joint Nigerian WIM vehicle records for direct bridge extreme-value calibration, or
+   formally adopt and sensitivity-test a documented proxy traffic model;
+6. verify no double counting in the model-uncertainty factors;
+7. adopt source-justified dependence coefficients or document defensible independence;
 8. demonstrate LHS/sample-size convergence with the final probability model;
-9. run ANN architecture/validation acceptance checks;
+9. train/select the ANN from held-out and near-limit-state evidence;
 10. cross-check FORM, ANN Monte Carlo and direct-evaluator Monte Carlo; and
 11. perform RBDO and independently re-evaluate the final optimum.
 
-The target-reliability source basis, Gaussian-copula infrastructure and explicit moment/shear
-model-error infrastructure are now implemented. The remaining blockers are the **final numerical
-probability model and validation evidence**, especially concrete, permanent action, road traffic,
-dependence coefficients, sample-size convergence and ANN/reliability/RBDO validation.
-
-Until those decisions and numerical checks are closed, the probabilistic research gate remains
-**VALIDATION PENDING** even though the complete software pipeline is executable.
+The probabilistic research gate therefore remains **VALIDATION PENDING**. The remaining
+blockers are evidence/parameter decisions and final numerical validation, not missing basic
+ANN/reliability software infrastructure.
