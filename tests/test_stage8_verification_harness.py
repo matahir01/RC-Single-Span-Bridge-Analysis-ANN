@@ -101,13 +101,31 @@ def test_scalar_comparison_uses_absolute_and_relative_tolerance() -> None:
     assert failing.status is ComparisonStatus.FAIL
 
 
-def test_acceptance_matrix_does_not_promote_internal_tests_to_verified() -> None:
+def test_primary_bs_en_v1_software_capability_gate_is_closed() -> None:
     matrix = current_v1_acceptance_matrix()
-    assert not matrix.v1_gate.accepted
-    assert "common_grillage" in matrix.v1_gate.blockers
+    assert matrix.v1_gate.accepted
+    assert matrix.v1_gate.blockers == ()
+
     structural = matrix.by_domain(VerificationDomain.STRUCTURAL_ANALYSIS)
     assert structural
-    assert all(item.state.value != "accepted" for item in structural)
+    assert all(item.state.value == "accepted" for item in structural)
+
+    # Legacy BS capabilities remain visible but do not decide the primary BS EN gate.
+    legacy = tuple(item for item in matrix.items if not item.v1_gate)
+    assert legacy
+    assert any(item.state.value != "accepted" for item in legacy)
+
+
+def test_reference_runner_uses_converged_15m_lm1_step_by_default() -> None:
+    config = ReferenceRunConfig(
+        elastic_modulus_mpa=31000.0,
+        eurocode_sls_factors=EurocodeServiceabilityFactors(
+            psi1_traffic=0.75,
+            psi2_traffic=0.0,
+            psi1_udl_traffic=0.40,
+        ),
+    )
+    assert config.lm1_longitudinal_step_m == pytest.approx(0.6)
 
 
 def test_calculation_report_forces_code_basis_and_traceable_steps() -> None:
