@@ -1,6 +1,6 @@
-from rc_single_span.core.models import MaterialProperties
-
 from reference_bridge_15m import reference_bridge_15m
+
+from rc_single_span.core.models import MaterialProperties
 
 
 def thesis_bridge_15m():
