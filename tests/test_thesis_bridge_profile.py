@@ -20,7 +20,7 @@ def test_thesis_bridge_preserves_verified_reference_geometry() -> None:
     assert geometry.girder_spacing_m == pytest.approx(1.70)
     assert geometry.girder_profile.width_m == pytest.approx(0.40)
     assert geometry.girder_profile.depth_m == pytest.approx(0.95)
-    assert geometry.deck.total_depth_m == pytest.approx(0.25)
+    assert geometry.deck.physical_depth_m == pytest.approx(0.25)
 
 
 def test_thesis_bridge_uses_c35_45_b500_material_basis() -> None:
