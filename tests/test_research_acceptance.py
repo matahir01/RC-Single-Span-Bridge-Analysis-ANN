@@ -13,5 +13,7 @@ def test_research_gate_remains_validation_pending_after_implementation() -> None
     assert "reliability_cross_check" in gate.blockers
     assert "target_reliability" in gate.blockers
     assert "rbdo_validation" in gate.blockers
-    assert any(item.state is ResearchEvidenceState.NOT_STARTED for item in gate.items)
+    target = next(item for item in gate.items if item.key == "target_reliability")
+    assert target.state is ResearchEvidenceState.VALIDATED
+    assert all(item.state is not ResearchEvidenceState.NOT_STARTED for item in gate.items)
     assert all(item.remaining.strip() for item in gate.items)
