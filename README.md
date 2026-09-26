@@ -32,7 +32,7 @@ the project/client/approving authority adopts them.
 ### Secondary legacy route: BS 5400 / BD 37
 
 BS 5400 / BD 37/01 is retained as a **legacy** deterministic profile for older
-projects, owner/authority requirements and comparison work. Its focused V1
+projects, owner/authority requirements and comparison work. Its expanded V1
 software-capability gate is separately accepted; it remains isolated from BS EN
 and traffic, material, resistance and detailing factors are not borrowed between
 the two routes.
@@ -54,7 +54,11 @@ V1 covers:
 - BS EN 1991-2 LM1 traffic with response-specific adverse UDL regions;
 - BS EN 1990 primary gravity/road-traffic ULS/SLS combinations;
 - legacy BD 37/01 HA, HB and HA+HB traffic;
-- legacy BS 5400 / BD 37 primary combinations 1-3 for modelled actions;
+- legacy BS 5400 / BD 37 highway combinations 1-5, with supplementary
+  horizontal/local/bearing response supplied by an analysis model appropriate
+  to the action when it lies outside the vertical-grillage response space;
+- BS 5400 Part 10 standard highway fatigue-vehicle generation;
+- BS 5400-4 flexural-bar curtailment continuation using `max(d, 12 phi)`;
 - flexure, shear, cracking and elastic-response deflection checks;
 - discrete reinforcement selection and bridge-specific detailing infrastructure;
 - traceable calculation records carrying code basis, formula, substitution,
@@ -63,9 +67,7 @@ V1 covers:
 Continuous spans, prestressing, curved bridges, general substructure/foundation
 design, general local-deck design, staged continuity, changing supports,
 arbitrary propping/removal sequences and advanced creep/shrinkage
-redistribution remain outside focused V1. Legacy combinations 4-5 also remain
-outside the focused BS 5400 / BD 37 acceptance until their corresponding
-secondary/accidental actions are explicitly modelled.
+redistribution remain outside focused V1.
 
 ## Reference bridge
 
@@ -162,16 +164,22 @@ Underlying elastic displacements have external STAAD evidence, and the software
 re-searches combined permanent + traffic displacement across retained traffic
 cases. See `docs/BS_EN_DEFLECTION_BASIS.md`.
 
-## Legacy BS 5400 / BD 37 — CLOSED FOR FOCUSED V1
+## Legacy BS 5400 / BD 37 — EXPANDED V1 CLOSED
 
-The legacy path now has its own deterministic acceptance gate rather than being
-merely tolerated beside the BS EN route.
+The legacy path has an independent deterministic acceptance gate and an expanded
+closure layer for the items that were previously left as deliberate boundaries.
 
-The focused evidence package includes:
+The evidence package includes:
 
 - official archived BD 37/01 source checks for HA, HB and HA+HB mechanics;
-- source-pinned primary combinations 1-3;
-- genuine external STAAD response evidence for the BS traffic models;
+- combinations 1-3 from the native primary traffic engine;
+- combination 4 source-pinned centrifugal, HA/HB longitudinal and skidding
+  actions, plus an explicit factor/provenance interface for classified secondary
+  actions such as parapet/collision effects;
+- combination 5 permanent actions plus bearing-friction response at gamma_fL
+  1.30 ULS / 1.00 SLS;
+- a project-level full-combination layer retaining ULS/SLS combinations 1-5;
+- genuine external STAAD response evidence for the verified BS traffic models;
 - the owner-supplied Ragana shear benchmark;
 - the separately reproduced Ragana doubly reinforced flexure benchmark;
 - an independent BS 5400-4 crack-width worked example reproducing approximately
@@ -179,24 +187,30 @@ The focused evidence package includes:
 - source-pinned BS 5400-4 reinforcement/detailing limits for minimum/maximum
   main steel, side-face reinforcement, clear spacing, tension-bar spacing and
   beam-link spacing;
-- discrete cage/link selection, station-wise reinforcement zoning, doubly
-  reinforced SLS and advanced Stage D infrastructure.
+- the BS 5400 Part 10 standard 320 kN fatigue vehicle as four 80 kN axles at
+  1.8/6.0/1.8 m spacing;
+- the BS 5400-4 flexural-bar continuation rule `max(d, 12 phi)` beyond a
+  theoretical cutoff; and
+- discrete cage/link selection, station-wise reinforcement zoning, fatigue
+  stress-range assessment, construction-stage stress, laps, bearing/end-zone
+  checks, doubly reinforced SLS and advanced Stage D infrastructure.
 
-Legacy advanced Stage D intentionally requires an explicit verified fatigue
-vehicle/model and an explicit verified legacy tension-shift/curtailment input.
-The software does not fabricate these values. Project crack/deflection limits,
-HB units, bearing geometry, construction-stage stress limits and splice policy
-also remain explicit.
+`build_bs5400_full_project_combinations(...)` deliberately accepts structural
+effects from an analysis model appropriate to each secondary/local/bearing
+action. The vertical grillage is not allowed to fabricate horizontal response.
+Likewise, fatigue resistance/detail category, bearing coefficient/type,
+applicable secondary actions, project crack/deflection limits and other genuine
+project choices remain explicit inputs rather than hidden defaults.
 
-See `docs/BS5400_BD37_V1_DETERMINISTIC_CLOSURE.md`.
+See `docs/BS5400_BD37_EXPANDED_V1_CLOSURE.md`.
 
 ## Deterministic V1 release position
 
-**GO — both focused deterministic software profiles are accepted within their
-documented V1 scopes:**
+**GO — both deterministic software profiles are accepted within their documented
+V1 scopes:**
 
 - **BS EN V1: GO**;
-- **legacy BS 5400 / BD 37 V1: GO**.
+- **expanded legacy BS 5400 / BD 37 V1: GO**.
 
 The two acceptance gates are independent. A future change to one code path must
 not silently alter the other.
@@ -216,8 +230,9 @@ capability is accepted.
 See:
 
 - `docs/BS_EN_V1_DETERMINISTIC_CLOSURE.md`;
-- `docs/BS5400_BD37_V1_DETERMINISTIC_CLOSURE.md`;
+- `docs/BS5400_BD37_EXPANDED_V1_CLOSURE.md`;
 - `src/rc_single_span/verification/acceptance.py`;
+- `src/rc_single_span/verification/legacy_bs_expanded_acceptance.py`;
 - `docs/CODE_LOADING_INDEPENDENT_AUDIT.md`;
 - `docs/REINFORCEMENT_SYNTHESIS.md`;
 - `docs/DETAILING_STAGE_D.md`.
