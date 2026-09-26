@@ -39,4 +39,4 @@ line-length = 100
 target-version = "py311"
 
 [tool.ruff.lint.per-file-ignores]
-"src/rc_single_span/gui/app.py" = ["BLE001", "I001", "F401"]
+"src/rc_single_span/gui/main_window.py" = ["I001"]
