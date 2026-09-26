@@ -125,7 +125,7 @@ def test_calculation_report_forces_formula_substitution_result_and_reference() -
                         formula="M_Ed = 1.35 G_k + 1.35 Q_k",
                         substitution="M_Ed = 1.35(100) + 1.35(200)",
                         result="M_Ed = 405 kNm",
-                        reference="EN 1990 project combination basis",
+                        reference="BS EN 1990:2002+A1:2005 project combination basis",
                         status="CHECKED",
                     ),
                 ),
@@ -135,6 +135,7 @@ def test_calculation_report_forces_formula_substitution_result_and_reference() -
     markdown = render_markdown(report)
     for token in ("Formula:", "Substitution:", "Result:", "Reference:", "Status:"):
         assert token in markdown
+    assert "BS EN 1990:2002+A1:2005" in markdown
 
 
 def test_all_case_combined_deflection_search_finds_stronger_traffic_case() -> None:
