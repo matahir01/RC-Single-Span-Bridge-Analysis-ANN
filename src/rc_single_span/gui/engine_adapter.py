@@ -98,21 +98,21 @@ def run_gui_analysis(
             )
             if not uls:
                 continue
-            governing = max(
-                uls,
-                key=lambda case: max(
-                    case.effects.moment_knm,
-                    case.effects.shear_kn,
-                    case.effects.torsion_knm,
-                ),
+            moment_case = max(uls, key=lambda case: case.effects.moment_knm)
+            shear_case = max(uls, key=lambda case: case.effects.shear_kn)
+            torsion_case = max(uls, key=lambda case: case.effects.torsion_knm)
+            source = (
+                "BS 5400 ULS envelope: "
+                f"M=C{moment_case.combination}, V=C{shear_case.combination}, "
+                f"T=C{torsion_case.combination}"
             )
             rows_list.append(
                 GuiResultRow(
                     girder=item.girder_index,
-                    moment_knm=float(governing.effects.moment_knm),
-                    shear_kn=float(governing.effects.shear_kn),
-                    torsion_knm=float(governing.effects.torsion_knm),
-                    source=f"BS 5400 combination {governing.combination} ULS",
+                    moment_knm=float(moment_case.effects.moment_knm),
+                    shear_kn=float(shear_case.effects.shear_kn),
+                    torsion_knm=float(torsion_case.effects.torsion_knm),
+                    source=source,
                 )
             )
         rows = tuple(rows_list)
