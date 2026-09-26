@@ -12,6 +12,7 @@ from rc_single_span.research.dataset import (
     generate_dataset,
     split_dataset,
 )
+from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.keras_backend import train_keras_ann
 from rc_single_span.research.reliability import (
     FORMResult,
@@ -64,6 +65,7 @@ class ResearchPipelineConfig:
     run_form: bool = True
     monte_carlo_samples: int = 0
     reliability_seed: int = 20260928
+    dependence: GaussianCopula | None = None
 
     def __post_init__(self) -> None:
         if self.sample_count <= 0:
@@ -94,10 +96,9 @@ def run_research_pipeline(
 ) -> ResearchPipelineResult:
     """Generate LHS data, train ANN, then optionally run ANN-based reliability.
 
-    The function intentionally does not declare the surrogate or RBDO fit for a
-    thesis merely because training completed. Test metrics, near-limit-state
-    checks and direct deterministic spot checks remain evidence to review before
-    accepting a trained model for reliability conclusions.
+    The same declared dependence model is propagated through dataset generation,
+    FORM and surrogate Monte Carlo so reliability conclusions do not silently
+    revert to statistical independence after ANN training.
     """
 
     current = config or ResearchPipelineConfig()
@@ -107,6 +108,7 @@ def run_research_pipeline(
         current.sample_count,
         seed=current.dataset_seed,
         invalid_policy="raise",
+        dependence=current.dependence,
     )
     split = split_dataset(
         dataset,
@@ -122,7 +124,12 @@ def run_research_pipeline(
 
     form_results = (
         {
-            target: form_surrogate_reliability(model, variables, target)
+            target: form_surrogate_reliability(
+                model,
+                variables,
+                target,
+                dependence=current.dependence,
+            )
             for target in dataset.target_names
         }
         if current.run_form
@@ -136,6 +143,7 @@ def run_research_pipeline(
                 target,
                 current.monte_carlo_samples,
                 seed=current.reliability_seed + index,
+                dependence=current.dependence,
             )
             for index, target in enumerate(dataset.target_names)
         }
