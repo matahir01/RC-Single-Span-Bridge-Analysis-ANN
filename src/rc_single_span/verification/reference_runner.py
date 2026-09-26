@@ -336,6 +336,7 @@ def run_reference_project(
             ec_design,
             design_inputs=ec2_design_inputs,
             detailing_inputs=ec2_detailing_inputs,
+            traffic=lm1,
         )
     )
     bs_detailing = (
@@ -347,6 +348,7 @@ def run_reference_project(
             bs_design,
             design_inputs=bs5400_design_inputs,
             detailing_inputs=bs5400_detailing_inputs,
+            traffic=bs_traffic,
         )
     )
 
