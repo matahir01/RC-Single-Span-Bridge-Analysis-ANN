@@ -30,6 +30,12 @@ from rc_single_span.design.project_detailing import (
     run_bs5400_project_detailing,
     run_eurocode_project_detailing,
 )
+from rc_single_span.design.stage_d_project import (
+    AdvancedGirderDetailingResult,
+    AdvancedStageDInputs,
+    run_bs5400_advanced_stage_d,
+    run_eurocode_advanced_stage_d,
+)
 from rc_single_span.traffic.bs5400 import (
     BS5400NominalTrafficSuite,
     HASearchResult,
@@ -63,7 +69,10 @@ from rc_single_span.verification.deflection import (
 class ReferenceRunConfig:
     elastic_modulus_mpa: float
     eurocode_sls_factors: EurocodeServiceabilityFactors
-    lm1_longitudinal_step_m: float = 1.2
+    # The 15 m BS EN reference audit converged at 0.6 m with a 4.08765% maximum
+    # envelope change from the 1.2 m grid, below the adopted 5% verification
+    # criterion. Other bridge geometries should run their own convergence audit.
+    lm1_longitudinal_step_m: float = 0.6
     bs_ha_longitudinal_step_m: float = 1.0
     bs_hb_longitudinal_step_m: float = 1.0
     bs_hb_transverse_step_m: float = 0.5
@@ -105,6 +114,8 @@ class ReferenceRunResult:
     bs5400_design: tuple[BS5400GirderDesignResult, ...] | None
     eurocode_detailing: tuple[EC2GirderDetailingResult, ...] | None
     bs5400_detailing: tuple[BS5400GirderDetailingResult, ...] | None
+    eurocode_advanced_detailing: tuple[AdvancedGirderDetailingResult, ...] | None
+    bs5400_advanced_detailing: tuple[AdvancedGirderDetailingResult, ...] | None
     eurocode_characteristic_deflection: tuple[CombinedDeflectionEnvelope, ...] | None
     bs5400_characteristic_deflection: dict[str, tuple[CombinedDeflectionEnvelope, ...]]
 
@@ -254,12 +265,15 @@ def run_reference_project(
     bs5400_design_inputs: BS5400DesignInputs | None = None,
     ec2_detailing_inputs: EC2DetailingInputs | None = None,
     bs5400_detailing_inputs: BS5400DetailingInputs | None = None,
+    ec2_advanced_detailing_inputs: AdvancedStageDInputs | None = None,
+    bs5400_advanced_detailing_inputs: AdvancedStageDInputs | None = None,
 ) -> ReferenceRunResult:
     """Run one reproducible deterministic verification project end to end.
 
     Values absent from the physical project are never invented. Elastic modulus
     is explicit in the run configuration; code/design/detailing inputs are
-    explicit optional arguments and are skipped when not supplied.
+    explicit optional arguments and are skipped when not supplied. Advanced
+    Stage D checks are also optional and require their project-specific inputs.
     """
 
     resolved = _with_elastic_modulus(project, config.elastic_modulus_mpa)
@@ -352,6 +366,37 @@ def run_reference_project(
         )
     )
 
+    if ec2_advanced_detailing_inputs is not None and ec_detailing is None:
+        raise ValueError("EC2 advanced Stage D requires EC2 detailing results.")
+    if bs5400_advanced_detailing_inputs is not None and bs_detailing is None:
+        raise ValueError("BS 5400 advanced Stage D requires BS 5400 detailing results.")
+
+    ec_advanced = (
+        None
+        if ec2_advanced_detailing_inputs is None
+        else run_eurocode_advanced_stage_d(
+            resolved,
+            ec_combinations,
+            ec_design,
+            ec_detailing,
+            design_inputs=ec2_design_inputs,
+            inputs=ec2_advanced_detailing_inputs,
+        )
+    )
+    bs_advanced = (
+        None
+        if bs5400_advanced_detailing_inputs is None
+        else run_bs5400_advanced_stage_d(
+            resolved,
+            bs_combinations,
+            bs_design,
+            bs_detailing,
+            design_inputs=bs5400_design_inputs,
+            detailing_inputs=bs5400_detailing_inputs,
+            inputs=bs5400_advanced_detailing_inputs,
+        )
+    )
+
     return ReferenceRunResult(
         project=resolved,
         construction=construction,
@@ -363,6 +408,8 @@ def run_reference_project(
         bs5400_design=bs_design,
         eurocode_detailing=ec_detailing,
         bs5400_detailing=bs_detailing,
+        eurocode_advanced_detailing=ec_advanced,
+        bs5400_advanced_detailing=bs_advanced,
         eurocode_characteristic_deflection=_ec_characteristic_deflection(
             resolved,
             lm1,
