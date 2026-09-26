@@ -56,6 +56,12 @@ from rc_single_span.research.surrogate import (
     RegressionMetrics,
     train_numpy_ann,
 )
+from rc_single_span.research.targets import (
+    ConsequenceClass,
+    TargetReliability,
+    bs_en_1990_target_reliability,
+    thesis_reference_targets,
+)
 from rc_single_span.research.validation import (
     DirectMonteCarloResult,
     SurrogateValidationResult,
@@ -66,6 +72,7 @@ from rc_single_span.research.validation import (
 __all__ = [
     "BSENReliabilityBaseline",
     "BridgeLimitStateEvaluator",
+    "ConsequenceClass",
     "DatasetSplit",
     "DesignVariable",
     "DirectMonteCarloResult",
@@ -88,7 +95,9 @@ __all__ = [
     "ResearchPipelineResult",
     "SampleSet",
     "SurrogateValidationResult",
+    "TargetReliability",
     "ann_reliability_rbdo_gate",
+    "bs_en_1990_target_reliability",
     "direct_monte_carlo_reliability",
     "extract_bs_en_reliability_baseline",
     "form_hlrf",
@@ -100,6 +109,7 @@ __all__ = [
     "optimize_surrogate_rbdo",
     "run_research_pipeline",
     "split_dataset",
+    "thesis_reference_targets",
     "train_numpy_ann",
     "validate_surrogate_against_direct",
 ]
