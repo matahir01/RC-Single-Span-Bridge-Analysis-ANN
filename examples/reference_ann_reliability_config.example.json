@@ -1,0 +1,136 @@
+{
+  "assumptions_confirmed": false,
+  "status_note": "ILLUSTRATIVE CONFIGURATION ONLY. Replace every probabilistic assumption with source-justified study values before setting assumptions_confirmed=true.",
+  "reference_run": {
+    "elastic_modulus_mpa": 31000.0,
+    "lm1_longitudinal_step_m": 0.6,
+    "retain_all_cases": true,
+    "lm1_udl_influence_surface": true,
+    "serviceability_factors": {
+      "psi1_traffic": 0.75,
+      "psi1_udl_traffic": 0.40,
+      "psi2_traffic": 0.0
+    }
+  },
+  "limit_state_model": {
+    "deflection_limit_mm": 50.0,
+    "gamma_c": 1.0,
+    "gamma_s": 1.0,
+    "alpha_cc": 1.0,
+    "cot_theta": 2.0,
+    "z_factor": 0.9,
+    "provided_asw_per_s_mm2_per_m": null
+  },
+  "random_variables": [
+    {
+      "name": "fck_mpa",
+      "family": "lognormal",
+      "mean": 35.0,
+      "cov": 0.10,
+      "lower": 20.0,
+      "upper": 60.0
+    },
+    {
+      "name": "fyk_mpa",
+      "family": "normal",
+      "mean": 500.0,
+      "cov": 0.05,
+      "lower": 400.0,
+      "upper": 650.0
+    },
+    {
+      "name": "effective_depth_m",
+      "family": "normal",
+      "mean": 1.10,
+      "cov": 0.02,
+      "lower": 1.00,
+      "upper": 1.18
+    },
+    {
+      "name": "web_width_m",
+      "family": "normal",
+      "mean": 0.40,
+      "cov": 0.02,
+      "lower": 0.36,
+      "upper": 0.44
+    },
+    {
+      "name": "steel_area_mm2",
+      "family": "normal",
+      "mean": 12868.0,
+      "cov": 0.02,
+      "lower": 11500.0,
+      "upper": 14200.0
+    },
+    {
+      "name": "dead_load_factor",
+      "family": "normal",
+      "mean": 1.0,
+      "cov": 0.10,
+      "lower": 0.70,
+      "upper": 1.30
+    },
+    {
+      "name": "live_load_factor",
+      "family": "lognormal",
+      "mean": 1.0,
+      "cov": 0.15,
+      "lower": 0.50,
+      "upper": 1.80
+    }
+  ],
+  "pipeline": {
+    "sample_count": 1500,
+    "dataset_seed": 20260926,
+    "split_seed": 20260927,
+    "train_fraction": 0.70,
+    "validation_fraction": 0.15,
+    "backend": "numpy",
+    "run_form": true,
+    "surrogate_monte_carlo_samples": 100000,
+    "reliability_seed": 20260928,
+    "mlp": {
+      "hidden_layers": [64, 64],
+      "learning_rate": 0.001,
+      "batch_size": 64,
+      "epochs": 1000,
+      "patience": 60,
+      "seed": 42
+    }
+  },
+  "validation": {
+    "fresh_direct_samples": 250,
+    "direct_monte_carlo_samples": 10000,
+    "near_limit_state_fraction": 0.10,
+    "seed": 20260929
+  },
+  "rbdo": {
+    "enabled": false,
+    "maximum_iterations": 100,
+    "design_variables": [
+      {
+        "name": "steel_area_mm2",
+        "lower": 9000.0,
+        "upper": 15000.0,
+        "initial": 12868.0
+      }
+    ],
+    "reliability_constraints": [
+      {
+        "target_name": "g_flexure_knm",
+        "minimum_beta": 3.8
+      },
+      {
+        "target_name": "g_shear_kn",
+        "minimum_beta": 3.8
+      },
+      {
+        "target_name": "g_deflection_mm",
+        "minimum_beta": 3.8
+      }
+    ],
+    "objective_weights": {
+      "steel_area_mm2": 1.0
+    }
+  }
+}
