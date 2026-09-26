@@ -8,7 +8,7 @@ from rc_single_span.codes.common import FactoredCombination, LoadEffects
 
 
 class BS5400Combination4Action(str, Enum):
-    """Secondary highway actions explicitly treated by BD 37/01 combination 4."""
+    """Common highway secondary actions explicitly treated by BD 37/01."""
 
     CENTRIFUGAL = "centrifugal"
     LONGITUDINAL_HA = "longitudinal_ha"
@@ -18,41 +18,69 @@ class BS5400Combination4Action(str, Enum):
 
 @dataclass(frozen=True)
 class BS5400Combination4Factors:
-    action: BS5400Combination4Action
+    """Factors for one combination-4 secondary action and its primary action.
+
+    Some BD 37/01 secondary actions use a different factor for the associated
+    primary live load (for example parapet collision).  The separate primary
+    fields make those cases representable without forcing an incorrect shared
+    factor.  For centrifugal, longitudinal and skidding actions the two sets are
+    identical and are source-pinned below.
+    """
+
+    action_name: str
     gamma_uls: float
     gamma_sls: float
     associated_primary: str
     provenance: str
+    primary_gamma_uls: float | None = None
+    primary_gamma_sls: float | None = None
+
+    def __post_init__(self) -> None:
+        values = (self.gamma_uls, self.gamma_sls)
+        if any(value <= 0.0 for value in values):
+            raise ValueError("Combination-4 secondary gamma_fL values must be positive.")
+        if self.primary_gamma_uls is not None and self.primary_gamma_uls <= 0.0:
+            raise ValueError("primary_gamma_uls must be positive when supplied.")
+        if self.primary_gamma_sls is not None and self.primary_gamma_sls <= 0.0:
+            raise ValueError("primary_gamma_sls must be positive when supplied.")
+        if not self.action_name.strip() or not self.provenance.strip():
+            raise ValueError("Combination-4 action name and provenance are required.")
 
     def gamma(self, limit_state: BS5400LimitState | str) -> float:
         state = BS5400LimitState(limit_state)
         return self.gamma_uls if state is BS5400LimitState.ULS else self.gamma_sls
 
+    def primary_gamma(self, limit_state: BS5400LimitState | str) -> float:
+        state = BS5400LimitState(limit_state)
+        if state is BS5400LimitState.ULS:
+            return self.gamma_uls if self.primary_gamma_uls is None else self.primary_gamma_uls
+        return self.gamma_sls if self.primary_gamma_sls is None else self.primary_gamma_sls
+
 
 _COMBINATION4_FACTORS = {
     BS5400Combination4Action.CENTRIFUGAL: BS5400Combination4Factors(
-        action=BS5400Combination4Action.CENTRIFUGAL,
+        action_name=BS5400Combination4Action.CENTRIFUGAL.value,
         gamma_uls=1.50,
         gamma_sls=1.00,
         associated_primary="400 kN vertical live load over 6 m in the loaded lane",
         provenance="BD 37/01 Appendix A clauses 6.9.1-6.9.4",
     ),
     BS5400Combination4Action.LONGITUDINAL_HA: BS5400Combination4Factors(
-        action=BS5400Combination4Action.LONGITUDINAL_HA,
+        action_name=BS5400Combination4Action.LONGITUDINAL_HA.value,
         gamma_uls=1.25,
         gamma_sls=1.00,
         associated_primary="HA",
         provenance="BD 37/01 Appendix A clauses 6.10.1, 6.10.3-6.10.5",
     ),
     BS5400Combination4Action.LONGITUDINAL_HB: BS5400Combination4Factors(
-        action=BS5400Combination4Action.LONGITUDINAL_HB,
+        action_name=BS5400Combination4Action.LONGITUDINAL_HB.value,
         gamma_uls=1.10,
         gamma_sls=1.00,
         associated_primary="HB",
         provenance="BD 37/01 Appendix A clauses 6.10.2-6.10.5",
     ),
     BS5400Combination4Action.SKIDDING_HA: BS5400Combination4Factors(
-        action=BS5400Combination4Action.SKIDDING_HA,
+        action_name=BS5400Combination4Action.SKIDDING_HA.value,
         gamma_uls=1.25,
         gamma_sls=1.00,
         associated_primary="HA",
@@ -65,6 +93,35 @@ def combination4_factors(
     action: BS5400Combination4Action | str,
 ) -> BS5400Combination4Factors:
     return _COMBINATION4_FACTORS[BS5400Combination4Action(action)]
+
+
+def custom_combination4_factors(
+    *,
+    action_name: str,
+    secondary_gamma_uls: float,
+    secondary_gamma_sls: float,
+    associated_primary: str,
+    primary_gamma_uls: float,
+    primary_gamma_sls: float,
+    provenance: str,
+) -> BS5400Combination4Factors:
+    """Create an auditable factor set for a classified combination-4 action.
+
+    This is intended for actions whose factors depend on the project/element
+    classification, such as parapet collision/global effects.  The caller must
+    provide the adopted factors and source rather than the software guessing the
+    containment level, structural mass class or bearing type.
+    """
+
+    return BS5400Combination4Factors(
+        action_name=action_name,
+        gamma_uls=secondary_gamma_uls,
+        gamma_sls=secondary_gamma_sls,
+        associated_primary=associated_primary,
+        provenance=provenance,
+        primary_gamma_uls=primary_gamma_uls,
+        primary_gamma_sls=primary_gamma_sls,
+    )
 
 
 def ha_longitudinal_nominal_kn(loaded_length_m: float) -> float:
@@ -111,9 +168,9 @@ def nominal_bearing_friction_force_kn(
 ) -> float:
     """Return the nominal combination-5 bearing-friction force magnitude.
 
-    BD 37/01 5.4.7.3 defines the nominal action from nominal permanent vertical
-    load and the applicable bearing coefficient of friction. The coefficient is
-    deliberately an explicit bearing/project input.
+    BD 37/01 5.4.7.3 derives the nominal action from nominal permanent vertical
+    load and the applicable bearing coefficient of friction.  The coefficient
+    is deliberately an explicit bearing/project input.
     """
 
     if nominal_vertical_load_kn < 0.0:
@@ -128,31 +185,39 @@ def build_bs5400_combination4(
     factored_permanent: LoadEffects,
     secondary_nominal: LoadEffects,
     associated_primary_nominal: LoadEffects,
-    action: BS5400Combination4Action | str,
+    action: BS5400Combination4Action | str | None = None,
     limit_state: BS5400LimitState | str,
     permanent_factor_audit: dict[str, float],
+    factors_override: BS5400Combination4Factors | None = None,
 ) -> FactoredCombination:
     """Build one BD 37/01 combination-4 secondary-live-load case.
 
-    Secondary live loads are considered separately, each with its associated
-    primary live load. The caller supplies structural effects from the
-    appropriate analysis model; this function performs the code combination and
-    preserves the factor audit.
+    Secondary live loads are considered separately with their associated
+    primary live load.  Structural effects must come from an analysis model
+    appropriate to the action.  ``factors_override`` covers classified actions
+    (for example parapet collision) whose factors cannot safely be inferred from
+    bridge geometry alone.
     """
 
-    action_type = BS5400Combination4Action(action)
+    if (action is None) == (factors_override is None):
+        raise ValueError("Supply exactly one of action or factors_override.")
+    factors = (
+        factors_override
+        if factors_override is not None
+        else combination4_factors(BS5400Combination4Action(action))
+    )
     state = BS5400LimitState(limit_state)
-    factors = combination4_factors(action_type)
-    gamma_live = factors.gamma(state)
+    gamma_secondary = factors.gamma(state)
+    gamma_primary = factors.primary_gamma(state)
     audit = dict(permanent_factor_audit)
-    audit["secondary_live"] = gamma_live
-    audit["associated_primary_live"] = gamma_live
+    audit["secondary_live"] = gamma_secondary
+    audit["associated_primary_live"] = gamma_primary
     return FactoredCombination(
-        name=f"BS 5400 combination 4 {state.value.upper()} ({action_type.value})",
+        name=f"BS 5400 combination 4 {state.value.upper()} ({factors.action_name})",
         effects=(
             factored_permanent
-            + secondary_nominal.scaled(gamma_live)
-            + associated_primary_nominal.scaled(gamma_live)
+            + secondary_nominal.scaled(gamma_secondary)
+            + associated_primary_nominal.scaled(gamma_primary)
         ),
         factors=audit,
     )
