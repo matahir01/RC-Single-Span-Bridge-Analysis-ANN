@@ -7,6 +7,7 @@ from rc_single_span.analysis.sections import (
     final_composite_concrete_layers,
 )
 from rc_single_span.codes.bs5400.combinations import BS5400PrimaryTraffic
+from rc_single_span.codes.eurocode.basis import BS_EN_1990
 from rc_single_span.codes.eurocode.combinations import EurocodeServiceabilityFactors
 from rc_single_span.core.models import (
     BarLayer,
@@ -21,9 +22,7 @@ from rc_single_span.design.bs5400 import (
     check_layered_flexure_bs5400,
     check_shear_bs5400,
 )
-from rc_single_span.design.eurocode import (
-    check_layered_flexure_ec2,
-)
+from rc_single_span.design.eurocode import check_layered_flexure_ec2
 from rc_single_span.design.project import (
     BS5400DesignInputs,
     EC2DesignInputs,
@@ -218,8 +217,8 @@ def test_eurocode_project_design_consumes_combined_effects_and_actual_lm1_deflec
 
     assert len(result) == 7
     first = result[0]
-    assert first.uls_combination_name == "EN 1990 persistent ULS"
-    assert first.sls_combination_name == "EN 1990 frequent SLS"
+    assert first.uls_combination_name == f"{BS_EN_1990} persistent ULS"
+    assert first.sls_combination_name == f"{BS_EN_1990} frequent SLS"
     assert first.flexure.design_moment_knm == pytest.approx(
         combinations[0].combinations.persistent_uls.effects.moment_knm
     )
