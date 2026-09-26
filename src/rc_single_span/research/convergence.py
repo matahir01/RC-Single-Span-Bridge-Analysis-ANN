@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from rc_single_span.research.dataset import DatasetEvaluator, ReliabilityDataset, generate_dataset
+from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.sampling import RandomVariable
 
 
@@ -71,13 +72,7 @@ def _standardized_change(
     previous: tuple[TargetSampleStatistics, ...],
     current: tuple[TargetSampleStatistics, ...],
 ) -> float:
-    """Compare adjacent sample sizes without unstable division by near-zero metrics.
-
-    Dimensional statistics are normalised by the larger of the two target standard
-    deviations (or 1.0 if both are tiny). Failure fraction is already dimensionless
-    and is compared as an absolute probability change. This makes the convergence
-    score interpretable near a failure probability of zero.
-    """
+    """Compare adjacent sample sizes without unstable division by near-zero metrics."""
 
     if tuple(item.target_name for item in previous) != tuple(
         item.target_name for item in current
@@ -106,14 +101,14 @@ def sample_size_convergence(
     *,
     base_seed: int = 20260926,
     tolerance: float = 0.05,
+    dependence: GaussianCopula | None = None,
 ) -> SampleSizeConvergenceResult:
     """Audit whether direct LHS response statistics stabilise as N increases.
 
-    Each sample size uses an independently seeded LHS. The result is evidence about
-    stability of the sampled response domain, not a mathematical proof that a chosen
-    N is universally sufficient. Reliability-tail convergence should also be checked
-    against FORM/direct Monte Carlo and, where failures are very rare, an appropriate
-    rare-event strategy.
+    Each sample size uses an independently seeded LHS with the same declared
+    dependence model. The result is evidence about stability of the sampled
+    response domain, not a mathematical proof that a chosen N is universally
+    sufficient. Reliability-tail convergence should also be checked separately.
     """
 
     if len(sample_counts) < 2:
@@ -135,6 +130,7 @@ def sample_size_convergence(
             sample_count,
             seed=seed,
             invalid_policy="raise",
+            dependence=dependence,
         )
         stats = _statistics(dataset)
         change = None if previous is None else _standardized_change(previous, stats)
