@@ -41,13 +41,18 @@ class RBDOResult:
     design: dict[str, float]
     objective: float
     reliability: dict[str, FORMResult]
+    minimum_beta: dict[str, float]
     success: bool
     message: str
     iterations: int
 
     @property
     def all_constraints_pass(self) -> bool:
-        return all(item.converged for item in self.reliability.values())
+        return all(
+            result.converged
+            and result.beta >= self.minimum_beta[target_name] - 1.0e-6
+            for target_name, result in self.reliability.items()
+        )
 
 
 def _variables_at_design(
@@ -98,6 +103,9 @@ def optimize_surrogate_rbdo(
         if item.target_name not in model.target_names:
             raise ValueError(f"Unknown reliability target: {item.target_name}")
 
+    minimum_beta = {
+        item.target_name: float(item.minimum_beta) for item in reliability_constraints
+    }
     kwargs = dict(form_kwargs or {})
     cache: dict[tuple[float, ...], dict[str, FORMResult]] = {}
 
@@ -164,6 +172,7 @@ def optimize_surrogate_rbdo(
         design=final_design,
         objective=float(result.fun),
         reliability=final_reliability,
+        minimum_beta=minimum_beta,
         success=bool(result.success and all_pass),
         message=str(result.message),
         iterations=int(getattr(result, "nit", 0)),
