@@ -75,7 +75,7 @@ class ReferenceRunConfig:
     max_exhaustive_kel_combinations: int = 5000
     max_exhaustive_ha_assignments: int = 500
     retain_all_cases: bool = True
-    lm1_udl_influence_surface: bool = False
+    lm1_udl_influence_surface: bool = True
 
     def __post_init__(self) -> None:
         positive = (
