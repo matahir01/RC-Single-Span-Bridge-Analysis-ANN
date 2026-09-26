@@ -29,11 +29,17 @@ remain explicit project inputs. Recommended Eurocode values are not silently
 labelled as Nigerian National Annex values, and UK NA values are used only when
 the project/client/approving authority adopts them.
 
-### Secondary legacy route
+### Secondary legacy route: BS 5400 / BD 37
 
-BS 5400 / BD 37/01 is retained as a **legacy** profile for older projects and
-comparison work. It remains separate from BS EN; traffic, material, resistance
-and detailing factors are not borrowed between the two routes.
+BS 5400 / BD 37/01 is retained as a **legacy** deterministic profile for older
+projects, owner/authority requirements and comparison work. Its focused V1
+software-capability gate is separately accepted; it remains isolated from BS EN
+and traffic, material, resistance and detailing factors are not borrowed between
+the two routes.
+
+BS 5400-4:1990 is a withdrawn legacy standard. Software acceptance of this path
+is therefore not a recommendation to select it for a new project: the adopted
+project/authority basis must explicitly require the legacy route.
 
 ## Focused V1 scope
 
@@ -47,6 +53,8 @@ V1 covers:
 - full-width grillage analysis and transverse distribution;
 - BS EN 1991-2 LM1 traffic with response-specific adverse UDL regions;
 - BS EN 1990 primary gravity/road-traffic ULS/SLS combinations;
+- legacy BD 37/01 HA, HB and HA+HB traffic;
+- legacy BS 5400 / BD 37 primary combinations 1-3 for modelled actions;
 - flexure, shear, cracking and elastic-response deflection checks;
 - discrete reinforcement selection and bridge-specific detailing infrastructure;
 - traceable calculation records carrying code basis, formula, substitution,
@@ -55,7 +63,9 @@ V1 covers:
 Continuous spans, prestressing, curved bridges, general substructure/foundation
 design, general local-deck design, staged continuity, changing supports,
 arbitrary propping/removal sequences and advanced creep/shrinkage
-redistribution remain outside focused V1.
+redistribution remain outside focused V1. Legacy combinations 4-5 also remain
+outside the focused BS 5400 / BD 37 acceptance until their corresponding
+secondary/accidental actions are explicitly modelled.
 
 ## Reference bridge
 
@@ -136,8 +146,8 @@ The design/detailing path also contains discrete cage selection, actual cage
 centroid/effective-depth rechecks, station-wise reinforcement zoning,
 curtailment, moving-axle fatigue-to-steel stress range, construction-stage steel
 stress, lap/splice zoning, local bearing/end-zone congestion and doubly
-reinforced SLS checking. `run_reference_project` can now execute the advanced
-Stage D orchestration when explicit `AdvancedStageDInputs` are supplied.
+reinforced SLS checking. `run_reference_project` can execute the advanced Stage
+D orchestration when explicit `AdvancedStageDInputs` are supplied.
 
 Project-specific inputs that cannot safely be inferred remain explicit. Missing
 or failing fatigue, construction-stage, bearing, splice or serviceability inputs
@@ -152,32 +162,61 @@ Underlying elastic displacements have external STAAD evidence, and the software
 re-searches combined permanent + traffic displacement across retained traffic
 cases. See `docs/BS_EN_DEFLECTION_BASIS.md`.
 
-## Legacy BS 5400 / BD 37
+## Legacy BS 5400 / BD 37 — CLOSED FOR FOCUSED V1
 
-The legacy path remains available and independently tracked. Official archived
-BD 37/01 evidence pins HA/HB/HA+HB mechanics and primary combinations 1-3. The
-Ragana calculation is retained as a narrow legacy RC benchmark. Unfinished
-legacy-detailing evidence does **not** block the primary BS EN V1 gate.
+The legacy path now has its own deterministic acceptance gate rather than being
+merely tolerated beside the BS EN route.
+
+The focused evidence package includes:
+
+- official archived BD 37/01 source checks for HA, HB and HA+HB mechanics;
+- source-pinned primary combinations 1-3;
+- genuine external STAAD response evidence for the BS traffic models;
+- the owner-supplied Ragana shear benchmark;
+- the separately reproduced Ragana doubly reinforced flexure benchmark;
+- an independent BS 5400-4 crack-width worked example reproducing approximately
+  96.9 mm compression depth, 87 mm `a_cr` and 0.22 mm crack width;
+- source-pinned BS 5400-4 reinforcement/detailing limits for minimum/maximum
+  main steel, side-face reinforcement, clear spacing, tension-bar spacing and
+  beam-link spacing;
+- discrete cage/link selection, station-wise reinforcement zoning, doubly
+  reinforced SLS and advanced Stage D infrastructure.
+
+Legacy advanced Stage D intentionally requires an explicit verified fatigue
+vehicle/model and an explicit verified legacy tension-shift/curtailment input.
+The software does not fabricate these values. Project crack/deflection limits,
+HB units, bearing geometry, construction-stage stress limits and splice policy
+also remain explicit.
+
+See `docs/BS5400_BD37_V1_DETERMINISTIC_CLOSURE.md`.
 
 ## Deterministic V1 release position
 
-**GO — the focused BS EN deterministic software capability is accepted for V1
-within the documented scope.**
+**GO — both focused deterministic software profiles are accepted within their
+documented V1 scopes:**
 
-The acceptance matrix now closes the primary BS EN software-capability gate, and
-the deterministic engine may move on to dataset generation, ANN surrogate work,
-reliability analysis and RBDO within that accepted V1 boundary.
+- **BS EN V1: GO**;
+- **legacy BS 5400 / BD 37 V1: GO**.
+
+The two acceptance gates are independent. A future change to one code path must
+not silently alter the other.
+
+The deterministic engine may therefore move on to dataset generation, ANN
+surrogate work, reliability analysis and RBDO using the code profile deliberately
+selected for that study/project and only within its accepted deterministic
+boundary.
 
 This is **not** approval of a particular bridge for construction. Every real
-project still requires its adopted National Annex/NDP basis, actual actions and
+project still requires its adopted code/authority basis, actual actions and
 materials, project serviceability criteria, fatigue/detailing inputs, bearing
 geometry and competent engineering review. A project with missing inputs or
-failed checks must remain not-ready even though the underlying V1 software
+failed checks must remain not-ready even though the underlying software
 capability is accepted.
 
 See:
 
 - `docs/BS_EN_V1_DETERMINISTIC_CLOSURE.md`;
+- `docs/BS5400_BD37_V1_DETERMINISTIC_CLOSURE.md`;
 - `src/rc_single_span/verification/acceptance.py`;
 - `docs/CODE_LOADING_INDEPENDENT_AUDIT.md`;
 - `docs/REINFORCEMENT_SYNTHESIS.md`;
