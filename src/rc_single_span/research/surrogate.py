@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import pairwise
 from pathlib import Path
 
 import numpy as np
@@ -138,7 +139,7 @@ class NumpyMLPRegressor:
         widths = (input_count, *self.config.hidden_layers, output_count)
         self.weights = []
         self.biases = []
-        for left, right in zip(widths[:-1], widths[1:], strict=True):
+        for left, right in pairwise(widths):
             scale = np.sqrt(2.0 / left)
             self.weights.append(rng.normal(0.0, scale, size=(left, right)))
             self.biases.append(np.zeros((1, right), dtype=float))
@@ -159,7 +160,9 @@ class NumpyMLPRegressor:
 
     def _loss(self, prediction: np.ndarray, truth: np.ndarray) -> float:
         mse = float(np.mean((prediction - truth) ** 2))
-        penalty = self.config.l2 * sum(float(np.sum(weight * weight)) for weight in self.weights)
+        penalty = self.config.l2 * sum(
+            float(np.sum(weight * weight)) for weight in self.weights
+        )
         return mse + penalty
 
     def fit(
@@ -221,7 +224,10 @@ class NumpyMLPRegressor:
                 grad_b = [np.zeros_like(bias) for bias in self.biases]
 
                 for layer in range(len(self.weights) - 1, -1, -1):
-                    grad_w[layer] = activations[layer].T @ grad + 2.0 * self.config.l2 * self.weights[layer]
+                    grad_w[layer] = (
+                        activations[layer].T @ grad
+                        + 2.0 * self.config.l2 * self.weights[layer]
+                    )
                     grad_b[layer] = np.sum(grad, axis=0, keepdims=True)
                     if layer > 0:
                         grad = (grad @ self.weights[layer].T) * self._relu_gradient(
@@ -274,7 +280,10 @@ class NumpyMLPRegressor:
         return self.history
 
     def fit_split(self, split: DatasetSplit) -> TrainingHistory:
-        if split.train.feature_names != self.feature_names or split.train.target_names != self.target_names:
+        if (
+            split.train.feature_names != self.feature_names
+            or split.train.target_names != self.target_names
+        ):
             raise ValueError("Dataset split does not match ANN feature/target names.")
         return self.fit(
             split.train.features,
@@ -302,9 +311,16 @@ class NumpyMLPRegressor:
         return physical[0] if one_row else physical
 
     def evaluate(self, dataset: ReliabilityDataset) -> RegressionMetrics:
-        if dataset.feature_names != self.feature_names or dataset.target_names != self.target_names:
+        if (
+            dataset.feature_names != self.feature_names
+            or dataset.target_names != self.target_names
+        ):
             raise ValueError("Dataset does not match ANN feature/target names.")
-        return regression_metrics(dataset.targets, self.predict(dataset.features), self.target_names)
+        return regression_metrics(
+            dataset.targets,
+            self.predict(dataset.features),
+            self.target_names,
+        )
 
     def save_npz(self, path: str | Path) -> Path:
         if not self.fitted:
