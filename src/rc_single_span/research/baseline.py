@@ -89,13 +89,12 @@ def _deflection_components(
     if not candidates:
         raise ValueError("Reference run contains no BS EN displacement response.")
     _, girder_index, permanent, traffic = max(candidates, key=lambda item: item[0])
-    return (
-        girder_index,
-        permanent,
-        traffic,
-        "LM1 traffic-governing displacement station plus characteristic permanent displacement "
-        "at the same station; not a full all-placement combined displacement re-search",
+    deflection_basis = (
+        "LM1 traffic-governing displacement station plus characteristic permanent "
+        "displacement at the same station; not a full all-placement combined "
+        "displacement re-search"
     )
+    return girder_index, permanent, traffic, deflection_basis
 
 
 def extract_bs_en_reliability_baseline(
