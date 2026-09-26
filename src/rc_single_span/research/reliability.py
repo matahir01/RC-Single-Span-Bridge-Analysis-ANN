@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from math import sqrt
-from typing import Callable, Protocol
+from typing import Protocol
 
 import numpy as np
 from scipy.stats import norm
@@ -72,7 +73,11 @@ def surrogate_limit_state(
     return evaluate
 
 
-def _wilson_interval(failures: int, sample_count: int, confidence: float) -> tuple[float, float]:
+def _wilson_interval(
+    failures: int,
+    sample_count: int,
+    confidence: float,
+) -> tuple[float, float]:
     if not 0.0 < confidence < 1.0:
         raise ValueError("confidence must lie in (0, 1).")
     p = failures / sample_count
@@ -109,8 +114,6 @@ def monte_carlo_surrogate_reliability(
         raise KeyError(target_name) from exc
     failures = int(np.count_nonzero(predictions[:, target_index] <= 0.0))
     probability = failures / sample_count
-    # Jeffreys-style continuity correction keeps beta finite for zero/all failures
-    # while preserving the reported raw Monte-Carlo probability above.
     probability_for_beta = (failures + 0.5) / (sample_count + 1.0)
     beta = -float(norm.ppf(probability_for_beta))
     low, high = _wilson_interval(failures, sample_count, confidence)
@@ -145,17 +148,22 @@ def form_hlrf(
 
     if not variables:
         raise ValueError("FORM requires at least one random variable.")
-    if min(maximum_iterations, 1) <= 0:
+    if maximum_iterations <= 0:
         raise ValueError("maximum_iterations must be positive.")
     if min(tolerance_u, tolerance_g, gradient_step) <= 0.0:
         raise ValueError("FORM tolerances and gradient_step must be positive.")
 
     dimension = len(variables)
-    u = np.zeros(dimension, dtype=float) if initial_u is None else np.asarray(initial_u, dtype=float)
+    u = (
+        np.zeros(dimension, dtype=float)
+        if initial_u is None
+        else np.asarray(initial_u, dtype=float)
+    )
     if u.shape != (dimension,):
         raise ValueError("initial_u has the wrong dimension.")
 
-    origin_g = float(limit_state(standard_normal_to_physical(variables, np.zeros(dimension))))
+    origin = standard_normal_to_physical(variables, np.zeros(dimension))
+    origin_g = float(limit_state(origin))
     sign = 1.0 if origin_g >= 0.0 else -1.0
     alpha = np.zeros(dimension, dtype=float)
     converged = False
@@ -183,22 +191,20 @@ def form_hlrf(
         coefficient = (float(np.dot(gradient, u)) - g) / (gradient_norm**2)
         target = coefficient * gradient
 
-        # A simple backtracking step makes the classical HLRF update much less
-        # prone to oscillation on ANN surfaces while retaining the same fixed point.
         current_abs_g = abs(g)
         relaxation = 1.0
         u_new = target
         for _ in range(12):
             candidate = u + relaxation * (target - u)
-            candidate_g = abs(
-                float(limit_state(standard_normal_to_physical(variables, candidate)))
-            )
+            candidate_x = standard_normal_to_physical(variables, candidate)
+            candidate_g = abs(float(limit_state(candidate_x)))
             u_new = candidate
             if candidate_g <= current_abs_g or relaxation <= 1.0 / 2048.0:
                 break
             relaxation *= 0.5
 
-        new_g = float(limit_state(standard_normal_to_physical(variables, u_new)))
+        new_x = standard_normal_to_physical(variables, u_new)
+        new_g = float(limit_state(new_x))
         if np.linalg.norm(u_new - u) <= tolerance_u and abs(new_g) <= tolerance_g:
             u = u_new
             g = new_g
