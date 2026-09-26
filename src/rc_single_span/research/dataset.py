@@ -189,8 +189,8 @@ def split_dataset(
 
     rng = np.random.default_rng(seed)
     indices = rng.permutation(dataset.size)
-    n_train = max(1, int(round(dataset.size * train_fraction)))
-    n_val = max(1, int(round(dataset.size * validation_fraction)))
+    n_train = max(1, round(dataset.size * train_fraction))
+    n_val = max(1, round(dataset.size * validation_fraction))
     if n_train + n_val >= dataset.size:
         n_val = max(1, dataset.size - n_train - 1)
     n_test_start = n_train + n_val
