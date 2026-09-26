@@ -1,4 +1,4 @@
-# Code loading independent audit — closed primary BS EN V1, 26 September 2026
+# Code loading independent audit — closed BS EN and legacy BS V1, 26 September 2026
 
 ## Code basis and scope
 
@@ -11,8 +11,11 @@ Recommended Eurocode/JRC verification values are not labelled as Nigerian
 National Annex values. Nationally Determined Parameters and authority adoption
 remain explicit project inputs.
 
-The legacy BS 5400 / BD 37/01 route remains separate and does not donate
-traffic, combination, material or detailing factors to the primary BS EN path.
+The legacy BS 5400 / BD 37/01 route has its own accepted focused V1 software
+capability. It remains separate and does not donate traffic, combination,
+material or detailing factors to the primary BS EN path. BS 5400-4:1990 is a
+withdrawn legacy standard, so use of that route requires an explicit project or
+authority basis.
 
 ## BS EN 1991-2 LM1 geometry and adverse UDL search
 
@@ -139,8 +142,8 @@ stress, lap/splice zoning, local bearing/end-zone congestion and doubly
 reinforced SLS. Source-pinned examples independently check anchorage, EC2
 tension shift and fatigue; regression checks exercise the remaining mechanics.
 
-`run_reference_project` now passes the actual LM1 search into basic detailing
-and can execute `run_eurocode_advanced_stage_d` when explicit
+`run_reference_project` passes the actual traffic search into basic detailing
+and can execute the code-specific advanced Stage D orchestration when explicit
 `AdvancedStageDInputs` are supplied.
 
 Project-specific fatigue resistance/category, construction-stage allowable steel
@@ -156,27 +159,68 @@ comparison failures**. It includes construction stages, permanent components,
 characteristic traffic, separately weighted frequent LM1 and corrected
 HB/HA+HB output completeness.
 
-## Legacy BS 5400 / BD 37 evidence
+## Legacy BS 5400 / BD 37 evidence — CLOSED for focused V1
 
-Official archived BD 37/01 material remains the primary legacy traffic source.
-Tests pin HA UDL/KEL, HB geometry/factors and HA+HB coexistence mechanics.
-Legacy external STAAD structural-response evidence is included in the 83-model
-campaign.
+Official archived BD 37/01 material is the primary legacy traffic source. Tests
+pin HA UDL/KEL, HB geometry/factors and HA+HB coexistence mechanics. Primary
+legacy combinations 1-3 are source-pinned for the actions implemented by the
+focused path. Legacy external STAAD response evidence is included in the
+83-model campaign, including complete corrected HB and HA+HB output sets.
 
-The owner-supplied Ragana calculation remains a narrow legacy RC benchmark. Its
-shear and separately corrected doubly reinforced flexure paths are reproduced.
-Its printed crack calculation remains internally inconsistent and is not used as
-acceptance evidence. None of those legacy assumptions alters the BS EN path.
+The owner-supplied Ragana calculation supplies independent legacy resistance
+benchmarks. The shear path reproduces its reported shear stress, concrete shear
+contribution and required links. The doubly reinforced flexure path separately
+reproduces its limiting concrete moment and compression/tension steel demand.
 
-## Primary BS EN V1 decision
+The Ragana crack calculation remains excluded because its printed neutral-axis
+calculation is internally inconsistent. Legacy crack acceptance is instead
+pinned to a separate published BS 5400-4 worked example using equations 24/25.
+For h=400 mm, d=342 mm, As=1340 mm2/m, Es=200 GPa, modified Ec=14 GPa,
+Mg=25 kNm/m, Mq=45 kNm/m, T16 at 150 mm and 50 mm nominal cover, the production
+kernel reproduces approximately 96.9 mm compression depth, 87 mm controlling
+surface distance and 0.22 mm crack width.
+
+The legacy detailing layer is source-pinned for the provisions it automates:
+
+- 0.15% b_a d minimum main tension steel for Grade 460;
+- 0.25% b_a d minimum main tension steel for Grade 250;
+- 4% gross-area maximum main reinforcement;
+- 0.05% b_t d side-face steel on each face where beam side-face depth exceeds
+  600 mm;
+- minimum clear spacing of maximum aggregate size + 5 mm;
+- maximum tension-bar spacing of 300 mm, subject also to crack control; and
+- maximum beam-link spacing of 0.75d.
+
+Unknown reinforcement grades are not silently remapped; an explicit adopted
+minimum-main-steel ratio is required.
+
+Legacy advanced Stage D remains conservative about inputs that are not safely
+universal. In particular, `run_bs5400_advanced_stage_d` requires an explicit
+verified fatigue vehicle/model and an explicit verified legacy tension-shift
+length before those checks can complete. Bearing geometry, construction-stage
+stress limit, splice rules and related project details also remain explicit.
+This explicit-input boundary is part of the accepted software behaviour rather
+than an unresolved calculation shortcut.
+
+Focused legacy V1 does **not** claim combinations 4-5 without implementing the
+corresponding secondary/accidental actions, and it does not imply that BS 5400
+should be selected for a new project.
+
+## Deterministic software decisions
 
 The focused **BS EN deterministic software capability is GO for V1** within the
-documented scope. The formal closure boundary is recorded in
-`docs/BS_EN_V1_DETERMINISTIC_CLOSURE.md` and the primary acceptance items in
-`src/rc_single_span/verification/acceptance.py` are now accepted.
+documented scope in `docs/BS_EN_V1_DETERMINISTIC_CLOSURE.md`.
 
-This software decision does **not** approve a real bridge design. Every real
-project still requires actual project actions/materials, the adopted National
-Annex/NDP basis, serviceability criteria, fatigue/detailing data, local bearing
-geometry and competent engineering review. Expanding the action model, bridge
-topology or response formulations re-opens the relevant verification gates.
+The focused **legacy BS 5400 / BD 37 deterministic software capability is also
+GO for V1** within the separate documented scope in
+`docs/BS5400_BD37_V1_DETERMINISTIC_CLOSURE.md`.
+
+The two acceptance gates are independent in
+`src/rc_single_span/verification/acceptance.py`.
+
+These are software-capability decisions, not approval of a real bridge design.
+Every real project still requires actual project actions/materials, the adopted
+code/authority basis, serviceability criteria, fatigue/detailing data, local
+bearing geometry and competent engineering review. Expanding the action model,
+bridge topology or response formulations re-opens the relevant verification
+gates.
