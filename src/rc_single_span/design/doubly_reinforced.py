@@ -184,7 +184,7 @@ def required_doubly_reinforced_steel_bs5400(
     maximum_lever_arm_ratio: float = 0.95,
     concrete_block_stress_factor: float = 0.40,
     tension_steel_design_factor: float = 0.87,
-    compression_steel_design_factor: float = 0.87,
+    compression_steel_design_factor: float = 0.72,
 ) -> DoublyReinforcedRequirement:
     """Legacy BS 5400-style doubly reinforced layered-section extension.
 
@@ -462,7 +462,7 @@ def check_doubly_reinforced_bs5400(
     maximum_lever_arm_ratio: float = 0.95,
     concrete_block_stress_factor: float = 0.40,
     tension_steel_design_factor: float = 0.87,
-    compression_steel_design_factor: float = 0.87,
+    compression_steel_design_factor: float = 0.72,
 ) -> DoublyReinforcedCheckResult:
     """Verify a discrete BS 5400 top/bottom cage on the repository's legacy basis."""
 
