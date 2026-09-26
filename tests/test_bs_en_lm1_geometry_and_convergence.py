@@ -57,7 +57,7 @@ def test_bs_en_lm1_tandem_wheels_and_characteristic_resultants_match_source_basi
     # Two loaded notional lanes, two axles per tandem and two wheels per axle.
     assert len(points) == 8
     assert len(areas) == 3  # lane 1 UDL + lane 2 UDL + remaining-area UDL
-    assert sum(point.load_kn for point in points) == pytest.approx(1000.0)
+    assert sum(point.magnitude_kn for point in points) == pytest.approx(1000.0)
     assert sum(
         area.pressure_kn_m2
         * (area.x_end_m - area.x_start_m)
