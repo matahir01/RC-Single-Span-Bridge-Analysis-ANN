@@ -221,7 +221,18 @@ def _governing_labels(search: object, source_case_id: int) -> tuple[str, ...]:
         ):
             if component.case_id == source_case_id:
                 labels.append(f"G{girder.girder_index} {quantity}")
-    return tuple(labels)
+
+    # The influence-surface LM1 search can retain a case solely because it
+    # governs a longitudinal station used by the reinforcement envelope. Such a
+    # case is genuine verification evidence even when it does not govern the
+    # girder-wide maximum moment/shear/torsion/deflection summary.
+    for girder in getattr(search, "station_moments", ()):
+        for station in girder.stations:
+            if station.moment_knm.case_id == source_case_id:
+                labels.append(
+                    f"G{girder.girder_index} moment at x={station.x_m:.6g} m"
+                )
+    return tuple(dict.fromkeys(labels))
 
 
 def _validate_connected_full_bridge(
@@ -308,7 +319,7 @@ def build_full_bridge_traffic_campaign(
                     "case_key": case_key,
                     "governing_for": "; ".join(governing_for),
                     "search_retention_basis": (
-                        "case governs at least one moment, shear, torsion or deflection "
+                        "case governs at least one girder-wide response or station moment "
                         "quantity across the seven physical girders"
                     ),
                 },
@@ -544,7 +555,10 @@ def build_cross_stage_combination_rules(
         for combination in (1, 2, 3):
             for limit_state in BS5400LimitState:
                 named = bs_permanent.as_named_factors(limit_state)
-                permanent = {category: named[category.value] for category in PermanentLoadCategory}
+                permanent = {
+                    category: named[category.value]
+                    for category in PermanentLoadCategory
+                }
                 rules.append(
                     CrossStageCombinationRule(
                         rule_id=(
