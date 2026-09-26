@@ -7,6 +7,8 @@ from math import exp, log, sqrt
 import numpy as np
 from scipy.stats import lognorm, norm, qmc, uniform
 
+from rc_single_span.research.dependence import GaussianCopula
+
 
 class DistributionFamily(str, Enum):
     NORMAL = "normal"
@@ -138,7 +140,7 @@ class RandomVariable:
         return np.asarray(distribution.ppf(probabilities), dtype=float)
 
     def from_standard_normal(self, values: np.ndarray | float) -> np.ndarray:
-        """Transform independent standard-normal coordinates to physical space."""
+        """Transform latent standard-normal coordinates to physical space."""
 
         u = np.asarray(values, dtype=float)
         return self.from_unit_interval(norm.cdf(u))
@@ -179,26 +181,46 @@ class SampleSet:
         )
 
 
-def latin_hypercube(
-    variables: tuple[RandomVariable, ...],
-    sample_count: int,
-    *,
-    seed: int | None = None,
-) -> SampleSet:
-    """Generate a reproducible Latin-hypercube design in physical space."""
-
-    if sample_count <= 0:
-        raise ValueError("sample_count must be positive.")
+def _variable_names(variables: tuple[RandomVariable, ...]) -> tuple[str, ...]:
     if not variables:
         raise ValueError("At least one random variable is required.")
     names = tuple(variable.name for variable in variables)
     if len(set(names)) != len(names):
         raise ValueError("Random-variable names must be unique.")
+    return names
+
+
+def _apply_gaussian_copula(
+    unit: np.ndarray,
+    dependence: GaussianCopula,
+) -> np.ndarray:
+    latent = norm.ppf(np.clip(unit, 1.0e-12, 1.0 - 1.0e-12))
+    correlated = dependence.correlate_standard_normals(latent)
+    return np.asarray(norm.cdf(correlated), dtype=float)
+
+
+def latin_hypercube(
+    variables: tuple[RandomVariable, ...],
+    sample_count: int,
+    *,
+    seed: int | None = None,
+    dependence: GaussianCopula | None = None,
+) -> SampleSet:
+    """Generate a reproducible LHS, optionally coupled by a Gaussian copula."""
+
+    if sample_count <= 0:
+        raise ValueError("sample_count must be positive.")
+    names = _variable_names(variables)
     unit = qmc.LatinHypercube(d=len(variables), seed=seed).random(sample_count)
+    method = "latin_hypercube"
+    if dependence is not None:
+        dependence.validate_names(names)
+        unit = _apply_gaussian_copula(unit, dependence)
+        method = "latin_hypercube_gaussian_copula"
     values = np.column_stack(
         [variable.from_unit_interval(unit[:, index]) for index, variable in enumerate(variables)]
     )
-    return SampleSet(names, values, method="latin_hypercube", seed=seed)
+    return SampleSet(names, values, method=method, seed=seed)
 
 
 def independent_random_samples(
@@ -206,36 +228,52 @@ def independent_random_samples(
     sample_count: int,
     *,
     seed: int | None = None,
+    dependence: GaussianCopula | None = None,
 ) -> SampleSet:
-    """Generate ordinary independent samples for Monte-Carlo reliability checks."""
+    """Generate Monte-Carlo samples with optional Gaussian-copula dependence."""
 
     if sample_count <= 0:
         raise ValueError("sample_count must be positive.")
-    if not variables:
-        raise ValueError("At least one random variable is required.")
+    names = _variable_names(variables)
     rng = np.random.default_rng(seed)
-    values = np.column_stack(
-        [variable.random_sample(sample_count, rng) for variable in variables]
-    )
-    return SampleSet(
-        tuple(variable.name for variable in variables),
-        values,
-        method="independent_random",
-        seed=seed,
-    )
+    if dependence is None:
+        values = np.column_stack(
+            [variable.random_sample(sample_count, rng) for variable in variables]
+        )
+        method = "independent_random"
+    else:
+        dependence.validate_names(names)
+        independent = rng.standard_normal((sample_count, len(variables)))
+        correlated = dependence.correlate_standard_normals(independent)
+        probabilities = norm.cdf(correlated)
+        values = np.column_stack(
+            [
+                variable.from_unit_interval(probabilities[:, index])
+                for index, variable in enumerate(variables)
+            ]
+        )
+        method = "gaussian_copula_random"
+    return SampleSet(names, values, method=method, seed=seed)
 
 
 def standard_normal_to_physical(
     variables: tuple[RandomVariable, ...],
     u: np.ndarray,
+    *,
+    dependence: GaussianCopula | None = None,
 ) -> np.ndarray:
-    """Transform one or many independent standard-normal vectors to physical space."""
+    """Transform independent normal coordinates to the physical basic variables."""
 
+    names = _variable_names(variables)
     array = np.asarray(u, dtype=float)
     if array.shape[-1] != len(variables):
         raise ValueError("Standard-normal vector dimension does not match variables.")
+    latent = array
+    if dependence is not None:
+        dependence.validate_names(names)
+        latent = dependence.correlate_standard_normals(array)
     columns = [
-        variable.from_standard_normal(array[..., index])
+        variable.from_standard_normal(latent[..., index])
         for index, variable in enumerate(variables)
     ]
     return np.stack(columns, axis=-1)
