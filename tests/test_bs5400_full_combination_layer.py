@@ -4,8 +4,8 @@ import pytest
 
 from rc_single_span.codes.bs5400.secondary import (
     BS5400Combination4Action,
-    custom_combination4_factors,
     build_bs5400_combination4,
+    custom_combination4_factors,
 )
 from rc_single_span.codes.common import LoadEffects
 from rc_single_span.core.models import (
