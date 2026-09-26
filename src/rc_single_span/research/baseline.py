@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from rc_single_span.analysis.construction import factored_permanent_deflection_at_x_mm
 from rc_single_span.analysis.sections import final_composite_girder_properties
 from rc_single_span.core.models import BridgeProject
 from rc_single_span.verification.reference_runner import ReferenceRunResult
@@ -30,6 +31,7 @@ class BSENReliabilityBaseline:
     traffic_deflection_mm: float
     nominal_deflection_iy_m4: float
     provenance: str
+    deflection_basis: str = "explicit baseline"
 
     def __post_init__(self) -> None:
         if min(
@@ -50,8 +52,50 @@ class BSENReliabilityBaseline:
             raise ValueError("Reliability baseline action magnitudes cannot be negative.")
         if self.nominal_deflection_iy_m4 <= 0.0:
             raise ValueError("Baseline flexural inertia must be positive.")
-        if not self.provenance.strip():
-            raise ValueError("Reliability baseline provenance is required.")
+        if not self.provenance.strip() or not self.deflection_basis.strip():
+            raise ValueError("Reliability baseline provenance/basis is required.")
+
+
+def _deflection_components(
+    result: ReferenceRunResult,
+) -> tuple[int, float, float, str]:
+    exact = result.eurocode_characteristic_deflection
+    if exact:
+        item = max(exact, key=lambda envelope: envelope.governing.total_mm)
+        governing = item.governing
+        return (
+            item.girder_index,
+            governing.permanent_mm,
+            governing.traffic_mm,
+            "combined permanent+LM1 displacement re-search across retained traffic cases",
+        )
+
+    # The response-specific influence-surface search stores only governing
+    # physical cases rather than every tandem placement. In that mode retain the
+    # deterministic traffic-governing displacement station and add the
+    # characteristic permanent displacement at the same station. This fallback is
+    # deliberately labelled because the stochastic model must not claim a full
+    # combined-case re-search that was not performed.
+    candidates: list[tuple[float, int, float, float]] = []
+    for envelope in result.lm1.girders:
+        x_m = float(envelope.deflection_position_m)
+        permanent = factored_permanent_deflection_at_x_mm(
+            result.project,
+            girder_index=envelope.girder_index,
+            x_m=x_m,
+        )
+        traffic = float(envelope.deflection_mm.value)
+        candidates.append((permanent + traffic, envelope.girder_index, permanent, traffic))
+    if not candidates:
+        raise ValueError("Reference run contains no BS EN displacement response.")
+    _, girder_index, permanent, traffic = max(candidates, key=lambda item: item[0])
+    return (
+        girder_index,
+        permanent,
+        traffic,
+        "LM1 traffic-governing displacement station plus characteristic permanent displacement "
+        "at the same station; not a full all-placement combined displacement re-search",
+    )
 
 
 def extract_bs_en_reliability_baseline(
@@ -71,37 +115,33 @@ def extract_bs_en_reliability_baseline(
         combinations,
         key=lambda item: item.combinations.persistent_uls.effects.shear_kn,
     )
-
-    deflections = result.eurocode_characteristic_deflection
-    if not deflections:
-        raise ValueError(
-            "Reference run does not contain a complete characteristic deflection envelope."
-        )
-    deflection_item = max(deflections, key=lambda item: item.governing.total_mm)
+    deflection_index, permanent_deflection, traffic_deflection, deflection_basis = (
+        _deflection_components(result)
+    )
 
     moment_set = moment_item.combinations
     shear_set = shear_item.combinations
-    governing_deflection = deflection_item.governing
     iy = final_composite_girder_properties(
         result.project.geometry,
-        girder_index=deflection_item.girder_index,
+        girder_index=deflection_index,
     ).iy_m4
 
     return BSENReliabilityBaseline(
         project=result.project,
         moment_girder_index=moment_item.girder_index,
         shear_girder_index=shear_item.girder_index,
-        deflection_girder_index=deflection_item.girder_index,
+        deflection_girder_index=deflection_index,
         permanent_moment_knm=moment_set.permanent_characteristic.moment_knm,
         traffic_moment_knm=moment_set.traffic_characteristic.moment_knm,
         permanent_shear_kn=shear_set.permanent_characteristic.shear_kn,
         traffic_shear_kn=shear_set.traffic_characteristic.shear_kn,
-        permanent_deflection_mm=governing_deflection.permanent_mm,
-        traffic_deflection_mm=governing_deflection.traffic_mm,
+        permanent_deflection_mm=permanent_deflection,
+        traffic_deflection_mm=traffic_deflection,
         nominal_deflection_iy_m4=iy,
         provenance=(
-            "BS EN reliability baseline extracted from the verified common-grillage "
-            "reference run: governing persistent-ULS moment/shear girders and the "
-            "governing characteristic permanent+LM1 displacement case."
+            "BS EN reliability baseline extracted from the verified common-grillage reference "
+            "run. Characteristic permanent and LM1 components are kept separate before "
+            "stochastic scaling."
         ),
+        deflection_basis=deflection_basis,
     )
