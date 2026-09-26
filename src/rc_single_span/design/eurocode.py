@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from math import sqrt
 
 from rc_single_span.analysis.sections import ConcreteLayer
+from rc_single_span.design.bs_en_cracking import bs_en_crack_width_from_steel_stress
 from rc_single_span.design.layered import (
     cracked_layered_section,
     effective_tension_area_mm2,
@@ -255,19 +256,34 @@ def check_crack_width_ec2(
             close_spacing=True,
         )
 
-    strain_calc = (
-        sigma_s - kt * fct_eff_mpa / rho * (1.0 + modular_ratio * rho)
-    ) / es_mpa
-    strain_min = 0.6 * sigma_s / es_mpa
-    strain_difference = max(strain_calc, strain_min, 0.0)
     close_spacing = bar_spacing_mm <= 5.0 * (cover_mm + bar_diameter_mm / 2.0)
     if close_spacing:
-        srmax = k3 * cover_mm + k1 * k2 * k4 * bar_diameter_mm / rho
+        formula = bs_en_crack_width_from_steel_stress(
+            steel_stress_mpa=sigma_s,
+            effective_reinforcement_ratio=rho,
+            bar_diameter_mm=bar_diameter_mm,
+            cover_mm=cover_mm,
+            es_mpa=es_mpa,
+            modular_ratio=modular_ratio,
+            fct_eff_mpa=fct_eff_mpa,
+            kt=kt,
+            k1=k1,
+            k2=k2,
+            k3=k3,
+            k4=k4,
+        )
+        srmax = formula.maximum_crack_spacing_mm
+        crack_width = formula.crack_width_mm
     else:
+        strain_calc = (
+            sigma_s - kt * fct_eff_mpa / rho * (1.0 + modular_ratio * rho)
+        ) / es_mpa
+        strain_min = 0.6 * sigma_s / es_mpa
+        strain_difference = max(strain_calc, strain_min, 0.0)
         srmax = 1.3 * (
             total_depth_m * 1000.0 - cracked.neutral_axis_from_top_mm
         )
-    crack_width = srmax * strain_difference
+        crack_width = srmax * strain_difference
 
     return EC2CrackWidthResult(
         crack_width_mm=crack_width,
@@ -280,7 +296,6 @@ def check_crack_width_ec2(
         effective_reinforcement_ratio=rho,
         close_spacing=close_spacing,
     )
-
 
 
 def required_steel_area_layered_ec2(
