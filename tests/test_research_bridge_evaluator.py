@@ -117,11 +117,11 @@ def test_resistance_model_uncertainty_scales_matching_resistance() -> None:
     flexure = evaluator.evaluate(_sample(flexure_resistance_model_factor=1.20))
     shear = evaluator.evaluate(_sample(shear_resistance_model_factor=0.90))
     assert base.valid and flexure.valid and shear.valid
-    assert flexure.values["moment_resistance_knm"] == np.testing.assert_allclose(
+    np.testing.assert_allclose(
         flexure.values["moment_resistance_knm"],
         1.20 * base.values["nominal_moment_resistance_knm"],
     )
-    assert shear.values["shear_resistance_kn"] == np.testing.assert_allclose(
+    np.testing.assert_allclose(
         shear.values["shear_resistance_kn"],
         0.90 * base.values["nominal_shear_resistance_kn"],
     )
