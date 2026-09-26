@@ -3,12 +3,12 @@
 ## Purpose
 
 The production BS EN route uses the response-specific signed influence-surface
-LM1 search.  Because the tandem-system longitudinal positions are discretised,
+LM1 search. Because the tandem-system longitudinal positions are discretised,
 the adopted search step must be demonstrated to be sufficiently refined for the
 reference bridge rather than treated as a universal constant.
 
 This audit is deliberately separate from the completed STAAD structural-solver
-comparison.  STAAD agreement verifies structural response for exported load
+comparison. STAAD agreement verifies structural response for exported load
 cases; this convergence audit checks whether the BS EN LM1 search itself has
 stabilised as the tandem-position grid is refined.
 
@@ -22,13 +22,13 @@ stabilised as the tandem-position grid is refined.
   assumption.
 - Acceptance tolerance: maximum relative change <= 5% across the girder
   envelopes for bending moment, shear, torsion and deflection.
-- Tandem placements must remain exhaustive at every refinement.  A reduced
+- Tandem placements must remain exhaustive at every refinement. A reduced
   search is not eligible to be labelled converged.
 
 ## First refinement: 2.4 m -> 1.2 m
 
 GitHub Actions run `36228045371` completed the exhaustive refinement and produced
-an audit artifact.  The engineering result was **NOT CONVERGED** at the adopted
+an audit artifact. The engineering result was **NOT CONVERGED** at the adopted
 5% tolerance:
 
 | Item | Result |
@@ -42,16 +42,37 @@ an audit artifact.  The engineering result was **NOT CONVERGED** at the adopted
 | Governing quantity | Shear |
 | Governing girder | 4 |
 
-The 1.2 m result is therefore **not** accepted merely because it is finer than
-the previous grid.  The 5% criterion has not been relaxed.
+The 1.2 m result was therefore rejected. The 5% criterion was not relaxed.
 
-## Required next refinement
+## Second refinement: 1.2 m -> 0.6 m
 
-The audit workflow has been changed to evaluate **1.2 m -> 0.6 m** with the same
-5% acceptance criterion and exhaustive-search requirement.  The 0.6 m grid is
-within the configured exhaustive-combination cap for the 7 m reference
-carriageway.
+GitHub Actions run `36228438781` completed successfully and uploaded the audit
+artifact `bs-en-lm1-convergence-audit` with digest
+`sha256:34c9540cc159ea882f5f65daac8f735caa477b953b24266dd7ff8bd270dc5dfc`.
+The engineering convergence result was **PASS**:
 
-Until that refinement completes satisfactorily, the BS EN LM1 numerical-search
-convergence item remains open.  A failure at 0.6 m is evidence to refine or
-improve the search further, not a reason to widen the acceptance tolerance.
+| Item | Result |
+| --- | ---: |
+| Coarse longitudinal step | 1.2 m |
+| Fine longitudinal step | 0.6 m |
+| Exhaustive tandem combinations | Yes |
+| Theoretical combinations per transverse layout at 0.6 m | 576 |
+| Evaluated LM1 placements at 0.6 m | 2,304 |
+| Maximum relative envelope change | 4.08765% |
+| Governing quantity | Torsion |
+| Governing girder | 2 |
+| Acceptance tolerance | 5.0% |
+
+Because 4.08765% is below the pre-declared 5% criterion and the tandem search
+remained exhaustive, the **15 m reference bridge LM1 search-resolution gate is
+closed at 0.6 m**.
+
+## Production consequence
+
+`ReferenceRunConfig` now uses `lm1_longitudinal_step_m = 0.6` for the 15 m
+reference project so the production/reference deterministic path does not fall
+back to the rejected 1.2 m grid.
+
+This is not a universal Eurocode discretisation rule. A materially different
+span, lane arrangement, girder layout or response topology should run the same
+convergence audit and either accept its own converged step or refine further.
