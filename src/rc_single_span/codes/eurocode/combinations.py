@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from rc_single_span.codes.common import FactoredCombination, LoadEffects
+from rc_single_span.codes.eurocode.basis import BS_EN_1990
 
 
 @dataclass(frozen=True)
@@ -31,13 +32,18 @@ class EurocodeServiceabilityFactors:
             raise ValueError("psi1_traffic must lie between 0 and 1.")
         if not 0.0 <= self.psi2_traffic <= 1.0:
             raise ValueError("psi2_traffic must lie between 0 and 1.")
-        if self.psi1_udl_traffic is not None and not 0.0 <= self.psi1_udl_traffic <= 1.0:
+        if (
+            self.psi1_udl_traffic is not None
+            and not 0.0 <= self.psi1_udl_traffic <= 1.0
+        ):
             raise ValueError("psi1_udl_traffic must lie between 0 and 1.")
 
     @property
     def frequent_components_differ(self) -> bool:
-        return (self.psi1_udl_traffic is not None
-                and self.psi1_udl_traffic != self.psi1_traffic)
+        return (
+            self.psi1_udl_traffic is not None
+            and self.psi1_udl_traffic != self.psi1_traffic
+        )
 
 
 @dataclass(frozen=True)
@@ -57,7 +63,7 @@ def persistent_uls(
 ) -> FactoredCombination:
     current = factors or EurocodeCombinationFactors()
     return FactoredCombination(
-        name="EN 1990 persistent ULS",
+        name=f"{BS_EN_1990} persistent ULS",
         effects=(
             permanent.scaled(current.gamma_g_unfavourable)
             + traffic.scaled(current.gamma_q_traffic)
@@ -74,7 +80,7 @@ def characteristic_sls(
     traffic: LoadEffects,
 ) -> FactoredCombination:
     return FactoredCombination(
-        name="EN 1990 characteristic SLS",
+        name=f"{BS_EN_1990} characteristic SLS",
         effects=permanent + traffic,
         factors={"G": 1.0, "Q_traffic": 1.0},
     )
@@ -86,9 +92,12 @@ def frequent_sls(
     factors: EurocodeServiceabilityFactors,
 ) -> FactoredCombination:
     if factors.frequent_components_differ:
-        raise ValueError("Distinct tandem and UDL frequent factors require a separately weighted LM1 search.")
+        raise ValueError(
+            "Distinct tandem and UDL frequent factors require a separately "
+            "weighted LM1 search."
+        )
     return FactoredCombination(
-        name="EN 1990 frequent SLS",
+        name=f"{BS_EN_1990} frequent SLS",
         effects=permanent + traffic.scaled(factors.psi1_traffic),
         factors={"G": 1.0, "Q_traffic": factors.psi1_traffic},
     )
@@ -100,7 +109,7 @@ def quasi_permanent_sls(
     factors: EurocodeServiceabilityFactors,
 ) -> FactoredCombination:
     return FactoredCombination(
-        name="EN 1990 quasi-permanent SLS",
+        name=f"{BS_EN_1990} quasi-permanent SLS",
         effects=permanent + traffic.scaled(factors.psi2_traffic),
         factors={"G": 1.0, "Q_traffic": factors.psi2_traffic},
     )
