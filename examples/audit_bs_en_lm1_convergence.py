@@ -6,10 +6,11 @@ import argparse
 import json
 from pathlib import Path
 
-from reference_bridge_15m import reference_bridge_15m
 from rc_single_span.traffic.lm1_influence_convergence import (
     run_lm1_influence_grillage_search_converged,
 )
+
+from reference_bridge_15m import reference_bridge_15m
 
 
 def _parser() -> argparse.ArgumentParser:
