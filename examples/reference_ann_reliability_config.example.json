@@ -1,6 +1,6 @@
 {
   "assumptions_confirmed": false,
-  "status_note": "ILLUSTRATIVE CONFIGURATION ONLY. Replace every probabilistic assumption with source-justified study values before setting assumptions_confirmed=true.",
+  "status_note": "ILLUSTRATIVE CONFIGURATION ONLY. Replace unresolved probabilistic assumptions with source-justified study values before setting assumptions_confirmed=true.",
   "target_reliability": {
     "consequence_class": "CC2",
     "reference_period_years": 50,
@@ -82,11 +82,35 @@
       "cov": 0.15,
       "lower": 0.50,
       "upper": 1.80
+    },
+    {
+      "name": "moment_load_model_factor",
+      "family": "lognormal",
+      "mean": 1.0,
+      "cov": 0.10
+    },
+    {
+      "name": "shear_load_model_factor",
+      "family": "lognormal",
+      "mean": 1.0,
+      "cov": 0.10
+    },
+    {
+      "name": "flexure_resistance_model_factor",
+      "family": "lognormal",
+      "mean": 1.2,
+      "cov": 0.15
+    },
+    {
+      "name": "shear_resistance_model_factor",
+      "family": "lognormal",
+      "mean": 1.0,
+      "cov": 0.10
     }
   ],
   "dependence": {
     "enabled": false,
-    "status_note": "Identity is a placeholder only. Enable the Gaussian copula only after source-justified correlation coefficients are adopted.",
+    "status_note": "Identity is a placeholder only. Enable the Gaussian copula only after source-justified correlation coefficients are adopted. Model-uncertainty independence must also be justified.",
     "names": [
       "fck_mpa",
       "fyk_mpa",
@@ -94,16 +118,24 @@
       "web_width_m",
       "steel_area_mm2",
       "dead_load_factor",
-      "live_load_factor"
+      "live_load_factor",
+      "moment_load_model_factor",
+      "shear_load_model_factor",
+      "flexure_resistance_model_factor",
+      "shear_resistance_model_factor"
     ],
     "correlation_matrix": [
-      [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0],
-      [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0],
-      [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-      [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+      [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
     ]
   },
   "pipeline": {
