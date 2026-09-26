@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 import numpy as np
@@ -60,7 +60,7 @@ class ResearchPipelineConfig:
     train_fraction: float = 0.70
     validation_fraction: float = 0.15
     backend: Literal["numpy", "keras"] = "numpy"
-    mlp: MLPConfig = MLPConfig()
+    mlp: MLPConfig = field(default_factory=MLPConfig)
     run_form: bool = True
     monte_carlo_samples: int = 0
     reliability_seed: int = 20260928
@@ -70,6 +70,8 @@ class ResearchPipelineConfig:
             raise ValueError("sample_count must be positive.")
         if self.monte_carlo_samples < 0:
             raise ValueError("monte_carlo_samples cannot be negative.")
+        if self.backend not in {"numpy", "keras"}:
+            raise ValueError("backend must be 'numpy' or 'keras'.")
 
 
 @dataclass(frozen=True)
@@ -154,9 +156,9 @@ def run_research_pipeline(
 
 __all__ = [
     "FeatureDomain",
+    "NumpyMLPRegressor",
     "ResearchPipelineConfig",
     "ResearchPipelineResult",
-    "run_research_pipeline",
-    "NumpyMLPRegressor",
     "TrainingHistory",
+    "run_research_pipeline",
 ]
