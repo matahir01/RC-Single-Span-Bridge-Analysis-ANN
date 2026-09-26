@@ -9,6 +9,7 @@ from reference_bridge_15m import reference_bridge_15m
 
 from rc_single_span.codes.eurocode.combinations import EurocodeServiceabilityFactors
 from rc_single_span.research.baseline import extract_bs_en_reliability_baseline
+from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.evaluator import (
     FEATURE_NAMES,
     BridgeLimitStateEvaluator,
@@ -22,6 +23,7 @@ from rc_single_span.research.rbdo import (
 )
 from rc_single_span.research.sampling import RandomVariable
 from rc_single_span.research.surrogate import MLPConfig
+from rc_single_span.research.targets import bs_en_1990_target_reliability
 from rc_single_span.research.validation import (
     direct_monte_carlo_reliability,
     validate_surrogate_against_direct,
@@ -65,12 +67,43 @@ def _variables(data: dict[str, object]) -> tuple[RandomVariable, ...]:
     return variables
 
 
+def _dependence(data: dict[str, object]) -> GaussianCopula | None:
+    raw = data.get("dependence")
+    if raw is None:
+        return None
+    config = _expect_dict(raw, "dependence")
+    if config.get("enabled") is not True:
+        return None
+    names_raw = config.get("names")
+    matrix_raw = config.get("correlation_matrix")
+    if not isinstance(names_raw, list) or not all(isinstance(item, str) for item in names_raw):
+        raise TypeError("dependence.names must be a JSON list of strings.")
+    if not isinstance(matrix_raw, list):
+        raise TypeError("dependence.correlation_matrix must be a JSON matrix.")
+    dependence = GaussianCopula(tuple(names_raw), matrix_raw)
+    dependence.validate_names(FEATURE_NAMES)
+    return dependence
+
+
+def _target_reliability(data: dict[str, object]):
+    raw = _expect_dict(data.get("target_reliability"), "target_reliability")
+    return bs_en_1990_target_reliability(
+        str(raw["consequence_class"]),
+        int(raw["reference_period_years"]),
+    )
+
+
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-def _rbdo(data: dict[str, object], model, variables: tuple[RandomVariable, ...]):
+def _rbdo(
+    data: dict[str, object],
+    model,
+    variables: tuple[RandomVariable, ...],
+    dependence: GaussianCopula | None,
+):
     raw = data.get("rbdo")
     if not isinstance(raw, dict) or raw.get("enabled") is not True:
         return None
@@ -101,6 +134,7 @@ def _rbdo(data: dict[str, object], model, variables: tuple[RandomVariable, ...])
         constraints,
         objective,
         maximum_iterations=int(raw.get("maximum_iterations", 100)),
+        form_kwargs={"dependence": dependence},
     )
 
 
@@ -147,6 +181,8 @@ def main() -> int:
         ),
     )
     variables = _variables(data)
+    dependence = _dependence(data)
+    target_reliability = _target_reliability(data)
 
     pipeline = _expect_dict(data.get("pipeline", {}), "pipeline")
     mlp_raw = _expect_dict(pipeline.get("mlp", {}), "pipeline.mlp")
@@ -174,6 +210,7 @@ def main() -> int:
             run_form=bool(pipeline.get("run_form", True)),
             monte_carlo_samples=int(pipeline.get("surrogate_monte_carlo_samples", 0)),
             reliability_seed=int(pipeline.get("reliability_seed", 20260928)),
+            dependence=dependence,
         ),
     )
 
@@ -198,6 +235,7 @@ def main() -> int:
         near_limit_state_fraction=float(
             validation_raw.get("near_limit_state_fraction", 0.10)
         ),
+        dependence=dependence,
     )
     direct_mc_samples = int(validation_raw.get("direct_monte_carlo_samples", 0))
     direct_mc = (
@@ -208,16 +246,26 @@ def main() -> int:
                 target,
                 direct_mc_samples,
                 seed=int(validation_raw.get("seed", 20260929)) + index + 1,
+                dependence=dependence,
             )
             for index, target in enumerate(evaluator.target_names)
         }
         if direct_mc_samples > 0
         else {}
     )
-    rbdo_result = _rbdo(data, result.model, variables)
+    rbdo_result = _rbdo(data, result.model, variables, dependence)
 
     summary = {
         "status": "research outputs generated; acceptance still depends on validation review",
+        "target_reliability": asdict(target_reliability),
+        "dependence": (
+            None
+            if dependence is None
+            else {
+                "names": dependence.names,
+                "correlation_matrix": dependence.correlation.tolist(),
+            }
+        ),
         "baseline": {
             "moment_girder_index": baseline.moment_girder_index,
             "shear_girder_index": baseline.shear_girder_index,
