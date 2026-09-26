@@ -1,17 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping
 
 from rc_single_span.analysis.sections import (
     final_composite_concrete_layers,
     final_composite_girder_properties,
 )
-from rc_single_span.core.models import (
-    IGirderProfile,
-    RectangularGirderProfile,
-    TGirderProfile,
-)
+from rc_single_span.core.models import IGirderProfile, RectangularGirderProfile, TGirderProfile
 from rc_single_span.design.eurocode import check_layered_flexure_ec2, check_shear_ec2
 from rc_single_span.research.baseline import BSENReliabilityBaseline
 
@@ -72,7 +68,10 @@ class LimitStateEvaluation:
     values: dict[str, float]
     message: str = ""
 
-    def target_vector(self, target_names: tuple[str, ...] = TARGET_NAMES) -> tuple[float, ...]:
+    def target_vector(
+        self,
+        target_names: tuple[str, ...] = TARGET_NAMES,
+    ) -> tuple[float, ...]:
         if not self.valid:
             raise ValueError(self.message or "Cannot read targets from an invalid evaluation.")
         return tuple(float(self.values[name]) for name in target_names)
@@ -83,13 +82,10 @@ def _geometry_with_web_width(baseline: BSENReliabilityBaseline, width_m: float):
     profile = geometry.girder_profile
     if isinstance(profile, RectangularGirderProfile):
         updated = profile.model_copy(update={"width_m": width_m})
-    elif isinstance(profile, TGirderProfile):
-        updated = profile.model_copy(update={"web_width_m": width_m})
-    elif isinstance(profile, IGirderProfile):
+    elif isinstance(profile, (TGirderProfile, IGirderProfile)):
         updated = profile.model_copy(update={"web_width_m": width_m})
     else:  # pragma: no cover - guarded by the core model union
         raise TypeError("Unsupported girder profile for reliability width variation.")
-    # Re-validate copied profile constraints rather than relying on a raw model_copy.
     updated = type(profile).model_validate(updated.model_dump())
     return geometry.model_copy(update={"girder_profile": updated})
 
@@ -123,7 +119,11 @@ class BridgeLimitStateEvaluator:
 
         values = {name: float(sample[name]) for name in self.feature_names}
         if any(value <= 0.0 for value in values.values()):
-            return LimitStateEvaluation(False, {}, "All reliability sample variables must be positive.")
+            return LimitStateEvaluation(
+                False,
+                {},
+                "All reliability sample variables must be positive.",
+            )
 
         fck = values["fck_mpa"]
         fyk = values["fyk_mpa"]
