@@ -216,18 +216,21 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 key="legacy_bs_flexure_shear",
                 title="Legacy BS 5400 flexure and shear design",
                 domain=VerificationDomain.DESIGN_RESISTANCE,
-                state=EvidenceState.INTERNAL_TESTED,
+                state=EvidenceState.INDEPENDENTLY_CHECKED,
                 evidence=(
                     "The legacy shear kernel reproduces the owner-supplied Ragana bridge shear "
-                    "calculation and its project wiring is regression-tested."
+                    "calculation. The doubly reinforced flexure path now separately reproduces "
+                    "the same Ragana beam basis: approximately 3148 kNm limiting concrete "
+                    "moment, 2388 mm2 compression steel and 9751 mm2 total tension steel using "
+                    "0.72fy compression-steel and 0.87fy tension-steel design stresses."
                 ),
                 boundary=(
-                    "Legacy flexure, especially doubly reinforced compression-steel treatment, "
-                    "still requires a source-pinned independent benchmark."
+                    "This is legacy BS evidence only. Its stress-block and reinforcement "
+                    "assumptions must not be imported into the primary BS EN 1992 route."
                 ),
                 next_evidence=(
-                    "Resolve the legacy flexure benchmark without importing those assumptions "
-                    "into the primary BS EN route."
+                    "Retain the Ragana regression as a legacy benchmark and verify any further "
+                    "legacy project-specific detailing independently when required."
                 ),
                 v1_gate=False,
             ),
