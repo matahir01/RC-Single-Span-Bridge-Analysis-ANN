@@ -4,6 +4,12 @@ The research package deliberately keeps uncertainty assumptions, surrogate
 training and reliability targets outside the deterministic design-code core.
 """
 
+from rc_single_span.research.acceptance import (
+    ResearchAcceptanceGate,
+    ResearchAcceptanceItem,
+    ResearchEvidenceState,
+    ann_reliability_rbdo_gate,
+)
 from rc_single_span.research.baseline import (
     BSENReliabilityBaseline,
     extract_bs_en_reliability_baseline,
@@ -75,10 +81,14 @@ __all__ = [
     "ReliabilityConstraint",
     "ReliabilityDataset",
     "ReliabilityModelConfig",
+    "ResearchAcceptanceGate",
+    "ResearchAcceptanceItem",
+    "ResearchEvidenceState",
     "ResearchPipelineConfig",
     "ResearchPipelineResult",
     "SampleSet",
     "SurrogateValidationResult",
+    "ann_reliability_rbdo_gate",
     "direct_monte_carlo_reliability",
     "extract_bs_en_reliability_baseline",
     "form_hlrf",
