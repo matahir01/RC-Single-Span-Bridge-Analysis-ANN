@@ -7,7 +7,11 @@ from rc_single_span.analysis.sections import (
     final_composite_concrete_layers,
     final_composite_girder_properties,
 )
-from rc_single_span.core.models import IGirderProfile, RectangularGirderProfile, TGirderProfile
+from rc_single_span.core.models import (
+    IGirderProfile,
+    RectangularGirderProfile,
+    TGirderProfile,
+)
 from rc_single_span.design.eurocode import check_layered_flexure_ec2, check_shear_ec2
 from rc_single_span.research.baseline import BSENReliabilityBaseline
 
