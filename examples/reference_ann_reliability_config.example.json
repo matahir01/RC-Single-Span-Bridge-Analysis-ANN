@@ -1,6 +1,11 @@
 {
   "assumptions_confirmed": false,
   "status_note": "ILLUSTRATIVE CONFIGURATION ONLY. Replace every probabilistic assumption with source-justified study values before setting assumptions_confirmed=true.",
+  "target_reliability": {
+    "consequence_class": "CC2",
+    "reference_period_years": 50,
+    "status_note": "Thesis reference scenario only: EN 1990/JRC beta=3.8 for CC2 over 50 years. Report CC1 and CC3 sensitivity and do not treat this as a real-project classification."
+  },
   "reference_run": {
     "elastic_modulus_mpa": 31000.0,
     "lm1_longitudinal_step_m": 0.6,
@@ -79,6 +84,28 @@
       "upper": 1.80
     }
   ],
+  "dependence": {
+    "enabled": false,
+    "status_note": "Identity is a placeholder only. Enable the Gaussian copula only after source-justified correlation coefficients are adopted.",
+    "names": [
+      "fck_mpa",
+      "fyk_mpa",
+      "effective_depth_m",
+      "web_width_m",
+      "steel_area_mm2",
+      "dead_load_factor",
+      "live_load_factor"
+    ],
+    "correlation_matrix": [
+      [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+    ]
+  },
   "pipeline": {
     "sample_count": 1500,
     "dataset_seed": 20260926,
