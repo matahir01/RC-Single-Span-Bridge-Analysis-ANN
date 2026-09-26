@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 import numpy as np
 from scipy.optimize import minimize
@@ -133,6 +133,7 @@ def optimize_surrogate_rbdo(
 
     scipy_constraints = []
     for index, constraint in enumerate(reliability_constraints):
+
         def constraint_function(vector: np.ndarray, i: int = index) -> float:
             spec = reliability_constraints[i]
             result = reliability_for(vector)[spec.target_name]
