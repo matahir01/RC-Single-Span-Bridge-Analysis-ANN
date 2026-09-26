@@ -101,19 +101,23 @@ def test_scalar_comparison_uses_absolute_and_relative_tolerance() -> None:
     assert failing.status is ComparisonStatus.FAIL
 
 
-def test_primary_bs_en_v1_software_capability_gate_is_closed() -> None:
+def test_both_deterministic_software_capability_gates_are_closed() -> None:
     matrix = current_v1_acceptance_matrix()
+
     assert matrix.v1_gate.accepted
     assert matrix.v1_gate.blockers == ()
+    assert matrix.legacy_bs_v1_gate.accepted
+    assert matrix.legacy_bs_v1_gate.blockers == ()
 
     structural = matrix.by_domain(VerificationDomain.STRUCTURAL_ANALYSIS)
     assert structural
     assert all(item.state.value == "accepted" for item in structural)
 
-    # Legacy BS capabilities remain visible but do not decide the primary BS EN gate.
-    legacy = tuple(item for item in matrix.items if not item.v1_gate)
-    assert legacy
-    assert any(item.state.value != "accepted" for item in legacy)
+    legacy_specific = tuple(
+        item for item in matrix.items if item.legacy_bs_gate and not item.v1_gate
+    )
+    assert legacy_specific
+    assert all(item.state.value == "accepted" for item in legacy_specific)
 
 
 def test_reference_runner_uses_converged_15m_lm1_step_by_default() -> None:
