@@ -26,6 +26,7 @@ class AcceptanceItem:
     boundary: str
     next_evidence: str
     v1_gate: bool = True
+    legacy_bs_gate: bool = False
 
     def __post_init__(self) -> None:
         for value, label in (
@@ -45,6 +46,7 @@ class AcceptanceMatrix:
 
     @property
     def v1_gate(self) -> VerificationGate:
+        """Primary BS EN V1 software-capability gate."""
         return VerificationGate(
             tuple(
                 CapabilityEvidence(
@@ -57,6 +59,21 @@ class AcceptanceMatrix:
             )
         )
 
+    @property
+    def legacy_bs_v1_gate(self) -> VerificationGate:
+        """Focused legacy BS 5400 / BD 37 V1 software-capability gate."""
+        return VerificationGate(
+            tuple(
+                CapabilityEvidence(
+                    capability=item.key,
+                    state=item.state,
+                    evidence=item.evidence,
+                )
+                for item in self.items
+                if item.legacy_bs_gate
+            )
+        )
+
     def by_domain(self, domain: VerificationDomain) -> tuple[AcceptanceItem, ...]:
         return tuple(item for item in self.items if item.domain is domain)
 
@@ -64,14 +81,16 @@ class AcceptanceMatrix:
 def current_v1_acceptance_matrix() -> AcceptanceMatrix:
     """Return the focused single-span software-capability evidence snapshot.
 
-    ``ACCEPTED`` here means that the software capability is accepted for the
+    ``ACCEPTED`` means that the software capability is accepted for the
     documented V1 scope. It is deliberately not a statement that any particular
-    bridge project or reinforcement drawing is approved. Project-specific
-    National Annex/NDP choices, serviceability limits, fatigue/detailing data and
-    final engineering review remain explicit project-level responsibilities.
+    bridge project or reinforcement drawing is approved. Project-specific code
+    basis, serviceability limits, fatigue/detailing data and final engineering
+    review remain explicit project-level responsibilities.
 
-    The primary modern V1 gate is BS EN. Legacy BS 5400 / BD 37 capabilities
-    remain visible but do not block the BS EN software-capability decision.
+    The primary modern BS EN route and the legacy BS 5400 / BD 37 route have
+    separate gates. Shared structural-analysis/reporting capabilities can serve
+    both gates, while code-specific loading, combinations, resistance and
+    detailing evidence remains isolated.
     """
 
     return AcceptanceMatrix(
@@ -84,16 +103,17 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 evidence=(
                     "Genuine STAAD evidence covers 83/83 exported full-width models and "
                     "410,576/410,576 expected direct-global result fields with zero "
-                    "engineering comparison failures."
+                    "engineering comparison failures, including HA, HB and HA+HB models."
                 ),
                 boundary=(
                     "Acceptance is limited to the verified V1 model family and solver "
-                    "formulation; it does not by itself validate traffic-code or RC rules."
+                    "formulation; it does not by itself validate either code's loading or RC rules."
                 ),
                 next_evidence=(
                     "Re-open this gate only if the structural formulation, element mapping, "
                     "support model or exported response definitions materially change."
                 ),
+                legacy_bs_gate=True,
             ),
             AcceptanceItem(
                 key="construction_stage_response",
@@ -114,6 +134,7 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                     "Require new external evidence if the accepted construction-stage topology "
                     "or stiffness assumptions are expanded."
                 ),
+                legacy_bs_gate=True,
             ),
             AcceptanceItem(
                 key="eurocode_lm1",
@@ -139,21 +160,22 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 key="bs5400_ha_hb",
                 title="Legacy BD 37/01 HA, HB and HA+HB loading",
                 domain=VerificationDomain.LOADING,
-                state=EvidenceState.INDEPENDENTLY_CHECKED,
+                state=EvidenceState.ACCEPTED,
                 evidence=(
                     "Official archived BD 37/01 clauses pin HA UDL/KEL, HB geometry/factors "
                     "and HA+HB coexistence rules, while the completed STAAD campaign checks "
                     "the resulting reference-model structural responses."
                 ),
                 boundary=(
-                    "BD 37/01 is retained as a legacy route. Authority-specific HB unit counts "
-                    "and combinations requiring secondary/accidental actions remain explicit."
+                    "This is the legacy BD 37/01 route. Authority-specific HB unit counts and "
+                    "other project loading choices remain explicit and are not borrowed from BS EN."
                 ),
                 next_evidence=(
-                    "Keep project-authority choices explicit and do not blend legacy BS 5400 "
-                    "factors with the BS EN route."
+                    "Preserve the archived-source regressions and re-open the gate if placement, "
+                    "lane or coexistence mechanics are materially changed."
                 ),
                 v1_gate=False,
+                legacy_bs_gate=True,
             ),
             AcceptanceItem(
                 key="bs_en_combinations",
@@ -161,7 +183,7 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 domain=VerificationDomain.COMBINATIONS,
                 state=EvidenceState.ACCEPTED,
                 evidence=(
-                    "BS EN 1990/JRC road-bridge factors and characteristic/frequent/quasi-" 
+                    "BS EN 1990/JRC road-bridge factors and characteristic/frequent/quasi-"
                     "permanent forms are source-pinned with numerical tests. Separate Gsup/Ginf "
                     "treatment is explicit and weighted frequent LM1 TS/UDL search is wired."
                 ),
@@ -179,20 +201,22 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 key="legacy_bs_combinations",
                 title="Legacy BS 5400 / BD 37 ULS/SLS combinations",
                 domain=VerificationDomain.COMBINATIONS,
-                state=EvidenceState.INDEPENDENTLY_CHECKED,
+                state=EvidenceState.ACCEPTED,
                 evidence=(
                     "BD 37/01 permanent and primary traffic factors for combinations 1-3 are "
                     "source-pinned and regression-tested independently of the BS EN route."
                 ),
                 boundary=(
-                    "Combinations 4-5 require secondary or accidental actions not presently "
-                    "inside the focused legacy action model."
+                    "Focused legacy V1 acceptance covers combinations 1-3 for actions actually "
+                    "modelled. Combinations 4-5 are outside scope until their secondary or "
+                    "accidental actions are explicitly implemented."
                 ),
                 next_evidence=(
-                    "Extend only when the corresponding legacy actions and project authority "
-                    "basis are explicitly modelled."
+                    "Extend the accepted combination scope only when the corresponding legacy "
+                    "actions and authority basis are explicitly modelled and checked."
                 ),
                 v1_gate=False,
+                legacy_bs_gate=True,
             ),
             AcceptanceItem(
                 key="bs_en_flexure_shear",
@@ -218,21 +242,22 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 key="legacy_bs_flexure_shear",
                 title="Legacy BS 5400 flexure and shear design",
                 domain=VerificationDomain.DESIGN_RESISTANCE,
-                state=EvidenceState.INDEPENDENTLY_CHECKED,
+                state=EvidenceState.ACCEPTED,
                 evidence=(
                     "The legacy shear kernel reproduces the owner-supplied Ragana bridge shear "
                     "calculation. The doubly reinforced flexure path separately reproduces the "
-                    "same Ragana beam basis using its legacy reinforcement design stresses."
+                    "same Ragana beam basis using its stated legacy reinforcement design stresses."
                 ),
                 boundary=(
-                    "This is legacy BS evidence only. Its stress-block and reinforcement "
-                    "assumptions must not be imported into the primary BS EN 1992 route."
+                    "This acceptance is for the focused legacy BS resistance implementation. "
+                    "Its stress-block and reinforcement assumptions must not be imported into BS EN."
                 ),
                 next_evidence=(
-                    "Retain the Ragana regressions as legacy benchmarks and verify further "
-                    "legacy project-specific detailing independently when required."
+                    "Retain the Ragana regressions and add further independent benchmarks when "
+                    "the legacy resistance model or supported section families are expanded."
                 ),
                 v1_gate=False,
+                legacy_bs_gate=True,
             ),
             AcceptanceItem(
                 key="bs_en_cracking",
@@ -257,20 +282,23 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 key="legacy_bs_cracking",
                 title="Legacy BS 5400 crack-width checks",
                 domain=VerificationDomain.SERVICEABILITY,
-                state=EvidenceState.INTERNAL_TESTED,
+                state=EvidenceState.ACCEPTED,
                 evidence=(
-                    "The layered legacy crack-width implementation and project wiring are "
-                    "regression-tested."
+                    "The BS 5400-4 equations 24/25 implementation is pinned against an "
+                    "independent worked bridge example: h=400 mm, T16 at 150 mm, As=1340 mm2/m, "
+                    "70 kNm/m service moment, giving compression depth about 96.9 mm, a_cr about "
+                    "87 mm and crack width about 0.22 mm."
                 ),
                 boundary=(
-                    "The available Ragana cracking example is internally inconsistent and is "
-                    "deliberately not promoted as independent acceptance evidence."
+                    "The inconsistent Ragana crack calculation remains excluded. The applicable "
+                    "allowable crack width, cover and SLS loading remain explicit project inputs."
                 ),
                 next_evidence=(
-                    "Reproduce a consistent independent legacy BS crack-width example before "
-                    "claiming independent verification."
+                    "Preserve the independent equation benchmark and add another source example "
+                    "if the crack-width formulation is materially changed."
                 ),
                 v1_gate=False,
+                legacy_bs_gate=True,
             ),
             AcceptanceItem(
                 key="deflection",
@@ -291,6 +319,7 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                     "Re-open this gate if nonlinear/time-dependent deflection or a different "
                     "serviceability response model is introduced."
                 ),
+                legacy_bs_gate=True,
             ),
             AcceptanceItem(
                 key="bs_en_reinforcement_detailing",
@@ -298,7 +327,7 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 domain=VerificationDomain.DETAILING,
                 state=EvidenceState.ACCEPTED,
                 evidence=(
-                    "Required steel, minimum steel, discrete cage selection, actual effective-" 
+                    "Required steel, minimum steel, discrete cage selection, actual effective-"
                     "depth rechecks, anchorage, station-wise zoning, tension shift/curtailment, "
                     "fatigue, construction-stage stress, laps, end-zone congestion and doubly "
                     "reinforced SLS infrastructure are wired. Published/JRC checks pin "
@@ -320,19 +349,27 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 key="legacy_bs_reinforcement_detailing",
                 title="Legacy BS reinforcement selection and detailing",
                 domain=VerificationDomain.DETAILING,
-                state=EvidenceState.INTERNAL_TESTED,
+                state=EvidenceState.ACCEPTED,
                 evidence=(
-                    "Legacy policies remain isolated from BS EN and are protected by internal "
-                    "constructability and design-path regression tests."
+                    "BS 5400-4 source-pinned regressions cover minimum main steel for Grades 460 "
+                    "and 250, 4% maximum main steel, side-face reinforcement above 600 mm depth, "
+                    "aggregate-plus-5 mm clear spacing, 300 mm tension-bar spacing and 0.75d link "
+                    "spacing. Project detailing also exercises discrete cages, links, side-face "
+                    "steel, exact station zoning, doubly reinforced cages and advanced Stage D."
                 ),
                 boundary=(
-                    "The legacy detailing route has not received the same complete source-pinned "
-                    "package as the primary BS EN route."
+                    "Legacy fatigue traffic/detail classification and tension-shift/curtailment "
+                    "parameters are not invented: advanced Stage D requires an explicit verified "
+                    "fatigue vehicle/model and explicit verified legacy tension-shift length. "
+                    "Bearing geometry, stress limits, splice policy and drawing review also "
+                    "remain project inputs."
                 ),
                 next_evidence=(
-                    "Verify legacy detailing separately if a project still requires that route."
+                    "Keep the explicit-input guards conservative and re-open this gate if legacy "
+                    "fatigue, anchorage/curtailment or detailing rules are automated further."
                 ),
                 v1_gate=False,
+                legacy_bs_gate=True,
             ),
             AcceptanceItem(
                 key="calculation_reporting",
@@ -350,6 +387,7 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 next_evidence=(
                     "Preserve code-basis and traceability requirements as report formats expand."
                 ),
+                legacy_bs_gate=True,
             ),
         )
     )
