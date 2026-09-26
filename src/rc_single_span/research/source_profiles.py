@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from math import exp, sqrt
 
+from rc_single_span.research.evaluator import FEATURE_NAMES
 from rc_single_span.research.sampling import RandomVariable
 
 
@@ -175,3 +176,48 @@ def jcss_model_uncertainty_variables() -> tuple[RandomVariable, ...]:
             cov=0.10,
         ),
     )
+
+
+def build_jcss_reference_variables(
+    *,
+    concrete_production: JCSSConcreteProduction | str,
+    nominal_effective_depth_m: float,
+    nominal_web_width_m: float,
+    nominal_steel_area_mm2: float,
+    dead_load_variable: RandomVariable,
+    live_load_variable: RandomVariable,
+    nominal_rebar_grade_mpa: float = 500.0,
+    bar_diameter_mm: float | None = None,
+) -> tuple[RandomVariable, ...]:
+    """Assemble the evaluator feature vector using source-derived JCSS profiles.
+
+    Permanent- and live-action models remain mandatory caller inputs because the
+    currently available generic/JCSS and Nigerian evidence does not justify one
+    universal scalar distribution for either. The function therefore prevents the
+    convenience helper from silently inventing the two least-settled action models.
+    """
+
+    if dead_load_variable.name != "dead_load_factor":
+        raise ValueError("dead_load_variable must be named dead_load_factor.")
+    if live_load_variable.name != "live_load_factor":
+        raise ValueError("live_load_variable must be named live_load_factor.")
+
+    variables = (
+        jcss_c35_concrete_prior(concrete_production).as_random_variable(),
+        jcss_rebar_yield_variable(
+            nominal_rebar_grade_mpa,
+            bar_diameter_mm=bar_diameter_mm,
+        ),
+        jcss_effective_depth_variable(nominal_effective_depth_m),
+        jcss_concrete_dimension_variable("web_width_m", nominal_web_width_m),
+        jcss_rebar_area_variable(nominal_steel_area_mm2),
+        dead_load_variable,
+        live_load_variable,
+        *jcss_model_uncertainty_variables(),
+    )
+    names = tuple(variable.name for variable in variables)
+    if names != FEATURE_NAMES:
+        raise RuntimeError(
+            "Source-backed variable vector no longer matches evaluator FEATURE_NAMES."
+        )
+    return variables
