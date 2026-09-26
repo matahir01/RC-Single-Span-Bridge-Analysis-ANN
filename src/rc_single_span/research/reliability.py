@@ -8,6 +8,7 @@ from typing import Protocol
 import numpy as np
 from scipy.stats import norm
 
+from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.sampling import (
     RandomVariable,
     independent_random_samples,
@@ -100,11 +101,17 @@ def monte_carlo_surrogate_reliability(
     *,
     seed: int | None = None,
     confidence: float = 0.95,
+    dependence: GaussianCopula | None = None,
 ) -> MonteCarloResult:
-    """Estimate Pf from independent samples evaluated by the ANN surrogate."""
+    """Estimate Pf from Monte-Carlo samples evaluated by the ANN surrogate."""
 
     _validate_variable_order(variables, model.feature_names)
-    samples = independent_random_samples(variables, sample_count, seed=seed)
+    samples = independent_random_samples(
+        variables,
+        sample_count,
+        seed=seed,
+        dependence=dependence,
+    )
     predictions = np.asarray(model.predict(samples.values), dtype=float)
     if predictions.ndim != 2 or predictions.shape[0] != sample_count:
         raise ValueError("Surrogate batch prediction has an invalid shape.")
@@ -138,12 +145,14 @@ def form_hlrf(
     tolerance_u: float = 1.0e-5,
     tolerance_g: float = 1.0e-5,
     gradient_step: float = 1.0e-4,
+    dependence: GaussianCopula | None = None,
 ) -> FORMResult:
-    """First-order reliability method using the Hasofer-Lind/Rackwitz-Fiessler step.
+    """First-order reliability method using the HLRF iteration.
 
-    Variables are assumed statistically independent. Distribution transforms are
-    exact for the families implemented in :mod:`research.sampling`; gradients are
-    central finite differences in independent standard-normal space.
+    ``u`` remains an independent standard-normal vector. When a Gaussian copula
+    is supplied, its Cholesky transform maps ``u`` into correlated latent-normal
+    coordinates before each marginal transform. Gradients are therefore taken in
+    the independent reliability space used to define beta.
     """
 
     if not variables:
@@ -162,7 +171,14 @@ def form_hlrf(
     if u.shape != (dimension,):
         raise ValueError("initial_u has the wrong dimension.")
 
-    origin = standard_normal_to_physical(variables, np.zeros(dimension))
+    def physical(vector: np.ndarray) -> np.ndarray:
+        return standard_normal_to_physical(
+            variables,
+            vector,
+            dependence=dependence,
+        )
+
+    origin = physical(np.zeros(dimension))
     origin_g = float(limit_state(origin))
     sign = 1.0 if origin_g >= 0.0 else -1.0
     alpha = np.zeros(dimension, dtype=float)
@@ -171,7 +187,7 @@ def form_hlrf(
     iteration = 0
 
     for iteration in range(1, maximum_iterations + 1):
-        x = standard_normal_to_physical(variables, u)
+        x = physical(u)
         g = float(limit_state(x))
         gradient = np.zeros(dimension, dtype=float)
         for index in range(dimension):
@@ -180,8 +196,8 @@ def form_hlrf(
             minus = u.copy()
             plus[index] += step
             minus[index] -= step
-            g_plus = float(limit_state(standard_normal_to_physical(variables, plus)))
-            g_minus = float(limit_state(standard_normal_to_physical(variables, minus)))
+            g_plus = float(limit_state(physical(plus)))
+            g_minus = float(limit_state(physical(minus)))
             gradient[index] = (g_plus - g_minus) / (2.0 * step)
 
         gradient_norm = float(np.linalg.norm(gradient))
@@ -196,14 +212,13 @@ def form_hlrf(
         u_new = target
         for _ in range(12):
             candidate = u + relaxation * (target - u)
-            candidate_x = standard_normal_to_physical(variables, candidate)
-            candidate_g = abs(float(limit_state(candidate_x)))
+            candidate_g = abs(float(limit_state(physical(candidate))))
             u_new = candidate
             if candidate_g <= current_abs_g or relaxation <= 1.0 / 2048.0:
                 break
             relaxation *= 0.5
 
-        new_x = standard_normal_to_physical(variables, u_new)
+        new_x = physical(u_new)
         new_g = float(limit_state(new_x))
         if np.linalg.norm(u_new - u) <= tolerance_u and abs(new_g) <= tolerance_g:
             u = u_new
@@ -212,7 +227,7 @@ def form_hlrf(
             break
         u = u_new
 
-    x_design = standard_normal_to_physical(variables, u)
+    x_design = physical(u)
     g = float(limit_state(x_design))
     beta = sign * float(np.linalg.norm(u))
     probability = float(norm.cdf(-beta))
