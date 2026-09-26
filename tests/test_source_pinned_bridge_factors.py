@@ -26,6 +26,7 @@ from rc_single_span.codes.eurocode.combinations import (
     characteristic_sls,
     frequent_sls,
     persistent_uls,
+    persistent_uls_split_permanent,
     quasi_permanent_sls,
 )
 
@@ -92,6 +93,36 @@ def test_bs_en_1990_combination_arithmetic_is_not_only_factor_metadata() -> None
         EurocodeServiceabilityFactors(psi1_traffic=0.75, psi2_traffic=0.0),
     )
     assert quasi.effects == permanent
+
+
+def test_jrc_persistent_uls_keeps_gsup_and_ginf_separate() -> None:
+    """JRC Ch.3 uses 1.35 Gsup or 1.00 Ginf with 1.35 road traffic."""
+
+    result = persistent_uls_split_permanent(
+        permanent_unfavourable=LoadEffects(
+            moment_knm=100.0,
+            shear_kn=50.0,
+            torsion_knm=10.0,
+        ),
+        # Retain the physical stabilising sign; do not take an absolute value.
+        permanent_favourable=LoadEffects(
+            moment_knm=-20.0,
+            shear_kn=-5.0,
+            torsion_knm=-2.0,
+        ),
+        traffic=LoadEffects(moment_knm=40.0, shear_kn=10.0, torsion_knm=5.0),
+    )
+
+    assert result.effects == LoadEffects(
+        moment_knm=169.0,
+        shear_kn=76.0,
+        torsion_knm=18.25,
+    )
+    assert result.factors == {
+        "G_unfavourable": 1.35,
+        "G_favourable": 1.0,
+        "Q_traffic": 1.35,
+    }
 
 
 def test_bd37_primary_and_permanent_factors_are_not_interchanged() -> None:
