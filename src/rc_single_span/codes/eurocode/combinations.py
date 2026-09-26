@@ -64,13 +64,13 @@ def persistent_uls_split_permanent(
 ) -> FactoredCombination:
     """Build BS EN 1990 persistent ULS with explicit Gsup/Ginf effects.
 
-    ``permanent_favourable`` must retain its physical response sign.  For
+    ``permanent_favourable`` must retain its physical response sign. For
     example, a stabilising -20 kNm contribution remains negative and is scaled
     by ``gamma_g_favourable``; it is not converted to a positive magnitude.
 
     The V1 longitudinal gravity bridge path has only downward permanent actions
     for its positive sagging/shear design envelopes, so it normally passes all
-    permanent response through ``permanent_unfavourable``.  This split helper
+    permanent response through ``permanent_unfavourable``. This split helper
     prevents that simplification from becoming a hidden general-code rule.
     """
 
@@ -98,16 +98,28 @@ def persistent_uls(
     """Build the V1 gravity-bridge persistent ULS envelope.
 
     For the current simply supported longitudinal girder path the supplied
-    permanent envelope is an unfavourable gravity effect.  Use
+    permanent envelope is an unfavourable gravity effect. Use
     :func:`persistent_uls_split_permanent` when a verification contains both
     favourable and unfavourable permanent response components.
     """
 
-    return persistent_uls_split_permanent(
+    current = factors or EurocodeCombinationFactors()
+    split = persistent_uls_split_permanent(
         permanent,
         LoadEffects(),
         traffic,
-        factors,
+        current,
+    )
+    # Keep the established V1 audit schema stable for the all-unfavourable
+    # gravity envelope while exposing Gsup/Ginf explicitly through the split
+    # helper for verifications that require both signs.
+    return FactoredCombination(
+        name=split.name,
+        effects=split.effects,
+        factors={
+            "G": current.gamma_g_unfavourable,
+            "Q_traffic": current.gamma_q_traffic,
+        },
     )
 
 
