@@ -62,10 +62,11 @@ class AcceptanceMatrix:
 
 
 def current_v1_acceptance_matrix() -> AcceptanceMatrix:
-    """Return the honest Stage-8 starting point for the focused single-span app.
+    """Return the current evidence snapshot for the focused single-span app.
 
-    Internal regression tests are not promoted to independent acceptance.
-    External/hand-check evidence must be attached explicitly before state changes.
+    Independent checking is not the same as final engineering acceptance. A
+    capability reaches ``ACCEPTED`` only after its documented boundaries and
+    remaining project-basis checks are deliberately closed.
     """
 
     return AcceptanceMatrix(
@@ -74,101 +75,135 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 key="common_grillage",
                 title="Common full-width grillage structural response",
                 domain=VerificationDomain.STRUCTURAL_ANALYSIS,
-                state=EvidenceState.INTERNAL_TESTED,
+                state=EvidenceState.INDEPENDENTLY_CHECKED,
                 evidence=(
-                    "Sparse common-grillage equilibrium, load mapping and per-girder "
-                    "response are protected by repository regression tests."
+                    "The current genuine STAAD campaign covers 83/83 exported full-width "
+                    "models and 410,576/410,576 expected direct-global result fields with "
+                    "zero engineering comparison failures."
                 ),
                 boundary=(
-                    "This repository has not yet completed its own independent STAAD "
-                    "comparison campaign for the focused model."
+                    "This establishes solver response for the verified model family; it does "
+                    "not certify traffic-code selection, RC resistance or detailing rules."
                 ),
                 next_evidence=(
-                    "Compare reactions, M, V, T and displacement for the same exported "
-                    "single-span models and loads in STAAD."
+                    "Retain the closed STAAD evidence while separately closing the BS EN and "
+                    "legacy-code loading/design gates."
                 ),
             ),
             AcceptanceItem(
                 key="construction_stage_response",
                 title="Three-stage construction response",
                 domain=VerificationDomain.STRUCTURAL_ANALYSIS,
-                state=EvidenceState.INTERNAL_TESTED,
+                state=EvidenceState.INDEPENDENTLY_CHECKED,
                 evidence=(
-                    "Precast, deck-construction and final-composite stiffness/load stages "
-                    "have deterministic regression tests. Stage 8 now rebuilds every "
-                    "girder/stage as a separate beam-FE model with the same load segments "
-                    "and stage A/J/Iy/Iz, cross-checks reactions/M/V/deflection, and emits "
-                    "an exact STAAD verification package for each stage."
+                    "Genuine STAAD returns are complete for the precast, deck-construction "
+                    "and final-composite reference systems, with the permanent-component "
+                    "load-time stiffness responses also included in the external campaign."
                 ),
                 boundary=(
-                    "The second in-repository beam-FE implementation is an internal "
-                    "cross-check, not independent external evidence. Genuine STAAD "
-                    "stage results have not yet been returned and compared."
+                    "The verified V1 sequence is the essential unpropped single-span sequence "
+                    "with unchanged supports; general propping, staged continuity and advanced "
+                    "time-dependent redistribution remain outside V1."
                 ),
                 next_evidence=(
-                    "Run the emitted precast, wet-deck and final/superimposed stage "
-                    "models in STAAD and compare reactions, M, V and displacement."
+                    "No further external solver rerun is required for the closed V1 stage "
+                    "sequence unless its modelling assumptions change."
                 ),
             ),
             AcceptanceItem(
                 key="eurocode_lm1",
-                title="Eurocode LM1 loading and search",
+                title="BS EN 1991-2 LM1 loading and search",
                 domain=VerificationDomain.LOADING,
-                state=EvidenceState.INTERNAL_TESTED,
+                state=EvidenceState.INDEPENDENTLY_CHECKED,
                 evidence=(
-                    "Notional lanes, LM1 characteristic values, physical wheel/area load "
-                    "mapping, equilibrium and convergence controls are regression-tested."
+                    "JRC source values pin LM1 lane loads, complete tandem geometry, separate "
+                    "frequent TS/UDL factors and the requirement to load only unfavourable UDL "
+                    "regions. The engine now uses a response-specific signed influence-surface "
+                    "search for the BS EN route."
                 ),
-                boundary="Internal tests do not independently certify the complete loading/search path.",
-                next_evidence="Check representative lane/resultant placements by hand and in STAAD.",
+                boundary=(
+                    "Nationally Determined Parameters remain explicit. Influence-cell and "
+                    "longitudinal search resolution are numerical controls that require "
+                    "project-geometry convergence rather than a universal fixed value."
+                ),
+                next_evidence=(
+                    "Complete convergence checks for the 15 m reference geometry and preserve "
+                    "a traceable external spot-check if the influence-search topology changes."
+                ),
             ),
             AcceptanceItem(
                 key="bs5400_ha_hb",
-                title="BD 37/01 HA, HB and HA+HB loading",
+                title="Legacy BD 37/01 HA, HB and HA+HB loading",
                 domain=VerificationDomain.LOADING,
-                state=EvidenceState.INTERNAL_TESTED,
+                state=EvidenceState.INDEPENDENTLY_CHECKED,
                 evidence=(
-                    "HA UDL/KEL, 45-unit HB geometry, transverse movement and HA+HB "
-                    "coexistence rules are protected by targeted regression tests."
+                    "Official archived BD 37/01 clauses pin HA UDL/KEL, HB geometry/factors "
+                    "and HA+HB coexistence rules, while the completed STAAD campaign independently "
+                    "checks the resulting reference-model structural responses."
                 ),
-                boundary="No focused-repository independent external solver campaign is recorded yet.",
-                next_evidence="Verify representative HA, HB and HA+HB cases independently.",
+                boundary=(
+                    "BD 37/01 is retained as a legacy route. Authority-specific HB unit counts "
+                    "and combinations requiring secondary/accidental actions remain explicit or "
+                    "outside the current primary V1 action set."
+                ),
+                next_evidence=(
+                    "Keep project-authority choices explicit and do not blend legacy BS 5400 "
+                    "factors with the BS EN route."
+                ),
             ),
             AcceptanceItem(
                 key="code_combinations",
-                title="Eurocode and BS 5400 ULS/SLS combinations",
+                title="BS EN and legacy BS 5400 ULS/SLS combinations",
                 domain=VerificationDomain.COMBINATIONS,
-                state=EvidenceState.INTERNAL_TESTED,
+                state=EvidenceState.INDEPENDENTLY_CHECKED,
                 evidence=(
-                    "Eurocode ULS/SLS and BS combinations 1-3 factors/superposition are "
-                    "covered by deterministic tests with traceable traffic provenance."
+                    "BS EN 1990/JRC recommended bridge factors and serviceability forms are "
+                    "source-pinned with numerical combination tests; BD 37/01 permanent and "
+                    "primary traffic factors for combinations 1-3 are pinned independently."
                 ),
-                boundary="Factor application tests are not a substitute for independent code review.",
-                next_evidence="Check representative combination rows against hand/code-reference calculations.",
+                boundary=(
+                    "The BS EN National Annex/project NDP basis is not inferred. Wind, thermal, "
+                    "accidental and other secondary-action combinations outside the current "
+                    "focused V1 action model are not claimed as verified."
+                ),
+                next_evidence=(
+                    "Record the selected project NDP/NA basis in each real design and expand "
+                    "the combination set only when the corresponding actions are modelled."
+                ),
             ),
             AcceptanceItem(
                 key="flexure_shear",
-                title="EC2 and BS 5400 flexure/shear design",
+                title="BS EN 1992-2 and legacy BS 5400 flexure/shear design",
                 domain=VerificationDomain.DESIGN_RESISTANCE,
                 state=EvidenceState.INTERNAL_TESTED,
                 evidence=(
-                    "Layered flexure and shear kernels include migrated benchmark regression "
-                    "cases and project-level demand wiring."
+                    "The EC2/BS EN path reproduces published flexure and shear worked examples, "
+                    "and the legacy BS path reproduces an owner-supplied shear calculation. "
+                    "Project-level demand wiring is regression-tested."
                 ),
                 boundary=(
-                    "Migrated regression values remain internal evidence until their external "
-                    "worked-example sources are recorded and independently reviewed here."
+                    "The legacy BS flexure path and the full bridge-specific set of resistance "
+                    "checks are not yet independently closed as one acceptance package."
                 ),
-                next_evidence="Record and reproduce published/hand flexure and shear examples.",
+                next_evidence=(
+                    "Add an independent legacy BS flexure benchmark and finish the reference "
+                    "girder resistance hand-check package."
+                ),
             ),
             AcceptanceItem(
                 key="cracking",
-                title="EC2 and BS 5400 crack-width checks",
+                title="BS EN 1992-2 and legacy BS crack-width checks",
                 domain=VerificationDomain.SERVICEABILITY,
                 state=EvidenceState.INTERNAL_TESTED,
-                evidence="Layered cracked-section and project-level crack checks are regression-tested.",
-                boundary="Allowable crack limits remain explicit project/code inputs.",
-                next_evidence="Reproduce independent published or hand crack-width examples.",
+                evidence=(
+                    "Layered cracked-section and project-level crack checks are regression-tested."
+                ),
+                boundary=(
+                    "The available Ragana legacy cracking example is internally inconsistent and "
+                    "is deliberately not promoted as acceptance evidence. Allowable crack limits "
+                    "remain explicit project/code inputs."
+                ),
+                next_evidence="Reproduce independent published or traceable hand crack-width examples.",
             ),
             AcceptanceItem(
                 key="deflection",
@@ -177,13 +212,17 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 state=EvidenceState.INTERNAL_TESTED,
                 evidence=(
                     "Stage-aware permanent deflection and common-grillage traffic displacement "
-                    "are implemented; Stage 8 adds an all-case combined displacement re-search."
+                    "are implemented, with an all-case combined-displacement search. STAAD "
+                    "independently checks the underlying elastic displacements."
                 ),
                 boundary=(
-                    "A road-bridge allowable deflection value is not treated as universal and "
+                    "A road-bridge allowable deflection limit is not treated as universal and "
                     "must remain an explicit project criterion."
                 ),
-                next_evidence="Run all-case combined search and compare representative responses externally.",
+                next_evidence=(
+                    "Pin the serviceability acceptance calculation and selected project limit "
+                    "against an independent BS EN bridge example or traceable hand calculation."
+                ),
             ),
             AcceptanceItem(
                 key="reinforcement_detailing",
@@ -191,14 +230,18 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 domain=VerificationDomain.DETAILING,
                 state=EvidenceState.INTERNAL_TESTED,
                 evidence=(
-                    "Required steel, discrete bars/links, cover and cage fit checks are "
-                    "regression-tested with EC2 and BS policies kept separate."
+                    "Required steel, discrete bars/links, anchorage infrastructure, curtailment, "
+                    "fatigue, construction-stage stress, laps and congestion checks are present "
+                    "with BS EN and legacy BS policies kept separate."
                 ),
                 boundary=(
-                    "Anchorage/laps, drawing-level congestion and unknown provided vertical "
-                    "layer spacing are not silently invented."
+                    "Project-specific fatigue resistance/detail category, construction-stage "
+                    "stress limits, bearing geometry and drawing-level review are not invented."
                 ),
-                next_evidence="Hand-check selected cages and link layouts for reference girders.",
+                next_evidence=(
+                    "Independently hand-check the selected BS EN cage, fatigue, anchorage, "
+                    "curtailment and end-zone outputs for the reference girder."
+                ),
             ),
             AcceptanceItem(
                 key="calculation_reporting",
@@ -206,10 +249,10 @@ def current_v1_acceptance_matrix() -> AcceptanceMatrix:
                 domain=VerificationDomain.REPORTING,
                 state=EvidenceState.INTERNAL_TESTED,
                 evidence=(
-                    "Stage 8 introduces structured formula/substitution/result/reference "
-                    "report records with deterministic Markdown rendering."
+                    "Structured formula/substitution/result/reference report records render "
+                    "deterministically and preserve the selected code basis."
                 ),
-                boundary="A desktop/PDF presentation layer is separate from engineering verification.",
+                boundary="A presentation layer is separate from engineering verification.",
                 next_evidence="Review a complete reference calculation report against engine outputs.",
             ),
         )
