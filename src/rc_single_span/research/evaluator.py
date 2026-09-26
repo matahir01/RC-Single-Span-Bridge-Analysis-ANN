@@ -11,7 +11,6 @@ from rc_single_span.core.models import RectangularGirderProfile
 from rc_single_span.design.eurocode import check_layered_flexure_ec2, check_shear_ec2
 from rc_single_span.research.baseline import BSENReliabilityBaseline
 
-
 FEATURE_NAMES = (
     "fck_mpa",
     "fyk_mpa",
