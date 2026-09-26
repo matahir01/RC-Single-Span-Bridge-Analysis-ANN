@@ -1,165 +1,105 @@
-# Stage D — Anchorage, Curtailment, Face Steel and Fatigue Infrastructure
+# Stage D — Bridge Reinforcement Detailing
 
-Stage D converts a globally adequate longitudinal cage into bridge-specific
-detailing information. It is deliberately split into explicit engineering
-sub-checks so the program never promotes a bar schedule simply because the
-midspan ULS area is adequate.
+Stage D converts a globally adequate longitudinal cage into bridge-specific,
+auditable detailing checks. It deliberately does not promote a bar schedule
+merely because the midspan ULS steel area is adequate.
 
-## Implemented in the current Stage D batch
+The primary modern route is BS EN. Legacy BS 5400 detailing remains separate.
 
-### 1. EC2 anchorage
+## Basic project-detailing path
 
-The Eurocode detailing path now calculates straight-bar tension anchorage from
+The BS EN project detailing path now covers:
 
-`f_bd = 2.25 eta1 eta2 f_ctd`
+- minimum and maximum longitudinal reinforcement limits;
+- discrete longitudinal cage generation;
+- actual cage centroid/effective-depth calculation and ULS recheck;
+- shear-link selection and spacing limits;
+- nominal cover checking;
+- straight-bar anchorage calculation;
+- station-wise reinforcement demand from the actual LM1 traffic search;
+- preliminary anchorage-extended curtailment;
+- doubly reinforced cage selection and final combined ULS recheck where needed.
 
-and
+The reference runner passes the actual LM1 traffic result into project detailing,
+so the station-wise reinforcement envelope and preliminary curtailment path are
+not skipped in the BS EN reference workflow.
 
-`l_b,rqd = (phi / 4) sigma_sd / f_bd`.
+## Advanced Stage D
 
-The alpha-factor product and the tension-bar minimum anchorage length are then
-applied. Bond-condition factors remain explicit inputs. If available anchorage
-length is supplied the result reports a direct pass/fail; otherwise the
-required length is reported without inventing available geometry.
+`stage_d_project.py` wires the following checks into project-level detailing:
 
-### 2. BS 5400 side-face reinforcement
+1. **Support anchorage, tension shift and termination.** The BS EN path applies
+   the EC2 truss-model tension shift
+   `a_l = z(cot(theta)-cot(alpha))/2` to the station-demand curtailment plan.
+2. **Moving-axle reinforcement fatigue.** An EN 1991-2 FLM3 axle-train helper is
+   swept longitudinally and converted to cracked-section reinforcement stress
+   range. Transverse distribution and fatigue resistance remain explicit.
+3. **Construction-stage steel stress.** Permanent actions are accumulated by
+   load-time stage and reinforcement stress is checked on the participating
+   stage section.
+4. **Lap/splice zoning.** End zones are excluded, the fraction of bars spliced
+   together is limited and laps are restricted to configured lower-demand zones.
+5. **Local bearing/end-zone checks.** Bearing pressure, longitudinal-bar clear
+   spacing, link spacing and local reinforcement congestion are reported.
+6. **Doubly reinforced SLS.** Selected top and bottom cages are both included in
+   the cracked transformed-section service check, including tension/compression
+   steel stress and crack control.
 
-The existing BS 5400 minimum side-face steel demand is now converted into a
-discrete reinforcement recommendation on each face. Bar diameter and optional
-maximum spacing are explicit inputs. The previous provided-area audit remains
-available separately.
+## Reference-runner integration
 
-### 3. Preliminary curtailment/zoning engine
+`run_reference_project` now accepts explicit `AdvancedStageDInputs` and invokes
+`run_eurocode_advanced_stage_d` after the BS EN design and basic detailing
+results are available. The resulting `AdvancedGirderDetailingResult` is carried
+in `ReferenceRunResult.eurocode_advanced_detailing`.
 
-A station-wise required-steel envelope can now be converted into longitudinal
-bar-continuation zones. The routine:
+The same orchestration exists separately for the legacy BS route, but legacy
+requirements do not alter the primary BS EN path.
 
-- requires the actual station-wise steel demand as input;
-- calculates the minimum number of bars required in each interval;
-- identifies theoretical cut-off locations;
-- extends cut-offs by the supplied anchorage length away from the high-demand
-  region.
+## Evidence
 
-The routine intentionally does not invent a bending-moment envelope. It is now
-fed directly by the implemented EC2 LM1 station-demand envelope and by the BS
-5400 common-grid HA/HB/HA+HB station-demand envelope when those traffic searches
-are supplied to project detailing.
+The implemented Stage D mechanics are protected by regression checks covering:
 
-### 4. Reinforcement fatigue stress-range checker
+- support shift and termination extensions;
+- refusal to invent an unverified legacy BS tension shift;
+- FLM3 vehicle sweep to reinforcement stress range;
+- three construction-stage reinforcement stress states;
+- lap/splice zoning;
+- local bearing/end-zone pressure, spacing and congestion;
+- doubly reinforced SLS with both reinforcement cages.
 
-A dedicated fatigue checker now exists for an already established equivalent
-reinforcement stress range and characteristic fatigue resistance. It applies
-explicit action/resistance factors and reports utilization and margin.
+Independent/source-pinned evidence additionally covers:
 
-It deliberately does not invent:
+- BS EN straight-bar anchorage against a published worked example;
+- EC2/JRC tension-shift identity;
+- the JRC bridge reinforcement-fatigue example, including equivalent stress
+  ranges and design fatigue resistance.
 
-- the bridge fatigue traffic model;
-- equivalent-cycle factors;
-- reinforcement/detail category;
-- S-N resistance.
+## Explicit project inputs remain mandatory
 
-Those belong to the applicable code-specific fatigue loading/detailing path and
-must be supplied before the fatigue result can be promoted to design evidence.
+The following cannot safely be inferred and therefore remain explicit inputs:
 
-### 5. Doubly reinforced flexural requirement
+- fatigue transverse distribution and fatigue resistance/detail category;
+- construction-stage allowable reinforcement stress;
+- bearing dimensions and allowable bearing pressure;
+- end-zone dimensions and congestion limits;
+- splice length, exclusion zones and permitted splice fraction;
+- actual project cover/aggregate/detailing geometry;
+- project National Annex/NDP and other authority requirements.
 
-The layered-section engine now has a dedicated doubly reinforced extension for
-both EC2 and the repository's BS 5400 flexural basis.
+A missing or failed check is not replaced with a generic default. The advanced
+result is marked `complete` only when all configured checks resolve and pass.
+Likewise, project-level reinforcement `final_design_ready` remains conservative.
 
-For EC2, when the configured singly reinforced neutral-axis limit is exceeded,
-the routine fixes the concrete block at that limiting neutral axis and resolves
-the excess moment through a compression-steel/additional-tension-steel couple.
-Compression-steel stress is calculated from strain compatibility and capped at
-the design yield stress.
+## V1 status
 
-For BS 5400, the same layered limiting concrete-block basis used by the
-repository's existing singly reinforced check is retained, and the excess
-moment is carried by an explicit design-stress compression/tension couple.
+The **Stage D software capability is accepted inside the focused BS EN V1
+software boundary** because the mechanics are implemented, integrated into the
+reference workflow, protected by regression tests and supported by independent
+source checks for the critical anchorage/tension-shift/fatigue equations.
 
-Both requirement routines report force-equilibrium and moment residuals. The
-detailer now continues beyond the continuous requirement: it generates
-discrete bottom-tension and top-compression cage candidates, calculates each
-multilayer cage centroid, updates the actual d and d', solves final combined
-force equilibrium, and verifies the selected pair at ULS. EC2 uses
-strain-compatible steel stresses capped at fyd; the BS 5400 path retains the
-repository's explicit legacy design-stress basis. A cage pair is not accepted
-merely because each separate provided area exceeds the continuous requirement.
+This acceptance does **not** mean a particular reinforcement drawing is approved.
+A real bridge still needs its actual project inputs and competent engineering
+review before construction use.
 
-### 6. Station-wise Eurocode ULS reinforcement envelope
-
-The LM1 common-grillage search now retains a governing bending-moment envelope
-at every longitudinal grillage station for every girder. This is accumulated
-during the traffic search itself, so it does not depend on retaining every
-full traffic case in memory.
-
-For a selected girder the EC2 detailing path can now combine, station by
-station:
-
-- the factored permanent-action bending moment evaluated at the same exact
-  longitudinal coordinate;
-- the governing LM1 traffic bending moment and its governing traffic case ID;
-- the configured persistent ULS factors;
-- the layered EC2 flexural resistance model;
-- code minimum longitudinal steel.
-
-The result is a true longitudinal `A_s(x)` demand envelope rather than a
-single midspan/global maximum. When the LM1 search is exhaustive and every
-station remains within the singly reinforced scope, the project-detailing path
-can immediately convert that envelope into an anchorage-extended preliminary
-curtailment plan for the selected discrete cage.
-
-Reduced LM1 searches are deliberately not allowed to certify curtailment.
-
-## Advanced Stage D implementation
-
-The previously outstanding Stage D mechanics are now implemented as explicit,
-auditable checks rather than hidden assumptions:
-
-1. support anchorage, tension shift and bar termination are applied to the
-   station-demand curtailment plan. The Eurocode path calculates
-   `a_l = z(cot(theta)-cot(alpha))/2`; the BS path requires an explicitly
-   verified legacy-code tension-shift length rather than inventing one;
-2. an explicit moving-axle fatigue vehicle can now be swept longitudinally and
-   converted to a cracked-section reinforcement stress range. An EN 1991-2
-   FLM3 axle train helper is provided, while transverse girder distribution,
-   resistance range and fatigue factors remain project inputs;
-3. construction-stage reinforcement stress checks now accumulate permanent
-   actions by load-time stage and evaluate steel stress on the participating
-   stage section;
-4. lap/splice zoning now excludes supports/end zones, limits the fraction of
-   bars spliced together and restricts laps to configured lower-demand zones;
-5. local bearing/end-zone checks now report bearing pressure, longitudinal-bar
-   clear spacing, link spacing and a local reinforcement congestion ratio;
-6. selected doubly reinforced cages now receive a cracked transformed-section
-   SLS check with both top and bottom cages included. EC2 crack control uses the
-   resulting tension-steel stress; the BS path retains the repository's
-   existing mean-strain/crack geometry framework.
-
-`stage_d_project.py` wires these checks into Eurocode and BS project-level
-detailing results. Inputs that cannot safely be inferred — fatigue transverse
-distribution, fatigue resistance/detail category, allowable construction-stage
-steel stress, bearing geometry/resistance, splice limits and the verified BS
-tension-shift/fatigue model — remain explicit. A result is marked complete only
-when every configured advanced check resolves and passes.
-
-Stage D can therefore be treated as implemented infrastructure, but it is not
-a substitute for project-specific code parameters, independent verification or
-drawing review.
-
-## BS 5400 exact common-grid reinforcement zoning
-
-The HA-alone, HB-alone and HA+HB common-grillage searches retain a governing
-longitudinal bending-moment envelope at every generated girder station, with
-governing case IDs and member IDs. For reinforcement zoning the three searches
-are now also supplied with the same explicit design-station x-grid. Those
-coordinates are inserted into each actual grillage topology, so their moments
-are solved at exact common stations rather than interpolated between different
-traffic grids.
-
-At every common station the BS detailing path evaluates permanent actions with
-their category-specific ULS factors and compares HA, HB and HA+HB with the
-traffic-specific gamma_fL values for combinations 1-3. The layered BS flexural
-solver then produces A_s(x), retaining minimum main steel where it governs.
-When the search is exhaustive, the singly reinforced envelope is complete, a
-longitudinal cage is selected, and a BS anchorage length is supplied explicitly,
-the result can feed the preliminary bar-continuation/curtailment plan.
+See `docs/BS_EN_V1_DETERMINISTIC_CLOSURE.md` and
+`src/rc_single_span/verification/acceptance.py`.
