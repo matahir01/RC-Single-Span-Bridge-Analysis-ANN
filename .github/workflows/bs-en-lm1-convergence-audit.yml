@@ -1,0 +1,46 @@
+name: BS EN LM1 convergence audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      initial_step_m:
+        description: Initial longitudinal tandem step (m)
+        required: true
+        default: "2.4"
+      minimum_step_m:
+        description: Minimum longitudinal tandem step (m)
+        required: true
+        default: "1.2"
+      relative_tolerance:
+        description: Maximum accepted relative envelope change
+        required: true
+        default: "0.05"
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install package
+        run: python -m pip install -e ".[dev]"
+      - name: Run BS EN influence-surface convergence audit
+        run: >-
+          python examples/audit_bs_en_lm1_convergence.py
+          --initial-step "${{ inputs.initial_step_m }}"
+          --minimum-step "${{ inputs.minimum_step_m }}"
+          --relative-tolerance "${{ inputs.relative_tolerance }}"
+          --max-refinements 1
+          --max-exhaustive 5000
+          --output bs_en_lm1_convergence_audit.json
+      - name: Upload audit record
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: bs-en-lm1-convergence-audit
+          path: bs_en_lm1_convergence_audit.json
+          if-no-files-found: error
+          retention-days: 30
