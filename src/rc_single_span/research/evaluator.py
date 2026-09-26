@@ -19,6 +19,10 @@ FEATURE_NAMES = (
     "steel_area_mm2",
     "dead_load_factor",
     "live_load_factor",
+    "moment_load_model_factor",
+    "shear_load_model_factor",
+    "flexure_resistance_model_factor",
+    "shear_resistance_model_factor",
 )
 
 TARGET_NAMES = (
@@ -32,10 +36,10 @@ TARGET_NAMES = (
 class ReliabilityModelConfig:
     """Explicit physical-limit-state assumptions for research sampling.
 
-    Partial factors default to 1.0 because the stochastic strengths and actions
-    represent physical random variables rather than code-design values. Set
-    different values only when the research methodology deliberately defines a
-    different resistance model.
+    Partial factors default to 1.0 because stochastic strengths/actions represent
+    physical random variables rather than code-design values. Model uncertainty is
+    represented by explicit random variables in ``FEATURE_NAMES`` rather than by
+    hidden deterministic multipliers.
     """
 
     deflection_limit_mm: float
@@ -94,11 +98,14 @@ class BridgeLimitStateEvaluator:
     """Fast stochastic evaluator tied to a verified deterministic action baseline.
 
     The expensive traffic placement/distribution search is performed once in the
-    deterministic baseline. Each stochastic sample then varies resistance
-    variables and scales permanent/live action components. Web-width uncertainty
-    also updates the final composite section inertia used for the elastic
-    deflection scaling. This is intentionally a response-separation approximation,
-    not a claim that every sampled bridge has been re-analysed as a new grillage.
+    deterministic baseline. Each stochastic sample varies material/geometry/action
+    variables and explicit load-effect/resistance-model factors. Web-width
+    uncertainty also updates final composite inertia for elastic deflection.
+
+    This remains a response-separation approximation: it does not claim that every
+    stochastic sample has been re-analysed as a new grillage. No generic deflection
+    model-error factor is introduced because the adopted JCSS source values used for
+    moment/shear resistance and load effects do not justify inventing one.
     """
 
     feature_names = FEATURE_NAMES
@@ -132,6 +139,10 @@ class BridgeLimitStateEvaluator:
         steel_area = values["steel_area_mm2"]
         dead_factor = values["dead_load_factor"]
         live_factor = values["live_load_factor"]
+        moment_effect_model = values["moment_load_model_factor"]
+        shear_effect_model = values["shear_load_model_factor"]
+        flexure_resistance_model = values["flexure_resistance_model_factor"]
+        shear_resistance_model = values["shear_resistance_model_factor"]
 
         try:
             geometry = _geometry_with_web_width(self.baseline, width)
@@ -145,10 +156,11 @@ class BridgeLimitStateEvaluator:
                 geometry,
                 girder_index=self.baseline.moment_girder_index,
             )
-            moment_effect = (
+            nominal_moment_effect = (
                 dead_factor * self.baseline.permanent_moment_knm
                 + live_factor * self.baseline.traffic_moment_knm
             )
+            moment_effect = moment_effect_model * nominal_moment_effect
             flexure = check_layered_flexure_ec2(
                 med_knm=moment_effect,
                 layers=moment_layers,
@@ -160,11 +172,14 @@ class BridgeLimitStateEvaluator:
                 gamma_s=self.config.gamma_s,
                 alpha_cc=self.config.alpha_cc,
             )
+            nominal_flexure_resistance = flexure.resistance_knm
+            flexure_resistance = flexure_resistance_model * nominal_flexure_resistance
 
-            shear_effect = (
+            nominal_shear_effect = (
                 dead_factor * self.baseline.permanent_shear_kn
                 + live_factor * self.baseline.traffic_shear_kn
             )
+            shear_effect = shear_effect_model * nominal_shear_effect
             shear = check_shear_ec2(
                 ved_kn=shear_effect,
                 web_width_m=width,
@@ -179,7 +194,7 @@ class BridgeLimitStateEvaluator:
                 z_factor=self.config.z_factor,
             )
             if self.config.provided_asw_per_s_mm2_per_m is None:
-                shear_resistance = min(shear.vrdc_kn, shear.vrdmax_kn)
+                nominal_shear_resistance = min(shear.vrdc_kn, shear.vrdmax_kn)
                 shear_basis = 0.0
             else:
                 asw_per_s_mm2_per_mm = (
@@ -194,8 +209,9 @@ class BridgeLimitStateEvaluator:
                     * self.config.cot_theta
                     / 1000.0
                 )
-                shear_resistance = min(vrds_kn, shear.vrdmax_kn)
+                nominal_shear_resistance = min(vrds_kn, shear.vrdmax_kn)
                 shear_basis = vrds_kn
+            shear_resistance = shear_resistance_model * nominal_shear_resistance
 
             if self.config.scale_deflection_by_gross_iy:
                 sampled_iy = final_composite_girder_properties(
@@ -213,10 +229,14 @@ class BridgeLimitStateEvaluator:
 
             output = {
                 **values,
+                "nominal_moment_effect_knm": nominal_moment_effect,
                 "moment_effect_knm": moment_effect,
-                "moment_resistance_knm": flexure.resistance_knm,
-                "g_flexure_knm": flexure.resistance_knm - moment_effect,
+                "nominal_moment_resistance_knm": nominal_flexure_resistance,
+                "moment_resistance_knm": flexure_resistance,
+                "g_flexure_knm": flexure_resistance - moment_effect,
+                "nominal_shear_effect_kn": nominal_shear_effect,
                 "shear_effect_kn": shear_effect,
+                "nominal_shear_resistance_kn": nominal_shear_resistance,
                 "shear_resistance_kn": shear_resistance,
                 "shear_concrete_resistance_kn": shear.vrdc_kn,
                 "shear_link_resistance_kn": shear_basis,
