@@ -51,6 +51,16 @@ from rc_single_span.research.sampling import (
     independent_random_samples,
     latin_hypercube,
 )
+from rc_single_span.research.source_profiles import (
+    JCSSConcretePrior,
+    JCSSConcreteProduction,
+    jcss_c35_concrete_prior,
+    jcss_concrete_dimension_variable,
+    jcss_effective_depth_variable,
+    jcss_model_uncertainty_variables,
+    jcss_rebar_area_variable,
+    jcss_rebar_yield_variable,
+)
 from rc_single_span.research.surrogate import (
     MLPConfig,
     NumpyMLPRegressor,
@@ -80,6 +90,8 @@ __all__ = [
     "DistributionFamily",
     "FORMResult",
     "GaussianCopula",
+    "JCSSConcretePrior",
+    "JCSSConcreteProduction",
     "LimitStateEvaluation",
     "MLPConfig",
     "MonteCarloResult",
@@ -106,6 +118,12 @@ __all__ = [
     "form_surrogate_reliability",
     "generate_dataset",
     "independent_random_samples",
+    "jcss_c35_concrete_prior",
+    "jcss_concrete_dimension_variable",
+    "jcss_effective_depth_variable",
+    "jcss_model_uncertainty_variables",
+    "jcss_rebar_area_variable",
+    "jcss_rebar_yield_variable",
     "latin_hypercube",
     "monte_carlo_surrogate_reliability",
     "optimize_surrogate_rbdo",
