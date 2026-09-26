@@ -15,6 +15,15 @@ on:
         description: Maximum accepted relative envelope change
         required: true
         default: "0.05"
+  push:
+    branches: [main]
+    paths:
+      - "src/rc_single_span/traffic/lm1.py"
+      - "src/rc_single_span/traffic/lm1_influence.py"
+      - "src/rc_single_span/traffic/lm1_influence_convergence.py"
+      - "src/rc_single_span/codes/eurocode/lm1.py"
+      - "examples/audit_bs_en_lm1_convergence.py"
+      - ".github/workflows/bs-en-lm1-convergence-audit.yml"
 
 jobs:
   audit:
@@ -28,11 +37,15 @@ jobs:
       - name: Install package
         run: python -m pip install -e ".[dev]"
       - name: Run BS EN influence-surface convergence audit
+        env:
+          INITIAL_STEP_M: ${{ inputs.initial_step_m || '2.4' }}
+          MINIMUM_STEP_M: ${{ inputs.minimum_step_m || '1.2' }}
+          RELATIVE_TOLERANCE: ${{ inputs.relative_tolerance || '0.05' }}
         run: >-
           python examples/audit_bs_en_lm1_convergence.py
-          --initial-step "${{ inputs.initial_step_m }}"
-          --minimum-step "${{ inputs.minimum_step_m }}"
-          --relative-tolerance "${{ inputs.relative_tolerance }}"
+          --initial-step "$INITIAL_STEP_M"
+          --minimum-step "$MINIMUM_STEP_M"
+          --relative-tolerance "$RELATIVE_TOLERANCE"
           --max-refinements 1
           --max-exhaustive 5000
           --output bs_en_lm1_convergence_audit.json
