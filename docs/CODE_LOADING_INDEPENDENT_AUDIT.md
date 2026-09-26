@@ -1,40 +1,184 @@
-# Code loading independent audit — 25 September 2026
+# Code loading independent audit — updated 26 September 2026
 
-## Evidence and scope
+## Code basis and scope
 
-Primary external source: European Commission Joint Research Centre, *Bridge Design to Eurocodes Worked Examples*, Chapter 3, Tables 3.6 and 3.8, https://eurocodes.jrc.ec.europa.eu/sites/default/files/2022-06/Bridge_Design-Eurocodes-Worked_examples-main_only.pdf. This independent source was checked against the implemented LM1 lane constants and the 15 m benchmark's 7 m carriageway. The source's recommended factors do not replace a project-specific National Annex.
+The primary modern route is the British-adopted Eurocode family: **BS EN
+1990:2002+A1:2005**, **BS EN 1991-2:2003** and **BS EN 1992-2:2005**. The
+internal package name remains `eurocode` where necessary, but design provenance
+is BS EN. The legacy BS 5400 / BD 37 route remains separate and is not allowed
+to donate factors or material definitions to the BS EN path.
 
-For a 7 m carriageway, two 3 m notional lanes and a 1 m remaining area give, over 15 m, 1000 kN in two complete tandem systems and 555 kN of UDL at the JRC's characteristic magnitudes (lane 1: 9 kN/m²; lane 2: 2.5 kN/m²; remaining: 2.5 kN/m²). The code's primitive LM1 loads reproduce these values. This load accounting checks the generation of one full-length placement; it does not independently verify every adverse placement or the lane permutation search.
+Primary external loading source: European Commission Joint Research Centre,
+*Bridge Design to Eurocodes Worked Examples*, Chapter 3, Tables 3.6 and 3.8.
+The source's recommended factors are verification values; they do not establish
+a Nigerian National Annex. Nationally Determined Parameters and any authority
+adoption remain explicit project inputs.
 
-## Blocking finding: Eurocode frequent SLS
+For the 15 m reference bridge's 7 m carriageway, two 3 m notional lanes and a
+1 m remaining area give 1000 kN in the two complete characteristic tandem
+systems and 555 kN of full-length UDL at the JRC characteristic magnitudes. The
+source-pinned regression suite also checks both notional-lane numberings, both
+possible remaining-area edges, 1.2 m tandem axle spacing and 2.0 m transverse
+wheel spacing.
 
-JRC Table 3.8 gives different recommended frequent factors for LM1's tandem system (0.75) and UDL (0.40). The current `EurocodeServiceabilityFactors` has only one `psi1_traffic` value, and `frequent_sls` applies it to an already combined LM1 envelope. For this illustrative full-length placement, a factor of 0.75 applied uniformly gives 1166.25 kN, whereas component weighting gives 972 kN. These totals illustrate the factor error only; they are not girder effects. The governing placements must be searched again after weighting the components, because their locations can change.
+## BS EN LM1 favourable-region search
 
-**Status: full Eurocode frequent-SLS code-loading verification remains open.** The reference runner and full-width STAAD exporter now accept separate tandem and UDL factors and re-run LM1 placement search with component-weighted loads before combining girder effects. The exported frequent matrix refers to the separately weighted traffic case models at factor 1.0. Existing single-factor runs remain legacy calculations and must not be interpreted as verification against the distinct recommended factors. The National Annex and a new independent external response comparison of these weighted models remain necessary; do not infer a corrected design result by rescaling the old combined envelope.
+BS EN 1991-2 requires the UDL to be applied only on adverse portions of the
+relevant influence surface. The production BS EN route no longer uses the
+historical whole-lane UDL approximation. It now builds a fixed common-grillage
+plan grid, solves unit-pressure cells once, searches the complete tandem
+position vectors, and for each signed fixed response retains only UDL cells
+that increase that response. Governing stored cases are then re-solved as
+physical tandem plus selected-UDL load cases.
 
-## Owner-supplied Ragana bridge calculation benchmark
+The search is response-specific: member-end bending, shear and torsion are
+checked for both signs and deflection is sampled along each longitudinal member.
+Station-wise moment demand used by reinforcement zoning is retained separately.
 
-The supplied `river-ragana-bridge-design-calculations-final_compress.pdf` (T. Onyango / Eng. M. Olela, April 2015), printed pp. 65-67, provides a useful **BS 5400 shear-component benchmark**. With the report's stated V = 835 kN, average web width = 329 mm, effective depth = 1349 mm, provided main steel = 12861 mm², fcu = 35 MPa and fyv = 460 MPa, the app returns design stress 1.881 MPa, adjusted concrete shear stress 0.786 MPa and Asv/s = 1.229 mm²/mm. The report rounds these to 1.88, 0.79 and 1.23 respectively. A source-based regression test is committed in `tests/test_ragana_bs5400_reference.py`. This verifies one shear-equation substitution; the 20 m Kenyan bridge's section, factors, traffic and materials do not establish a full-project validation for the 15 m reference bridge.
+### Numerical convergence
 
-The report's printed p. 68 cracking worked example gives b = 329 mm, modular ratio 15, As = 12861 mm² and d = 1349 mm but reports neutral axis x = 1043 mm. Direct substitution into its own quadratic, b*x²/2 + 15*As*x - 15*As*d = 0, gives about 801 mm. That cracking result cannot serve as an independent acceptance benchmark until the inconsistency is resolved. The report also identifies HA as critical while taking its listed governing SLS moment from the HB column; use its combined-load selections cautiously.
+Search resolution is a numerical parameter, not a code constant. The repository
+therefore has a dedicated convergence audit that requires:
 
-## Official BS traffic and independent EC2 shear sources
+- exhaustive tandem combinations at every refinement;
+- halving of the tandem longitudinal step;
+- comparison of girder moment, shear, torsion and deflection envelopes; and
+- maximum relative change no greater than the adopted 5% verification
+  criterion.
 
-The official archived Highways Agency *BD 37/01 CR01*, https://www.standardsforhighways.co.uk/tses/attachments/d9448824-a259-4cd3-938b-15daeacd90a0?inline=true, Appendix A clauses 3.2.9.3 and 6.2.1-6.4.2, was inspected directly. The reference code reproduces its 7 m two-lane split, HA short-length UDL and 120 kN KEL, short-span lane factors, the 30-unit HB vehicle load and axle positions, and the specified combination-1 HA-alone and HA/HB-coexistent factors. Tests in `tests/test_bd37_official_source.py` independently pin source values and critical lane-width and length boundaries. Clause 6.4.2 additionally confirms HB straddling, 25 m exclusion zones, omission of KEL in occupied lanes and the 2.5 m residual-width criterion; existing placement logic matches these reviewed clauses. The official archive identifies the standard as superseded in the UK; this repository's historical BS profile still needs an explicitly selected applicable design basis for a real project.
+The first recorded refinement, **2.4 m -> 1.2 m**, was deliberately rejected:
+maximum relative change was **13.4036%**, governed by shear on girder 4. The
+criterion was not widened. A finer **1.2 m -> 0.6 m** exhaustive audit is the
+next acceptance check. See `docs/BS_EN_LM1_CONVERGENCE_AUDIT.md`.
 
-The European Commission JRC *Bridge Design to Eurocodes Worked Examples*, same URL as above, Chapter 5 section 5.2.2.7, gives a bridge slab-strip EC2 shear example using fck = 35 MPa, d = 360 mm, bw = 1000 mm, As = 1848 mm² and VEd = 235 kN. The app reproduces its concrete-only resistance of about 198 kN and computes a required vertical-link demand of about 667 mm²/m for cot(theta)=2.5. `tests/test_jrc_ec2_shear_reference.py` captures that narrow independent check. It does not validate the bridge girder's complete detailing, cracking or fatigue calculations.
+## BS EN frequent SLS — corrected and externally checked
 
-The Concrete Centre, *Practical Design to Eurocode 2: Bending and Shear in Beams* (2017), p. 24, https://www.concretecentre.com/TCC/media/TCCMediaLibrary/PDF%20attachments/Lecture-3-Bending-and-Shear-in-Beams-PHG-A8-Oct17.pdf, gives a 450 mm by 1000 mm C30 beam with d = 934 mm and MEd = 1410 kNm. Using the example's alpha_cc = 0.85, the layered flexure function gives z = 822 mm and required As about 3946 mm², versus its rounded 3943 mm². The project design, steel demand, cage recheck and doubly reinforced path now accept the same explicit `EC2DesignInputs.alpha_cc` factor; the default of 1.0 remains an explicit modelling basis and must be chosen against the project National Annex. `tests/test_concrete_centre_ec2_flexure_reference.py` captures the source comparison.
+JRC Table 3.8 gives different recommended frequent factors for LM1's tandem
+system and UDL: 0.75 and 0.40 respectively. Applying one factor to an already
+combined LM1 envelope is therefore not a valid substitute for a separately
+weighted search because the governing placement can change.
 
-The recommended frequent-factor path has now received genuine external structural-response evidence. A weighted campaign using `--psi1-traffic 0.75 --psi1-udl-traffic 0.40 --psi2-traffic 0` produced 17 retained `traffic/lm1_frequent/` cases, and genuine STAAD returns matched all 46,189 expected direct-global fields with zero engineering comparison failures. This closes the reference bridge's weighted frequent-LM1 **solver-response** check; it does not by itself establish the applicable National Annex or complete EN 1990/EN 1991-2 action-grouping compliance.
+The current engine addresses this explicitly:
 
-The same 83-model return review exposed an output-completeness defect in the historical HB/HA+HB STAAD print commands: fixed 24-member `PRINT MEMBER FORCES GLOBAL LIST` groups became too long once member IDs reached four digits, causing selected final IDs to be truncated by STAAD. The exporter now chunks these commands by character length and a completeness-safe `.ANL` comparator is regression-tested. The corrected rerun of those 13 HB and 15 HA+HB models is complete: all 284,291 expected fields are present with zero engineering comparison failures. The full 83-model current STAAD evidence set is therefore complete at 410,576/410,576 fields with zero comparison failures. See `docs/STAAD_WEIGHTED_FREQUENT_EXTERNAL_VERIFICATION_2026-09-25.md`.
+- `EurocodeServiceabilityFactors` accepts separate tandem and UDL frequent
+  factors;
+- scalar `frequent_sls` rejects distinct component factors rather than silently
+  applying one number;
+- the LM1 search can weight tandem and UDL components before the placement
+  search;
+- project combinations accept a separately searched frequent-LM1 result; and
+- the full-width STAAD exporter maps the frequent combination to the weighted
+  traffic cases at factor 1.0 instead of rescaling a characteristic envelope.
 
-## Remaining source checks
+This correction has genuine external structural-response evidence. A weighted
+campaign using tandem factor 0.75, UDL factor 0.40 and quasi-permanent traffic
+factor 0.0 retained 17 frequent cases. Genuine STAAD returns matched all
+**46,189/46,189** expected direct-global result fields with zero engineering
+comparison failures.
 
-- Confirm LM1 notional-lane assignment, lane permutations, wheel coordinates and the adverse longitudinal placement search against the complete EN 1991-2 rules and the applicable National Annex.
-- Confirm EN 1990 ULS/SLS factor combinations for favourable and unfavourable permanent effects and the actual action grouping, including the separated frequent LM1 components.
-- Extend the completed authoritative BD 37/01 primitive and coexistence checks to adverse-placement coverage, load combinations outside the current primary 1-3 subset, and any project-specific authority instructions. The Irish NRA addendum is jurisdiction-specific and cannot by itself establish the Nigerian project's governing HB units or factors.
-- Independently check the EC2 and BS 5400 RC resistance, serviceability, fatigue and detailing calculations against published worked examples or traceable hand calculations. STAAD structural agreement is not evidence for these design equations.
+That closes the weighted frequent-LM1 **solver-response** comparison. It does
+not choose the project's National Annex or add actions that are outside the V1
+action model.
 
-The 67-model STAAD structural-response campaign remains a passed verification of its exported model and loads. It does not establish that the selected loads or design factors comply with either standard.
+## BS EN 1990 combinations
+
+The primary combination module now identifies its outputs as BS EN 1990. The
+JRC road-bridge values used for verification are pinned numerically, including
+recommended persistent ULS factors for unfavourable permanent action and road
+traffic. Favourable and unfavourable permanent response can be supplied
+separately through `persistent_uls_split_permanent`; a stabilising response
+keeps its physical sign rather than being converted to a positive magnitude.
+
+For the focused simply supported gravity-girder V1 path, the permanent sagging
+and positive shear envelopes are treated as unfavourable gravity effects. The
+split helper exists so this V1 simplification cannot become a hidden general
+combination rule.
+
+The applicable National Annex/project NDP basis remains explicit. Wind,
+thermal, accidental and other secondary action combinations are not claimed as
+implemented merely because the primary gravity/traffic combination arithmetic
+is source-pinned.
+
+## BS EN concrete design source checks
+
+The following independent checks are now attached to the primary route:
+
+- **Flexure:** Concrete Centre published beam example; with the example's
+  explicit `alpha_cc = 0.85`, the layered flexure path reproduces the published
+  lever arm and required tension steel to rounding.
+- **Shear:** JRC concrete-bridge worked example using `fck = 35 MPa`,
+  `d = 360 mm`, `bw = 1000 mm`, `As = 1848 mm²` and `VEd = 235 kN`; the engine
+  reproduces the concrete resistance and required vertical-link demand to the
+  published basis.
+- **Minimum longitudinal steel:** the JRC recommended
+  `max(0.26 fctm/fyk, 0.0013) bt d` expression is pinned directly. Coefficients
+  remain overrideable where National Annex choice applies.
+- **Shear detailing:** recommended minimum link ratio and explicit link-spacing
+  limits are source-pinned; they are not mixed with the legacy BS 5400 rules.
+- **Cracking:** a published EC2 crack-width example gives approximately
+  0.184 mm; the production close-spacing crack check now calls the same
+  source-pinned formula used by that benchmark.
+- **Anchorage:** the BS EN/EC2 straight-bar anchorage calculation has a
+  published worked-example regression.
+- **Tension shift:** the EC2 truss-model expression
+  `a_l = z(cot(theta)-cot(alpha))/2` is source-pinned; support anchorage and
+  continuation remain separate explicit detailing inputs.
+- **Fatigue:** the reinforcement fatigue calculation is checked against the JRC
+  bridge example, while project fatigue category/resistance inputs remain
+  explicit.
+
+These examples verify individual equations and implementation paths. They do
+not by themselves certify a complete project girder or drawing.
+
+## Legacy BS 5400 / BD 37 evidence
+
+The official archived Highways Agency *BD 37/01 CR01*, Appendix A, remains the
+primary legacy traffic source. Tests pin the 7 m two-lane split, HA UDL/KEL,
+short-span lane factors, HB geometry and HA+HB coexistence mechanics including
+occupied-lane treatment and exclusion zones. The corrected external STAAD
+rerun also covers the resulting HB and HA+HB structural responses.
+
+The owner-supplied Ragana River Bridge calculation provides a useful narrow
+legacy RC benchmark. With its stated `V = 835 kN`, average web width 329 mm,
+`d = 1349 mm`, `As = 12861 mm²`, `fcu = 35 MPa` and `fyv = 460 MPa`, the legacy
+shear kernel reproduces the report's rounded shear stress, concrete contribution
+and required `Asv/s`.
+
+The Ragana cracking calculation remains unsuitable as acceptance evidence: its
+printed neutral axis does not satisfy its own displayed transformed-section
+quadratic. Its doubly reinforced flexure also uses a legacy compression-steel
+coefficient that must be checked against an authoritative BS 5400 source before
+changing the software. No such legacy assumption is imported into the primary
+BS EN route.
+
+## Structural solver evidence
+
+The current external STAAD evidence set is complete at **83/83 models** and
+**410,576/410,576 expected fields**, with zero engineering comparison failures.
+The campaign includes construction stages, permanent components, characteristic
+traffic, separately weighted frequent LM1 traffic, and corrected HB/HA+HB
+output completeness.
+
+This is evidence for structural response of the exported model/load cases. It
+is not evidence that a selected code factor, NDP, crack limit, fatigue category
+or reinforcement drawing is correct.
+
+## Remaining BS EN acceptance work
+
+1. Finish the 15 m LM1 search-resolution convergence audit without relaxing the
+   5% criterion; refine further if the 0.6 m result still has not stabilised.
+2. Record the project/authority National Annex or NDP choices instead of
+   labelling recommended Eurocode values as Nigerian defaults.
+3. Close the reference-girder **serviceability** package, especially the
+   selected deflection criterion/combination, without inventing a universal
+   road-bridge limit.
+4. Close the BS EN **detailing** package as one traceable reference-girder hand
+   check: selected cage, anchorage, tension shift/curtailment, fatigue,
+   construction-stage stress, laps and bearing/end-zone congestion.
+5. Review one complete calculation report against the engine outputs and source
+   references before promoting reporting to accepted.
+
+The primary BS EN deterministic path therefore remains **NO-GO for final
+engineering release** while these acceptance items remain open. The legacy BS
+5400 route can continue to be improved independently without blocking closure of
+the primary BS EN V1 route.
