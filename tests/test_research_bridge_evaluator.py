@@ -53,8 +53,8 @@ def _baseline() -> BSENReliabilityBaseline:
     )
 
 
-def _sample(dead: float = 1.0, live: float = 1.0) -> dict[str, float]:
-    return {
+def _sample(dead: float = 1.0, live: float = 1.0, **updates: float) -> dict[str, float]:
+    sample = {
         "fck_mpa": 35.0,
         "fyk_mpa": 500.0,
         "effective_depth_m": 1.08,
@@ -62,17 +62,27 @@ def _sample(dead: float = 1.0, live: float = 1.0) -> dict[str, float]:
         "steel_area_mm2": 12868.0,
         "dead_load_factor": dead,
         "live_load_factor": live,
+        "moment_load_model_factor": 1.0,
+        "shear_load_model_factor": 1.0,
+        "flexure_resistance_model_factor": 1.0,
+        "shear_resistance_model_factor": 1.0,
     }
+    sample.update(updates)
+    return sample
 
 
-def test_bridge_reliability_evaluator_returns_three_limit_states() -> None:
-    evaluator = BridgeLimitStateEvaluator(
+def _evaluator() -> BridgeLimitStateEvaluator:
+    return BridgeLimitStateEvaluator(
         _baseline(),
         ReliabilityModelConfig(
             deflection_limit_mm=50.0,
             provided_asw_per_s_mm2_per_m=1500.0,
         ),
     )
+
+
+def test_bridge_reliability_evaluator_returns_three_limit_states() -> None:
+    evaluator = _evaluator()
     result = evaluator.evaluate(_sample())
     assert result.valid, result.message
     assert set(evaluator.target_names) <= set(result.values)
@@ -80,15 +90,38 @@ def test_bridge_reliability_evaluator_returns_three_limit_states() -> None:
 
 
 def test_more_load_reduces_all_limit_state_margins() -> None:
-    evaluator = BridgeLimitStateEvaluator(
-        _baseline(),
-        ReliabilityModelConfig(
-            deflection_limit_mm=50.0,
-            provided_asw_per_s_mm2_per_m=1500.0,
-        ),
-    )
+    evaluator = _evaluator()
     base = evaluator.evaluate(_sample())
     heavier = evaluator.evaluate(_sample(dead=1.15, live=1.20))
     assert base.valid and heavier.valid
     for target in evaluator.target_names:
         assert heavier.values[target] < base.values[target]
+
+
+def test_load_effect_model_uncertainty_reduces_matching_margin_only() -> None:
+    evaluator = _evaluator()
+    base = evaluator.evaluate(_sample())
+    moment = evaluator.evaluate(_sample(moment_load_model_factor=1.10))
+    shear = evaluator.evaluate(_sample(shear_load_model_factor=1.10))
+    assert base.valid and moment.valid and shear.valid
+    assert moment.values["g_flexure_knm"] < base.values["g_flexure_knm"]
+    assert moment.values["g_shear_kn"] == base.values["g_shear_kn"]
+    assert shear.values["g_shear_kn"] < base.values["g_shear_kn"]
+    assert shear.values["g_flexure_knm"] == base.values["g_flexure_knm"]
+    assert moment.values["g_deflection_mm"] == base.values["g_deflection_mm"]
+
+
+def test_resistance_model_uncertainty_scales_matching_resistance() -> None:
+    evaluator = _evaluator()
+    base = evaluator.evaluate(_sample())
+    flexure = evaluator.evaluate(_sample(flexure_resistance_model_factor=1.20))
+    shear = evaluator.evaluate(_sample(shear_resistance_model_factor=0.90))
+    assert base.valid and flexure.valid and shear.valid
+    assert flexure.values["moment_resistance_knm"] == np.testing.assert_allclose(
+        flexure.values["moment_resistance_knm"],
+        1.20 * base.values["nominal_moment_resistance_knm"],
+    )
+    assert shear.values["shear_resistance_kn"] == np.testing.assert_allclose(
+        shear.values["shear_resistance_kn"],
+        0.90 * base.values["nominal_shear_resistance_kn"],
+    )
