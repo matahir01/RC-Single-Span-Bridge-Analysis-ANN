@@ -5,6 +5,8 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
+from reference_bridge_15m import reference_bridge_15m
+
 from rc_single_span.codes.eurocode.combinations import EurocodeServiceabilityFactors
 from rc_single_span.research.baseline import extract_bs_en_reliability_baseline
 from rc_single_span.research.evaluator import (
@@ -25,7 +27,6 @@ from rc_single_span.research.validation import (
     validate_surrogate_against_direct,
 )
 from rc_single_span.verification.reference_runner import ReferenceRunConfig, run_reference_project
-from reference_bridge_15m import reference_bridge_15m
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -45,10 +46,16 @@ def _require_confirmed(data: dict[str, object]) -> None:
         )
 
 
+def _expect_dict(value: object, label: str) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise TypeError(f"{label} must be a JSON object.")
+    return value
+
+
 def _variables(data: dict[str, object]) -> tuple[RandomVariable, ...]:
     raw = data.get("random_variables")
     if not isinstance(raw, list):
-        raise ValueError("random_variables must be a JSON list.")
+        raise TypeError("random_variables must be a JSON list.")
     variables = tuple(RandomVariable(**item) for item in raw if isinstance(item, dict))
     if tuple(variable.name for variable in variables) != FEATURE_NAMES:
         raise ValueError(
@@ -99,17 +106,15 @@ def _rbdo(data: dict[str, object], model, variables: tuple[RandomVariable, ...])
 
 def main() -> int:
     args = _parser().parse_args()
-    data = json.loads(args.config.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise ValueError("Study configuration root must be a JSON object.")
+    raw_data = json.loads(args.config.read_text(encoding="utf-8"))
+    data = _expect_dict(raw_data, "Study configuration root")
     _require_confirmed(data)
 
-    reference = data.get("reference_run")
-    if not isinstance(reference, dict):
-        raise ValueError("reference_run configuration is required.")
-    sls = reference.get("serviceability_factors")
-    if not isinstance(sls, dict):
-        raise ValueError("reference_run.serviceability_factors is required.")
+    reference = _expect_dict(data.get("reference_run"), "reference_run")
+    sls = _expect_dict(
+        reference.get("serviceability_factors"),
+        "reference_run.serviceability_factors",
+    )
     run_config = ReferenceRunConfig(
         elastic_modulus_mpa=float(reference["elastic_modulus_mpa"]),
         eurocode_sls_factors=EurocodeServiceabilityFactors(
@@ -124,9 +129,7 @@ def main() -> int:
     deterministic = run_reference_project(reference_bridge_15m(), run_config)
     baseline = extract_bs_en_reliability_baseline(deterministic)
 
-    limit_state = data.get("limit_state_model")
-    if not isinstance(limit_state, dict):
-        raise ValueError("limit_state_model configuration is required.")
+    limit_state = _expect_dict(data.get("limit_state_model"), "limit_state_model")
     evaluator = BridgeLimitStateEvaluator(
         baseline,
         ReliabilityModelConfig(
@@ -145,14 +148,12 @@ def main() -> int:
     )
     variables = _variables(data)
 
-    pipeline = data.get("pipeline", {})
-    if not isinstance(pipeline, dict):
-        raise ValueError("pipeline must be a JSON object.")
-    mlp_raw = pipeline.get("mlp", {})
-    if not isinstance(mlp_raw, dict):
-        raise ValueError("pipeline.mlp must be a JSON object.")
+    pipeline = _expect_dict(data.get("pipeline", {}), "pipeline")
+    mlp_raw = _expect_dict(pipeline.get("mlp", {}), "pipeline.mlp")
     mlp = MLPConfig(
-        hidden_layers=tuple(int(value) for value in mlp_raw.get("hidden_layers", [64, 64])),
+        hidden_layers=tuple(
+            int(value) for value in mlp_raw.get("hidden_layers", [64, 64])
+        ),
         learning_rate=float(mlp_raw.get("learning_rate", 1.0e-3)),
         batch_size=int(mlp_raw.get("batch_size", 64)),
         epochs=int(mlp_raw.get("epochs", 1000)),
@@ -187,9 +188,7 @@ def main() -> int:
     elif hasattr(result.model, "save"):
         result.model.save(output / "ann_model.keras")
 
-    validation_raw = data.get("validation", {})
-    if not isinstance(validation_raw, dict):
-        raise ValueError("validation must be a JSON object.")
+    validation_raw = _expect_dict(data.get("validation", {}), "validation")
     direct_check = validate_surrogate_against_direct(
         evaluator,
         result.model,
