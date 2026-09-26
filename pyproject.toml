@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-rc-bridge-gui = "rc_single_span.gui.app:main"
+rc-bridge-gui = "rc_single_span.gui.launcher:main"
 
 [project.optional-dependencies]
 dev = [
