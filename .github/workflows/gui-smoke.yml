@@ -1,0 +1,31 @@
+name: gui-smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/rc_single_span/gui/**"
+      - "tests/test_gui_smoke.py"
+      - "pyproject.toml"
+      - ".github/workflows/gui-smoke.yml"
+  pull_request:
+    paths:
+      - "src/rc_single_span/gui/**"
+      - "tests/test_gui_smoke.py"
+      - "pyproject.toml"
+      - ".github/workflows/gui-smoke.yml"
+
+jobs:
+  gui-smoke:
+    runs-on: ubuntu-latest
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install GUI test dependencies
+        run: python -m pip install -e ".[dev,gui]"
+      - name: GUI smoke test
+        run: pytest -q tests/test_gui_smoke.py
