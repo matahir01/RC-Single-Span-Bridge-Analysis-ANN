@@ -20,6 +20,7 @@ from rc_single_span.research.dataset import (
     generate_dataset,
     split_dataset,
 )
+from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.evaluator import (
     BridgeLimitStateEvaluator,
     LimitStateEvaluation,
@@ -78,6 +79,7 @@ __all__ = [
     "DirectMonteCarloResult",
     "DistributionFamily",
     "FORMResult",
+    "GaussianCopula",
     "LimitStateEvaluation",
     "MLPConfig",
     "MonteCarloResult",
