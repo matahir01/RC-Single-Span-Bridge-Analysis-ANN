@@ -7,7 +7,7 @@ def test_expanded_legacy_bs_v1_gate_is_closed() -> None:
     gate = expanded_legacy_bs_v1_gate()
     assert gate.accepted
     assert gate.blockers == ()
-    names = {item.capability for item in gate.capabilities}
+    names = {item.capability for item in gate.items}
     assert "legacy_bs_combinations_1_to_5" in names
     assert "legacy_bs_fatigue_vehicle" in names
     assert "legacy_bs_curtailment" in names
