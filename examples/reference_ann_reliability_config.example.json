@@ -1,13 +1,13 @@
 {
   "assumptions_confirmed": false,
-  "status_note": "ILLUSTRATIVE CONFIGURATION ONLY. Replace unresolved probabilistic assumptions with source-justified study values before setting assumptions_confirmed=true.",
+  "status_note": "ILLUSTRATIVE CONFIGURATION ONLY. The deterministic research bridge is C35/45 B500, but unresolved probabilistic assumptions below must still be source-justified before setting assumptions_confirmed=true.",
   "target_reliability": {
     "consequence_class": "CC2",
     "reference_period_years": 50,
     "status_note": "Thesis reference scenario only: EN 1990/JRC beta=3.8 for CC2 over 50 years. Report CC1 and CC3 sensitivity and do not treat this as a real-project classification."
   },
   "reference_run": {
-    "elastic_modulus_mpa": 31000.0,
+    "elastic_modulus_mpa": 34000.0,
     "lm1_longitudinal_step_m": 0.6,
     "retain_all_cases": true,
     "lm1_udl_influence_surface": true,
@@ -131,11 +131,11 @@
       [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
       [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
       [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0],
-      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0],
-      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+      [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
     ]
   },
   "pipeline": {
