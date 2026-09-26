@@ -7,7 +7,6 @@ from rc_single_span.design.project import (
     EC2DesignInputs,
     EurocodeSLSBasis,
 )
-from rc_single_span.gui.engine_adapter import GuiCodeProfile
 
 
 @dataclass(frozen=True)
@@ -65,10 +64,10 @@ class GuiDesignInputs:
         if self.deflection_limit_basis is not None and not self.deflection_limit_basis.strip():
             raise ValueError("Deflection basis must be non-empty when supplied.")
 
-    def for_profile(self, profile: GuiCodeProfile):
+    def for_profile(self, profile_value: str):
         if not self.enabled:
             return None
-        if profile is GuiCodeProfile.BS_EN:
+        if profile_value.startswith("BS EN"):
             return EC2DesignInputs(
                 effective_depth_m=self.effective_depth_m,
                 bar_diameter_mm=self.bar_diameter_mm,
@@ -82,15 +81,17 @@ class GuiDesignInputs:
                 sls_basis=EurocodeSLSBasis(self.ec2_sls_basis),
                 alpha_cc=self.ec2_alpha_cc,
             )
-        return BS5400DesignInputs(
-            effective_depth_m=self.effective_depth_m,
-            bar_diameter_mm=self.bar_diameter_mm,
-            bar_spacing_mm=self.bar_spacing_mm,
-            nominal_cover_mm=self.bs_nominal_cover_mm,
-            crack_point_depth_mm=self.bs_crack_point_depth_mm,
-            allowable_crack_width_mm=self.bs_allowable_crack_width_mm,
-            ec_modified_mpa=self.bs_ec_modified_mpa,
-            shear_reinforcement_fyv_mpa=self.bs_shear_reinforcement_fyv_mpa,
-            deflection_limit_mm=self.deflection_limit_mm,
-            deflection_limit_basis=self.deflection_limit_basis,
-        )
+        if profile_value.startswith("BS 5400"):
+            return BS5400DesignInputs(
+                effective_depth_m=self.effective_depth_m,
+                bar_diameter_mm=self.bar_diameter_mm,
+                bar_spacing_mm=self.bar_spacing_mm,
+                nominal_cover_mm=self.bs_nominal_cover_mm,
+                crack_point_depth_mm=self.bs_crack_point_depth_mm,
+                allowable_crack_width_mm=self.bs_allowable_crack_width_mm,
+                ec_modified_mpa=self.bs_ec_modified_mpa,
+                shear_reinforcement_fyv_mpa=self.bs_shear_reinforcement_fyv_mpa,
+                deflection_limit_mm=self.deflection_limit_mm,
+                deflection_limit_basis=self.deflection_limit_basis,
+            )
+        raise ValueError(f"Unsupported GUI code profile: {profile_value}")
