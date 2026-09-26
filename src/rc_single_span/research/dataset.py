@@ -7,6 +7,7 @@ from typing import Protocol
 
 import numpy as np
 
+from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.evaluator import LimitStateEvaluation
 from rc_single_span.research.sampling import RandomVariable, latin_hypercube
 
@@ -123,12 +124,14 @@ def generate_dataset(
     *,
     seed: int | None = None,
     invalid_policy: str = "raise",
+    dependence: GaussianCopula | None = None,
 ) -> ReliabilityDataset:
     """Generate one LHS dataset from an explicit deterministic evaluator.
 
     ``invalid_policy='raise'`` is the recommended research setting because it
     exposes infeasible bounds immediately. ``'skip'`` is available for exploratory
-    bound-finding and records how many points were discarded.
+    bound-finding and records how many points were discarded. When ``dependence``
+    is supplied, the LHS coordinates are coupled with the declared Gaussian copula.
     """
 
     if invalid_policy not in {"raise", "skip"}:
@@ -139,7 +142,12 @@ def generate_dataset(
             "Random-variable order/names must exactly match evaluator.feature_names."
         )
 
-    samples = latin_hypercube(variables, sample_count, seed=seed)
+    samples = latin_hypercube(
+        variables,
+        sample_count,
+        seed=seed,
+        dependence=dependence,
+    )
     feature_rows: list[tuple[float, ...]] = []
     target_rows: list[tuple[float, ...]] = []
     invalid = 0
