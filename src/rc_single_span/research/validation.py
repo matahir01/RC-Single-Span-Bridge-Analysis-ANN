@@ -6,6 +6,7 @@ from typing import Protocol
 import numpy as np
 from scipy.stats import norm
 
+from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.evaluator import LimitStateEvaluation
 from rc_single_span.research.reliability import SurrogatePredictor
 from rc_single_span.research.sampling import RandomVariable, independent_random_samples
@@ -57,6 +58,7 @@ def direct_monte_carlo_reliability(
     *,
     seed: int | None = None,
     invalid_policy: str = "raise",
+    dependence: GaussianCopula | None = None,
 ) -> DirectMonteCarloResult:
     """Run Monte Carlo directly through the deterministic limit-state evaluator.
 
@@ -73,7 +75,12 @@ def direct_monte_carlo_reliability(
     except ValueError as exc:
         raise KeyError(target_name) from exc
 
-    samples = independent_random_samples(variables, sample_count, seed=seed)
+    samples = independent_random_samples(
+        variables,
+        sample_count,
+        seed=seed,
+        dependence=dependence,
+    )
     failures = 0
     valid = 0
     invalid = 0
@@ -114,6 +121,7 @@ def validate_surrogate_against_direct(
     *,
     seed: int | None = None,
     near_limit_state_fraction: float = 0.10,
+    dependence: GaussianCopula | None = None,
 ) -> SurrogateValidationResult:
     """Compare ANN outputs with fresh direct points, including near g=0 points.
 
@@ -130,7 +138,12 @@ def validate_surrogate_against_direct(
     if surrogate.target_names != evaluator.target_names:
         raise ValueError("Surrogate target names do not match the direct evaluator.")
 
-    samples = independent_random_samples(variables, sample_count, seed=seed)
+    samples = independent_random_samples(
+        variables,
+        sample_count,
+        seed=seed,
+        dependence=dependence,
+    )
     feature_rows: list[tuple[float, ...]] = []
     direct_rows: list[tuple[float, ...]] = []
     invalid = 0
