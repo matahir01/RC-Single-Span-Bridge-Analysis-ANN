@@ -12,6 +12,7 @@ from rc_single_span.codes.bs5400.combinations import (
 )
 from rc_single_span.codes.bs5400.secondary import (
     BS5400Combination4Action,
+    BS5400Combination4Factors,
     build_bs5400_combination4,
     build_bs5400_combination5,
 )
@@ -26,16 +27,35 @@ from rc_single_span.traffic.combinations import (
 
 @dataclass(frozen=True)
 class BS5400Combination4EffectInput:
-    """Nominal structural effects for one separately considered secondary action."""
+    """Nominal structural effects for one separately considered secondary action.
 
-    action: BS5400Combination4Action
+    Use ``action`` for the directly source-pinned BD 37/01 6.9-6.11 highway
+    actions. Use ``factors_override`` for project-classified actions whose table
+    factors depend on containment class, structural mass, bearing type or other
+    authority choices. Exactly one factor source is required.
+    """
+
     secondary_nominal: LoadEffects
     associated_primary_nominal: LoadEffects
     provenance: str
+    action: BS5400Combination4Action | None = None
+    factors_override: BS5400Combination4Factors | None = None
 
     def __post_init__(self) -> None:
         if not self.provenance.strip():
             raise ValueError("Combination-4 effect input requires provenance.")
+        if (self.action is None) == (self.factors_override is None):
+            raise ValueError(
+                "Combination-4 effect input requires exactly one of action or "
+                "factors_override."
+            )
+
+    @property
+    def action_name(self) -> str:
+        if self.factors_override is not None:
+            return self.factors_override.action_name
+        assert self.action is not None
+        return self.action.value
 
 
 @dataclass(frozen=True)
@@ -46,6 +66,27 @@ class BS5400SupplementaryCombinationCase:
     action_name: str
     result: FactoredCombination
     provenance: str
+    secondary_nominal: LoadEffects | None = None
+    associated_primary_nominal: LoadEffects | None = None
+    secondary_gamma: float | None = None
+    associated_primary_gamma: float | None = None
+
+    @property
+    def variable_effects(self) -> LoadEffects | None:
+        """Return factored non-permanent effects when component data are retained."""
+
+        if self.secondary_nominal is None or self.secondary_gamma is None:
+            return None
+        result = self.secondary_nominal.scaled(self.secondary_gamma)
+        if self.associated_primary_nominal is not None:
+            if self.associated_primary_gamma is None:
+                raise ValueError(
+                    "Associated primary nominal effect is present without its factor."
+                )
+            result = result + self.associated_primary_nominal.scaled(
+                self.associated_primary_gamma
+            )
+        return result
 
 
 @dataclass(frozen=True)
@@ -129,13 +170,17 @@ def build_bs5400_full_project_combinations(
     gamma = permanent_factors or BS5400PermanentGammaFL()
     combo4_map = combination4_effects_by_girder or {}
     combo5_map = combination5_bearing_friction_by_girder or {}
-    if combo5_map and (combination5_provenance is None or not combination5_provenance.strip()):
+    if combo5_map and (
+        combination5_provenance is None or not combination5_provenance.strip()
+    ):
         raise ValueError("Combination-5 bearing-friction effects require provenance.")
 
     expected = int(project.geometry.girder_count)
     invalid = (set(combo4_map) | set(combo5_map)) - set(range(1, expected + 1))
     if invalid:
-        raise ValueError(f"Supplementary BS effects contain invalid girder indices: {sorted(invalid)}")
+        raise ValueError(
+            f"Supplementary BS effects contain invalid girder indices: {sorted(invalid)}"
+        )
 
     results: list[BS5400FullGirderCombinationResult] = []
     for primary_result in primary:
@@ -154,6 +199,7 @@ def build_bs5400_full_project_combinations(
                     secondary_nominal=item.secondary_nominal,
                     associated_primary_nominal=item.associated_primary_nominal,
                     action=item.action,
+                    factors_override=item.factors_override,
                     limit_state=state,
                     permanent_factor_audit=permanent_named,
                 )
@@ -162,16 +208,23 @@ def build_bs5400_full_project_combinations(
                         girder_index=index,
                         combination=4,
                         limit_state=state,
-                        action_name=item.action.value,
+                        action_name=item.action_name,
                         result=result,
                         provenance=item.provenance,
+                        secondary_nominal=item.secondary_nominal,
+                        associated_primary_nominal=item.associated_primary_nominal,
+                        secondary_gamma=result.factors["secondary_live"],
+                        associated_primary_gamma=result.factors[
+                            "associated_primary_live"
+                        ],
                     )
                 )
 
             if index in combo5_map:
+                friction_nominal = combo5_map[index]
                 result = build_bs5400_combination5(
                     factored_permanent=permanent,
-                    bearing_friction_nominal=combo5_map[index],
+                    bearing_friction_nominal=friction_nominal,
                     limit_state=state,
                     permanent_factor_audit=permanent_named,
                 )
@@ -183,6 +236,8 @@ def build_bs5400_full_project_combinations(
                         action_name="bearing_friction",
                         result=result,
                         provenance=str(combination5_provenance),
+                        secondary_nominal=friction_nominal,
+                        secondary_gamma=result.factors["bearing_friction"],
                     )
                 )
 
