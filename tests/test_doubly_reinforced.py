@@ -51,7 +51,37 @@ def test_bs5400_doubly_reinforced_requirement_recovers_force_and_moment_equilibr
     assert result.excess_moment_knm > 0.0
     assert result.compression_steel_mm2 > 0.0
     assert result.total_tension_steel_mm2 > result.base_tension_steel_mm2
-    assert result.compression_steel_design_stress_mpa == pytest.approx(435.0)
+    assert result.compression_steel_design_stress_mpa == pytest.approx(360.0)
+    assert abs(result.equilibrium_residual_kn) < 1.0e-9
+    assert abs(result.moment_residual_knm) < 1.0e-9
+
+
+def test_ragana_legacy_bs_doubly_reinforced_beam_is_reproduced() -> None:
+    """Reproduce the independent 20 m Ragana beam flexural reinforcement.
+
+    Owner-supplied Ragana River Bridge calculations (beam design pp. 65-66)
+    use M = 4174 kNm, b = 329 mm, d = 1349 mm, d' = 51 mm,
+    fcu = 35 MPa and fy = 460 MPa.  The report gives a limiting concrete
+    moment of about 3148 kNm, required compression steel about 2388 mm2 and
+    total tension steel about 9751 mm2 before selecting 6Y25 top and 16Y32
+    bottom.  Equation 3 explicitly uses 0.72 fy for compression steel while
+    Equation 4 uses 0.87 fy for tension steel.
+    """
+
+    result = required_doubly_reinforced_steel_bs5400(
+        med_knm=4174.0,
+        layers=(ConcreteLayer(0.329, 0.0, 1.40, "Ragana beam average width"),),
+        effective_depth_m=1.349,
+        compression_steel_depth_m=0.051,
+        fcu_mpa=35.0,
+        fy_mpa=460.0,
+    )
+
+    assert result.compression_steel_design_stress_mpa == pytest.approx(0.72 * 460.0)
+    assert result.tension_steel_design_stress_mpa == pytest.approx(0.87 * 460.0)
+    assert result.limiting_concrete_moment_knm == pytest.approx(3148.0, rel=2.0e-3)
+    assert result.compression_steel_mm2 == pytest.approx(2388.0, rel=5.0e-3)
+    assert result.total_tension_steel_mm2 == pytest.approx(9751.0, rel=5.0e-3)
     assert abs(result.equilibrium_residual_kn) < 1.0e-9
     assert abs(result.moment_residual_knm) < 1.0e-9
 
