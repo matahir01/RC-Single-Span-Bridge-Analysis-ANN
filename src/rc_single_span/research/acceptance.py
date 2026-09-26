@@ -65,11 +65,12 @@ def ann_reliability_rbdo_gate() -> ResearchAcceptanceGate:
                 title="Sampling-size and domain convergence",
                 state=ResearchEvidenceState.IMPLEMENTED,
                 evidence=(
-                    "Seeded LHS generation and reproducible dataset splitting are implemented."
+                    "Seeded LHS generation, reproducible dataset splitting and an explicit "
+                    "sample-size convergence audit are implemented."
                 ),
                 remaining=(
-                    "Demonstrate that the adopted sample size and bounds adequately cover the "
-                    "response/failure domain and that key metrics are stable with added samples."
+                    "Run the convergence audit with the final probability model and confirm "
+                    "that key response/failure-domain statistics remain stable."
                 ),
             ),
             ResearchAcceptanceItem(
@@ -100,11 +101,15 @@ def ann_reliability_rbdo_gate() -> ResearchAcceptanceGate:
             ResearchAcceptanceItem(
                 key="target_reliability",
                 title="Target reliability basis",
-                state=ResearchEvidenceState.NOT_STARTED,
-                evidence="No hidden target reliability index is imposed by the software.",
+                state=ResearchEvidenceState.VALIDATED,
+                evidence=(
+                    "Source-pinned EN 1990 Annex C/JRC ULS targets are implemented for CC1, "
+                    "CC2 and CC3 at 1-year and 50-year reference periods. The 50-year values "
+                    "are beta=3.3, 3.8 and 4.3 respectively."
+                ),
                 remaining=(
-                    "Adopt a source-justified target beta/reference period appropriate to the "
-                    "study's consequence/reliability class and governing framework."
+                    "Declare the thesis reference consequence class/reference period and report "
+                    "sensitivity to adjacent classes rather than silently classifying a real bridge."
                 ),
             ),
             ResearchAcceptanceItem(
