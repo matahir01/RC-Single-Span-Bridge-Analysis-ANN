@@ -110,10 +110,14 @@ def test_acceptance_matrix_does_not_promote_internal_tests_to_verified() -> None
     assert all(item.state.value != "accepted" for item in structural)
 
 
-def test_calculation_report_forces_formula_substitution_result_and_reference() -> None:
+def test_calculation_report_forces_code_basis_and_traceable_steps() -> None:
     report = CalculationReport(
         title="Verification calculation",
         project_name="15 m reference",
+        code_basis=(
+            "BS EN 1990:2002+A1:2005; BS EN 1991-2:2003; "
+            "BS EN 1992-2:2005"
+        ),
         assumptions=("Example assumption",),
         warnings=("Independent review pending",),
         sections=(
@@ -133,9 +137,41 @@ def test_calculation_report_forces_formula_substitution_result_and_reference() -
         ),
     )
     markdown = render_markdown(report)
-    for token in ("Formula:", "Substitution:", "Result:", "Reference:", "Status:"):
+    for token in (
+        "Code basis:",
+        "Formula:",
+        "Substitution:",
+        "Result:",
+        "Reference:",
+        "Status:",
+    ):
         assert token in markdown
     assert "BS EN 1990:2002+A1:2005" in markdown
+    assert "BS EN 1991-2:2003" in markdown
+    assert "BS EN 1992-2:2005" in markdown
+
+
+def test_calculation_report_rejects_missing_code_basis() -> None:
+    with pytest.raises(ValueError, match="code basis"):
+        CalculationReport(
+            title="Verification calculation",
+            project_name="15 m reference",
+            code_basis="",
+            sections=(
+                CalculationSection(
+                    title="Check",
+                    steps=(
+                        CalculationStep(
+                            title="Result",
+                            formula="x = 1",
+                            substitution="x = 1",
+                            result="x = 1",
+                            reference="project basis",
+                        ),
+                    ),
+                ),
+            ),
+        )
 
 
 def test_all_case_combined_deflection_search_finds_stronger_traffic_case() -> None:
