@@ -1,6 +1,9 @@
 import pytest
 
+from rc_single_span.research.evaluator import FEATURE_NAMES
+from rc_single_span.research.sampling import RandomVariable
 from rc_single_span.research.source_profiles import (
+    build_jcss_reference_variables,
     jcss_c35_concrete_prior,
     jcss_concrete_dimension_variable,
     jcss_effective_depth_variable,
@@ -60,3 +63,38 @@ def test_jcss_model_uncertainty_profiles_match_documented_generic_values() -> No
     assert variables["flexure_resistance_model_factor"].mean == pytest.approx(1.2)
     assert variables["flexure_resistance_model_factor"].cov == pytest.approx(0.15)
     assert variables["shear_resistance_model_factor"].cov == pytest.approx(0.10)
+
+
+def test_reference_builder_preserves_exact_evaluator_feature_order() -> None:
+    variables = build_jcss_reference_variables(
+        concrete_production="precast",
+        nominal_effective_depth_m=1.10,
+        nominal_web_width_m=0.40,
+        nominal_steel_area_mm2=12868.0,
+        dead_load_variable=RandomVariable(
+            "dead_load_factor", "normal", mean=1.0, cov=0.04
+        ),
+        live_load_variable=RandomVariable(
+            "live_load_factor", "lognormal", mean=1.0, cov=0.15
+        ),
+    )
+    assert tuple(item.name for item in variables) == FEATURE_NAMES
+    assert variables[0].mean == pytest.approx(52.24791574)
+    assert variables[1].mean == pytest.approx(560.0)
+    assert variables[2].mean == pytest.approx(1.110)
+    assert variables[3].mean == pytest.approx(0.4012)
+    assert variables[4].cov == pytest.approx(0.02)
+
+
+def test_reference_builder_refuses_to_invent_or_misname_action_models() -> None:
+    dead = RandomVariable("wrong_dead", "normal", mean=1.0, cov=0.04)
+    live = RandomVariable("live_load_factor", "lognormal", mean=1.0, cov=0.15)
+    with pytest.raises(ValueError, match="dead_load_factor"):
+        build_jcss_reference_variables(
+            concrete_production="ready_mixed",
+            nominal_effective_depth_m=1.10,
+            nominal_web_width_m=0.40,
+            nominal_steel_area_mm2=12868.0,
+            dead_load_variable=dead,
+            live_load_variable=live,
+        )
