@@ -5,7 +5,7 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
-from reference_bridge_15m import reference_bridge_15m
+from thesis_bridge_15m import thesis_bridge_15m
 
 from rc_single_span.codes.eurocode.combinations import EurocodeServiceabilityFactors
 from rc_single_span.research.baseline import extract_bs_en_reliability_baseline
@@ -160,7 +160,7 @@ def main() -> int:
         retain_all_cases=bool(reference.get("retain_all_cases", True)),
         lm1_udl_influence_surface=bool(reference.get("lm1_udl_influence_surface", True)),
     )
-    deterministic = run_reference_project(reference_bridge_15m(), run_config)
+    deterministic = run_reference_project(thesis_bridge_15m(), run_config)
     baseline = extract_bs_en_reliability_baseline(deterministic)
 
     limit_state = _expect_dict(data.get("limit_state_model"), "limit_state_model")
@@ -267,6 +267,10 @@ def main() -> int:
             }
         ),
         "baseline": {
+            "project_name": baseline.project.name,
+            "material_fck_mpa": baseline.project.materials.fck_mpa,
+            "material_fyk_mpa": baseline.project.materials.fyk_mpa,
+            "material_ecm_mpa": baseline.project.materials.elastic_modulus_mpa,
             "moment_girder_index": baseline.moment_girder_index,
             "shear_girder_index": baseline.shear_girder_index,
             "deflection_girder_index": baseline.deflection_girder_index,
