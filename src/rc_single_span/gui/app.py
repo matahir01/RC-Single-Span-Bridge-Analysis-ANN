@@ -4,7 +4,15 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from rc_single_span.gui.main_window import BridgeMainWindow
+from rc_single_span.gui.main_window import BridgeMainWindow as _BaseBridgeMainWindow
+from rc_single_span.gui.visualization import install_visualization_tab
+
+
+class BridgeMainWindow(_BaseBridgeMainWindow):
+    def __init__(self) -> None:
+        super().__init__()
+        self.bridge_schematic = install_visualization_tab(self)
+
 
 __all__ = ["BridgeMainWindow", "main"]
 
