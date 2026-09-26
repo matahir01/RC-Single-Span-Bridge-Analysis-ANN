@@ -21,6 +21,16 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-refinements", type=int, default=1)
     parser.add_argument("--max-exhaustive", type=int, default=5000)
     parser.add_argument(
+        "--elastic-modulus-mpa",
+        type=float,
+        default=31000.0,
+        help=(
+            "Explicit concrete elastic modulus for the common grillage. "
+            "The 31 GPa default is the BS EN 1992-1-1 Table 3.1 C25/30 "
+            "verification assumption, not hidden project data."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("bs_en_lm1_convergence_audit.json"),
@@ -31,6 +41,15 @@ def _parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = _parser().parse_args()
     project = reference_bridge_15m()
+    if args.elastic_modulus_mpa <= 0.0:
+        raise ValueError("elastic modulus must be positive")
+    project = project.model_copy(
+        update={
+            "materials": project.materials.model_copy(
+                update={"elastic_modulus_mpa": args.elastic_modulus_mpa}
+            )
+        }
+    )
     audit = run_lm1_influence_grillage_search_converged(
         project,
         initial_longitudinal_step_m=args.initial_step,
@@ -43,6 +62,11 @@ def main() -> int:
     payload = {
         "basis": "BS EN 1991-2:2003 LM1 influence-surface adverse-region search",
         "project": project.name,
+        "elastic_modulus_mpa": args.elastic_modulus_mpa,
+        "elastic_modulus_basis": (
+            "BS EN 1992-1-1:2004+A1:2014 Table 3.1 C25/30 Ecm = 31 GPa "
+            "verification assumption"
+        ),
         "relative_tolerance": audit.relative_tolerance,
         "converged": audit.converged,
         "final_longitudinal_step_m": audit.result.longitudinal_step_m,
