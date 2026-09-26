@@ -15,6 +15,7 @@ from rc_single_span.codes.bs5400.combinations import (
     build_bs5400_primary_combination,
 )
 from rc_single_span.codes.common import FactoredCombination, LoadEffects
+from rc_single_span.codes.eurocode.basis import BS_EN_1990, BS_EN_1991_2
 from rc_single_span.codes.eurocode.combinations import (
     EurocodeCombinationFactors,
     EurocodeCombinationSet,
@@ -30,7 +31,7 @@ from rc_single_span.traffic.lm1 import LM1SearchResult
 class EurocodeGirderCombinationResult:
     girder_index: int
     combinations: EurocodeCombinationSet
-    traffic_source: str = "EN 1991-2 LM1 common-grillage envelope"
+    traffic_source: str = f"{BS_EN_1991_2} LM1 common-grillage envelope"
 
 
 @dataclass(frozen=True)
@@ -76,16 +77,20 @@ def build_eurocode_project_combinations(
     uls_factors: EurocodeCombinationFactors | None = None,
     frequent_traffic: LM1SearchResult | None = None,
 ) -> tuple[EurocodeGirderCombinationResult, ...]:
-    """Combine the common permanent actions with the LM1 envelope by girder."""
+    """Combine common permanent actions with the BS EN LM1 envelope by girder."""
 
     expected = int(project.geometry.girder_count)
     if len(traffic.girders) != expected:
         raise ValueError("LM1 result girder count does not match the physical bridge.")
     if sls_factors.frequent_components_differ:
         if frequent_traffic is None or len(frequent_traffic.girders) != expected:
-            raise ValueError("Distinct frequent LM1 factors require a complete weighted search result.")
+            raise ValueError(
+                "Distinct frequent LM1 factors require a complete weighted search result."
+            )
     elif frequent_traffic is not None:
-        raise ValueError("A separate frequent search is only required for distinct tandem/UDL factors.")
+        raise ValueError(
+            "A separate frequent search is only required for distinct tandem/UDL factors."
+        )
 
     results: list[EurocodeGirderCombinationResult] = []
     for girder in traffic.girders:
@@ -99,18 +104,21 @@ def build_eurocode_project_combinations(
             traffic_effects,
             sls_factors=(
                 EurocodeServiceabilityFactors(1.0, sls_factors.psi2_traffic)
-                if frequent_traffic is not None else sls_factors
+                if frequent_traffic is not None
+                else sls_factors
             ),
             uls_factors=uls_factors,
         )
         if frequent_traffic is not None:
             weighted_girder = frequent_traffic.girders[girder.girder_index - 1]
             if weighted_girder.girder_index != girder.girder_index:
-                raise ValueError("Weighted LM1 result girder order does not match characteristic result.")
+                raise ValueError(
+                    "Weighted LM1 result girder order does not match characteristic result."
+                )
             combination_set = replace(
                 combination_set,
                 frequent_sls=FactoredCombination(
-                    name="EN 1990 frequent SLS",
+                    name=f"{BS_EN_1990} frequent SLS",
                     effects=permanent + _envelope_effects(weighted_girder),
                     factors={
                         "G": 1.0,
@@ -153,7 +161,9 @@ def _governing_bs_cases(
         if item.combination == combination and item.limit_state is limit_state
     )
     if not selected:
-        raise RuntimeError("No BS 5400 traffic cases were available for governing selection.")
+        raise RuntimeError(
+            "No BS 5400 traffic cases were available for governing selection."
+        )
 
     moment_case = max(selected, key=lambda item: item.result.effects.moment_knm)
     shear_case = max(selected, key=lambda item: item.result.effects.shear_kn)
@@ -192,12 +202,16 @@ def build_bs5400_project_combinations(
     if not combinations:
         raise ValueError("At least one BS 5400 combination number is required.")
     if any(value not in (1, 2, 3) for value in combinations):
-        raise ValueError("This primary highway combination engine supports 1, 2 and 3 only.")
+        raise ValueError(
+            "This primary highway combination engine supports 1, 2 and 3 only."
+        )
 
     expected = int(project.geometry.girder_count)
     for result in (traffic.ha, traffic.hb, traffic.ha_hb):
         if len(result.girders) != expected:
-            raise ValueError("BS traffic result girder count does not match the physical bridge.")
+            raise ValueError(
+                "BS traffic result girder count does not match the physical bridge."
+            )
 
     permanent_gamma = permanent_factors or BS5400PermanentGammaFL()
     results: list[BS5400GirderCombinationResult] = []
