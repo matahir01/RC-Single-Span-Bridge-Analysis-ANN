@@ -4,9 +4,8 @@ A focused engineering application for simply supported, single-span,
 non-prestressed reinforced-concrete girder bridges.
 
 The deterministic analysis/design engine is the primary product. ANN surrogate
-modelling, reliability analysis and RBDO are downstream capabilities and must
-not be trained on a deterministic engine whose verification gates are still
-open.
+modelling, reliability analysis and RBDO are downstream capabilities built on
+that deterministic engine.
 
 ## Design basis
 
@@ -24,203 +23,162 @@ bridge family used by this implementation:
 - **BS EN 1992-2:2005** — concrete bridges, together with applicable
   BS EN 1992-1-1 provisions.
 
-Internal modules may retain `eurocode` in their Python package names, but
-user-facing provenance is BS EN. National Annex / Nationally Determined
-Parameter choices are separate project inputs. Recommended Eurocode values are
-not silently labelled as Nigerian National Annex values, and a UK National
-Annex value is used only when the client, approving authority or project basis
-adopts it.
+Internal modules may retain `eurocode` in Python package names, but user-facing
+provenance is BS EN. National Annex / Nationally Determined Parameter choices
+remain explicit project inputs. Recommended Eurocode values are not silently
+labelled as Nigerian National Annex values, and UK NA values are used only when
+the project/client/approving authority adopts them.
 
 ### Secondary legacy route
 
 BS 5400 / BD 37/01 is retained as a **legacy** profile for older projects and
-comparison work. It is kept separate from BS EN: no automatic cube-to-cylinder
-strength conversion and no borrowing of traffic, resistance or detailing
-factors between the two routes.
+comparison work. It remains separate from BS EN; traffic, material, resistance
+and detailing factors are not borrowed between the two routes.
 
-The structural solver itself is code-neutral.
+## Focused V1 scope
 
-## V1 scope
+V1 covers:
 
-V1 is intentionally narrow:
-
-- simply supported, one span only;
-- non-prestressed reinforced concrete;
-- rectangular, T and I longitudinal girder profiles;
+- simply supported, one-span, non-prestressed RC girder bridges;
+- rectangular, T and I longitudinal girder profiles supported by the model;
 - composite reinforced-concrete deck;
-- editable span, deck/carriageway width, girder count/spacing and sections;
-- geometry-derived self-weight and permanent actions;
-- essential three-stage unpropped construction analysis: precast girder,
+- three-stage unpropped construction response: precast girder,
   deck-construction and final hardened-composite stages;
-- full-width grillage analysis with transverse distribution;
-- BS EN 1991-2 LM1 traffic;
-- legacy BD 37/01 HA, HB and HA+HB traffic;
-- code-specific ULS/SLS combinations;
+- full-width grillage analysis and transverse distribution;
+- BS EN 1991-2 LM1 traffic with response-specific adverse UDL regions;
+- BS EN 1990 primary gravity/road-traffic ULS/SLS combinations;
 - flexure, shear, cracking and elastic-response deflection checks;
-- practical reinforcement selection and bridge-specific detailing checks;
-- calculation records carrying formula, substitution, result and reference;
-- deterministic dataset / ANN / reliability / RBDO only after deterministic
-  verification gates are accepted.
+- discrete reinforcement selection and bridge-specific detailing infrastructure;
+- traceable calculation records carrying code basis, formula, substitution,
+  result, reference and status.
 
-Continuous spans, prestressing, curved bridges, substructure/foundation design,
-general local-deck design, staged continuity, changing supports, general
-propping/removal and advanced creep/shrinkage redistribution are outside this
-focused V1.
+Continuous spans, prestressing, curved bridges, general substructure/foundation
+design, general local-deck design, staged continuity, changing supports,
+arbitrary propping/removal sequences and advanced creep/shrinkage
+redistribution remain outside focused V1.
 
-## Reference bridges
+## Reference bridge
 
-The repository includes:
+The main verification bridge is the 15 m single-span, seven-girder reference:
+seven girders at 1.70 m spacing, 400 x 950 mm precast rectangular girders,
+11.0 m overall deck and a 75 + 175 mm deck build-up. Benchmark permanent actions
+and material values in `examples/reference_bridge_15m.py` are explicitly labelled
+verification assumptions where they are not project/as-built data.
 
-- a 15 m rectangular-girder reference bridge with seven girders at 1.70 m
-  spacing, 400 x 950 mm precast girders and a 75 + 175 mm deck build-up; and
-- a 20 m haunched-I engineering benchmark used for additional geometry/design
-  regressions.
+## Structural-analysis verification — CLOSED
 
-Physical geometry is not adjusted merely to reproduce a target reinforcement
-answer.
-
-## Structural-analysis verification
-
-The common solver/export path has genuine external STAAD evidence. The current
-campaign is complete at:
+The common solver/export path has genuine external STAAD evidence:
 
 - **83/83 external models**;
-- **410,576/410,576 expected direct-global result fields**;
+- **410,576/410,576 expected direct-global fields**;
 - **zero engineering comparison failures**.
 
 The campaign covers construction stages, permanent-component response,
 characteristic traffic, separately weighted frequent LM1 traffic and corrected
-HB/HA+HB result completeness.
+HB/HA+HB output completeness.
 
-This verifies structural response for the exported reference model/load cases.
-It does **not** establish that a traffic rule, National Annex choice, resistance
-formula, crack limit, fatigue category or reinforcement drawing is correct.
-Those are separate verification gates.
+This verifies structural response for the accepted V1 model family. It does not
+by itself approve traffic-code choices, National Annex values, reinforcement or
+a real bridge project.
 
-See:
+See `docs/STAAD_EXTERNAL_VERIFICATION_2026-09-25.md` and
+`docs/STAAD_WEIGHTED_FREQUENT_EXTERNAL_VERIFICATION_2026-09-25.md`.
 
-- `docs/STAAD_EXTERNAL_VERIFICATION_2026-09-25.md`;
-- `docs/STAAD_WEIGHTED_FREQUENT_EXTERNAL_VERIFICATION_2026-09-25.md`;
-- `docs/FULL_BRIDGE_STAAD_MODEL.md`.
+## BS EN 1991-2 LM1 — CLOSED FOR THE 15 m REFERENCE
 
-## BS EN 1991-2 LM1 status
+The production BS EN path uses a response-specific signed influence-surface
+search. Complete tandem systems are searched, unit-pressure carriageway cells
+are evaluated, only adverse UDL cells are retained for each signed response,
+and the governing physical tandem + selected-UDL cases are re-solved.
 
-The primary BS EN route uses a response-specific signed influence-surface search
-rather than the historical whole-lane UDL approximation. For each fixed signed
-response it:
+Source-pinned tests cover notional lanes, remaining areas, characteristic
+resultants, complete tandem geometry, 1.2 m axle spacing, 2.0 m transverse wheel
+spacing and separate frequent tandem/UDL factors.
 
-1. searches complete tandem-system position vectors;
-2. evaluates unit-pressure carriageway cells;
-3. retains only UDL cells that increase the selected response; and
-4. re-solves the governing physical tandem + selected-UDL case.
+The numerical search-resolution audit retained its pre-declared 5% criterion:
 
-Source-pinned tests cover the reference notional-lane arrangement, both lane
-numberings, both remaining-area edges, tandem axle/wheel geometry and
-characteristic resultants.
+- 2.4 m -> 1.2 m: **13.4036%**, rejected;
+- 1.2 m -> 0.6 m: **4.08765%**, accepted;
+- second-refinement governing response: torsion, girder 2;
+- 0.6 m search: 576 theoretical tandem combinations per transverse layout and
+  2,304 evaluated LM1 placements, with exhaustive tandem search retained.
 
-### Search convergence is still an acceptance gate
-
-A dedicated exhaustive convergence audit now halves the longitudinal tandem
-step and compares girder moment, shear, torsion and deflection envelopes. The
-adopted verification criterion is a maximum relative envelope change of 5%.
-
-The first recorded refinement **2.4 m -> 1.2 m did not converge**: the maximum
-change was **13.4036%**, governed by shear on girder 4. The tolerance was not
-relaxed. The next refinement is **1.2 m -> 0.6 m**.
+`ReferenceRunConfig` now uses **0.6 m** for this 15 m reference bridge. That is a
+verified numerical setting for this geometry, not a universal BS EN rule; a
+materially different bridge geometry must establish its own convergence.
 
 See `docs/BS_EN_LM1_CONVERGENCE_AUDIT.md`.
 
-## BS EN frequent SLS
+## BS EN frequent SLS — CLOSED
 
-The frequent-LM1 correction is implemented and externally checked. Tandem and
-UDL components can be weighted separately before searching the governing
-placement. The source-reference values used in the verification campaign are
-0.75 for the tandem system and 0.40 for the UDL; these are verification values,
-not an automatic Nigerian National Annex selection.
+The frequent-LM1 implementation weights tandem and UDL components before the
+placement search when their factors differ. The source-reference values used in
+the verification campaign were 0.75 for the tandem system and 0.40 for UDL,
+with quasi-permanent road traffic 0.0. Those are verification values, not an
+automatic Nigerian NA selection.
 
-The weighted external STAAD campaign retained 17 frequent cases and matched
-**46,189/46,189** expected result fields with zero engineering comparison
-failures.
+The weighted external STAAD campaign matched **46,189/46,189** expected fields
+for 17 frequent cases with zero engineering comparison failures.
 
-## BS EN concrete design verification
+## BS EN concrete design and detailing evidence
 
-The primary route currently has independent/source-pinned checks for:
+The primary route has independent/source-pinned checks for:
 
-- flexural resistance against a published worked beam example;
-- shear resistance against the JRC concrete-bridge example;
-- recommended minimum longitudinal reinforcement expression;
-- minimum shear reinforcement and link-spacing limits;
-- crack-width calculation against a published example, with the production
-  close-spacing path calling the same pinned formula;
+- flexure against a published Concrete Centre worked beam example;
+- shear against the JRC concrete-bridge worked example;
+- minimum longitudinal reinforcement and shear-detailing limits;
+- crack width against a published example (approximately 0.184 mm);
 - straight-bar anchorage against a worked example;
-- EC2 tension-shift rule;
+- EC2 tension shift;
 - reinforcement fatigue against the JRC bridge example.
 
-The production design path also contains discrete cage selection, actual cage
-centroid/effective-depth rechecks, station-wise steel-demand zoning,
-curtailment, construction-stage steel stress, lap/splice zoning, local
-bearing/end-zone congestion and doubly reinforced cage checks.
+The design/detailing path also contains discrete cage selection, actual cage
+centroid/effective-depth rechecks, station-wise reinforcement zoning,
+curtailment, moving-axle fatigue-to-steel stress range, construction-stage steel
+stress, lap/splice zoning, local bearing/end-zone congestion and doubly
+reinforced SLS checking. `run_reference_project` can now execute the advanced
+Stage D orchestration when explicit `AdvancedStageDInputs` are supplied.
 
-Project-specific values that cannot be inferred safely remain explicit,
-including National Annex/NDP choices, crack/deflection criteria, fatigue
-category/resistance data, construction-stage stress limits and local bearing
-geometry.
+Project-specific inputs that cannot safely be inferred remain explicit. Missing
+or failing fatigue, construction-stage, bearing, splice or serviceability inputs
+must continue to leave the project result incomplete; software V1 acceptance is
+not permission to invent them.
 
-## Legacy BS 5400 / BD 37 status
+## Deflection basis
 
-The legacy route includes HA, HB and HA+HB loading and primary combinations
-1-3. Official archived BD 37/01 values are source-pinned, and the external
-STAAD campaign includes the resulting traffic responses.
+There is deliberately no hidden universal road-bridge span-ratio limit.
+`ProjectDeflectionCriterion` requires the selected limit and its provenance.
+Underlying elastic displacements have external STAAD evidence, and the software
+re-searches combined permanent + traffic displacement across retained traffic
+cases. See `docs/BS_EN_DEFLECTION_BASIS.md`.
 
-The owner-supplied Ragana River Bridge calculation is retained as a narrow
-legacy BS design benchmark. Its shear calculation is reproduced. Its printed
-crack calculation is internally inconsistent and is not used as acceptance
-evidence. Legacy doubly reinforced flexure remains a separate verification item
-and cannot alter the BS EN implementation.
+## Legacy BS 5400 / BD 37
 
-## Reinforcement synthesis
+The legacy path remains available and independently tracked. Official archived
+BD 37/01 evidence pins HA/HB/HA+HB mechanics and primary combinations 1-3. The
+Ragana calculation is retained as a narrow legacy RC benchmark. Unfinished
+legacy-detailing evidence does **not** block the primary BS EN V1 gate.
 
-The program keeps these concepts distinct:
+## Deterministic V1 release position
 
-`A_s,ULS -> code minimum -> candidate cages -> actual d -> ULS/SLS recheck -> bridge detailing -> recommended cage`
+**GO — the focused BS EN deterministic software capability is accepted for V1
+within the documented scope.**
 
-A cage is not promoted solely because its steel area exceeds the continuous ULS
-requirement. See `docs/REINFORCEMENT_SYNTHESIS.md` and
-`docs/DETAILING_STAGE_D.md`.
+The acceptance matrix now closes the primary BS EN software-capability gate, and
+the deterministic engine may move on to dataset generation, ANN surrogate work,
+reliability analysis and RBDO within that accepted V1 boundary.
 
-## Verification rule
+This is **not** approval of a particular bridge for construction. Every real
+project still requires its adopted National Annex/NDP basis, actual actions and
+materials, project serviceability criteria, fatigue/detailing inputs, bearing
+geometry and competent engineering review. A project with missing inputs or
+failed checks must remain not-ready even though the underlying V1 software
+capability is accepted.
 
-A capability is never labelled verified merely because the software runs or a
-unit test passes. The acceptance matrix separates:
+See:
 
-- internal regression evidence;
-- independent source/worked-example checks;
-- external structural-software comparisons; and
-- final acceptance.
-
-The primary BS EN route and the secondary legacy route are tracked separately,
-so unfinished legacy work does not masquerade as a BS EN blocker and unfinished
-BS EN work cannot be hidden by a successful legacy benchmark.
-
-See `src/rc_single_span/verification/acceptance.py` and
-`docs/CODE_LOADING_INDEPENDENT_AUDIT.md`.
-
-## Current release position
-
-**Deterministic V1 remains NO-GO for final engineering release.**
-
-The common structural-response verification is closed, and several BS EN
-loading/resistance/serviceability equations have independent evidence. The main
-remaining primary-route acceptance work is:
-
-1. close the 15 m LM1 search-resolution convergence audit without widening the
-   5% criterion merely to obtain a pass;
-2. record the actual project/authority National Annex or NDP choices;
-3. close the reference-girder serviceability/deflection acceptance package;
-4. close the complete BS EN reinforcement/detailing reference-girder hand-check
-   package; and
-5. review a complete calculation report against the engine outputs and sources.
-
-Only after these deterministic gates are accepted should production dataset
-generation, ANN surrogate validation, reliability analysis and RBDO be treated
-as the next phase.
+- `docs/BS_EN_V1_DETERMINISTIC_CLOSURE.md`;
+- `src/rc_single_span/verification/acceptance.py`;
+- `docs/CODE_LOADING_INDEPENDENT_AUDIT.md`;
+- `docs/REINFORCEMENT_SYNTHESIS.md`;
+- `docs/DETAILING_STAGE_D.md`.
