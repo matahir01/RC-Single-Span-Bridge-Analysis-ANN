@@ -44,6 +44,7 @@ from rc_single_span.traffic.lm1 import (
     frequent_lm1_adjustments,
     run_lm1_grillage_search,
 )
+from rc_single_span.traffic.lm1_influence import run_lm1_influence_grillage_search
 from rc_single_span.verification.full_bridge import (
     build_full_bridge_stage_model,
     build_girder_line_load_case,
@@ -66,6 +67,7 @@ class TrafficAction(str, Enum):
 class FullBridgeTrafficSearchConfig:
     lm1_longitudinal_step_m: float = 1.2
     lm1_max_exhaustive_tandem_combinations: int = 5000
+    lm1_udl_influence_surface: bool = True
     ha_longitudinal_step_m: float = 1.0
     ha_max_exhaustive_kel_combinations: int = 5000
     hb_units: float = 45.0
@@ -200,7 +202,7 @@ def _description(
             f"lane {lane.lane_number} lead x={lane.tandem_lead_x_m:.6g} m"
             for lane in case.placement.lanes
         )
-        return f"EN 1991-2 LM1 ({lanes})"
+        return f"BS EN 1991-2:2003 LM1 ({lanes})"
     if isinstance(case, BS5400CaseResult):
         return case.description
     if action is TrafficAction.HA_HB:
@@ -266,10 +268,14 @@ def build_full_bridge_traffic_campaign(
         ],
         ...,
     ] = (
-        (TrafficAction.LM1, "EN 1991-2", lm1, lm1.cases),
+        (TrafficAction.LM1, "BS EN 1991-2:2003", lm1, lm1.cases),
         *((
-            (TrafficAction.LM1_FREQUENT, "EN 1991-2 frequent LM1", lm1_frequent,
-             lm1_frequent.cases),
+            (
+                TrafficAction.LM1_FREQUENT,
+                "BS EN 1991-2:2003 frequent LM1",
+                lm1_frequent,
+                lm1_frequent.cases,
+            ),
         ) if lm1_frequent is not None else ()),
         (TrafficAction.HA, "BD 37/01", ha, ha.cases),
         (TrafficAction.HB, "BD 37/01", hb, hb.cases),
@@ -336,19 +342,27 @@ def run_full_bridge_traffic_campaign(
     """Search, retain and package governing LM1, HA, HB and HA+HB cases."""
 
     current = config or FullBridgeTrafficSearchConfig()
-    lm1 = run_lm1_grillage_search(
+    lm1_search = (
+        run_lm1_influence_grillage_search
+        if current.lm1_udl_influence_surface
+        else run_lm1_grillage_search
+    )
+    lm1_kwargs = {} if current.lm1_udl_influence_surface else {
+        "retain_all_cases": False,
+    }
+    lm1 = lm1_search(
         project,
         longitudinal_step_m=current.lm1_longitudinal_step_m,
         max_exhaustive_tandem_combinations=(current.lm1_max_exhaustive_tandem_combinations),
-        retain_all_cases=False,
+        **lm1_kwargs,
     )
     lm1_frequent = (
-        run_lm1_grillage_search(
+        lm1_search(
             project,
             factors=frequent_lm1_adjustments(eurocode_sls_factors),
             longitudinal_step_m=current.lm1_longitudinal_step_m,
             max_exhaustive_tandem_combinations=current.lm1_max_exhaustive_tandem_combinations,
-            retain_all_cases=False,
+            **lm1_kwargs,
         )
         if eurocode_sls_factors is not None
         and eurocode_sls_factors.frequent_components_differ else None
@@ -470,17 +484,17 @@ def build_cross_stage_combination_rules(
 ) -> tuple[CrossStageCombinationRule, ...]:
     """Return auditable response-superposition factors for both code profiles."""
 
-
     ec_uls = eurocode_uls_factors or EurocodeCombinationFactors()
     all_categories = tuple(PermanentLoadCategory)
 
     def ec_permanent(value: float) -> dict[PermanentLoadCategory, float]:
         return {category: value for category in all_categories}
 
+    bs_en_standard = "BS EN 1990:2002+A1:2005 / BS EN 1991-2:2003"
     rules: list[CrossStageCombinationRule] = [
         CrossStageCombinationRule(
             "ec_uls_persistent",
-            "EN 1990 / EN 1991-2",
+            bs_en_standard,
             "Persistent ULS",
             TrafficAction.LM1,
             ec_permanent(ec_uls.gamma_g_unfavourable),
@@ -488,7 +502,7 @@ def build_cross_stage_combination_rules(
         ),
         CrossStageCombinationRule(
             "ec_sls_characteristic",
-            "EN 1990 / EN 1991-2",
+            bs_en_standard,
             "Characteristic SLS",
             TrafficAction.LM1,
             ec_permanent(1.0),
@@ -496,17 +510,23 @@ def build_cross_stage_combination_rules(
         ),
         CrossStageCombinationRule(
             "ec_sls_frequent",
-            "EN 1990 / EN 1991-2",
+            bs_en_standard,
             "Frequent SLS",
-            (TrafficAction.LM1_FREQUENT
-             if eurocode_sls_factors.frequent_components_differ else TrafficAction.LM1),
+            (
+                TrafficAction.LM1_FREQUENT
+                if eurocode_sls_factors.frequent_components_differ
+                else TrafficAction.LM1
+            ),
             ec_permanent(1.0),
-            (1.0 if eurocode_sls_factors.frequent_components_differ
-             else eurocode_sls_factors.psi1_traffic),
+            (
+                1.0
+                if eurocode_sls_factors.frequent_components_differ
+                else eurocode_sls_factors.psi1_traffic
+            ),
         ),
         CrossStageCombinationRule(
             "ec_sls_quasi_permanent",
-            "EN 1990 / EN 1991-2",
+            bs_en_standard,
             "Quasi-permanent SLS",
             TrafficAction.LM1,
             ec_permanent(1.0),
