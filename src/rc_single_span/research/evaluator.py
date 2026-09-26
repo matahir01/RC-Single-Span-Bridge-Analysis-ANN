@@ -7,11 +7,7 @@ from rc_single_span.analysis.sections import (
     final_composite_concrete_layers,
     final_composite_girder_properties,
 )
-from rc_single_span.core.models import (
-    IGirderProfile,
-    RectangularGirderProfile,
-    TGirderProfile,
-)
+from rc_single_span.core.models import RectangularGirderProfile
 from rc_single_span.design.eurocode import check_layered_flexure_ec2, check_shear_ec2
 from rc_single_span.research.baseline import BSENReliabilityBaseline
 
@@ -86,10 +82,11 @@ def _geometry_with_web_width(baseline: BSENReliabilityBaseline, width_m: float):
     profile = geometry.girder_profile
     if isinstance(profile, RectangularGirderProfile):
         updated = profile.model_copy(update={"width_m": width_m})
-    elif isinstance(profile, (TGirderProfile, IGirderProfile)):
+    else:
+        # The core profile union contains rectangular, T and I girders. Both T
+        # and I profiles expose ``web_width_m``; keeping the branch structural
+        # avoids duplicating type-specific geometry logic here.
         updated = profile.model_copy(update={"web_width_m": width_m})
-    else:  # pragma: no cover - guarded by the core model union
-        raise TypeError("Unsupported girder profile for reliability width variation.")
     updated = type(profile).model_validate(updated.model_dump())
     return geometry.model_copy(update={"girder_profile": updated})
 
