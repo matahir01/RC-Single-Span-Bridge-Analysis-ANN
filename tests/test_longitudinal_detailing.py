@@ -31,6 +31,39 @@ def test_ec2_anchorage_recovers_direct_tension_bar_expression() -> None:
     assert result.passes_available_length is None
 
 
+def test_bs_en_anchorage_matches_concrete_centre_h16_worked_example() -> None:
+    """Concrete Centre Lecture 9 example: C25/30, H16, good bond, 25 mm cover.
+
+    The published straight-bar result is about 592 mm. The source calculates
+    fctk,0.05 = 1.795 MPa, sigma_sd = 500/1.15 = 435 MPa and alpha2 = 0.916
+    (rounded). We use the unrounded alpha2 expression and compare to the source
+    at its stated engineering precision.
+    """
+
+    alpha2 = 1.0 - 0.15 * (25.0 - 16.0) / 16.0
+    result = ec2_design_anchorage_length(
+        bar_diameter_mm=16.0,
+        steel_stress_mpa=500.0 / 1.15,
+        fctk_005_mpa=1.795,
+        gamma_c=1.50,
+        alpha_ct=1.0,
+        eta1=1.0,
+        eta2=1.0,
+        alpha1=1.0,
+        alpha2=alpha2,
+        alpha3=1.0,
+        alpha4=1.0,
+        alpha5=1.0,
+    )
+
+    assert result.design_bond_strength_mpa == pytest.approx(2.693, abs=0.001)
+    assert result.basic_required_anchorage_length_mm / 16.0 == pytest.approx(
+        40.36,
+        abs=0.02,
+    )
+    assert result.design_anchorage_length_mm == pytest.approx(592.0, abs=1.0)
+
+
 def test_ec2_anchorage_checks_available_length_without_hiding_failure() -> None:
     result = ec2_design_anchorage_length(
         bar_diameter_mm=25.0,
