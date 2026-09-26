@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QRectF, Qt
+from PySide6.QtCore import QRectF
 from PySide6.QtGui import QPainter, QPen
 from PySide6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
@@ -19,7 +19,7 @@ class BridgeSchematicWidget(QWidget):
         self._state = state
         self.update()
 
-    def paintEvent(self, event) -> None:  # noqa: N802 - Qt API naming convention.
+    def paintEvent(self, event) -> None:
         super().paintEvent(event)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
