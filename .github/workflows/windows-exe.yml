@@ -49,7 +49,7 @@ jobs:
             throw "Packaged executable failed: $($process.ExitCode)"
           }
           $result = Get-Content 'package-smoke/smoke_result.json' -Raw | ConvertFrom-Json
-          if ($result.status -ne 'passed' -or $result.girders -ne 7 -or $result.design_rows -ne 7) {
+          if ($result.status -ne 'passed' -or $result.girders -ne 7 -or $result.design_rows -ne 7 -or $result.smoke_lm1_step_m -ne 1.2) {
             throw 'Reference analysis or design checks did not complete'
           }
           if (-not (Test-Path 'package-smoke/reference_bridge.json')) { throw 'Project save/open missing' }

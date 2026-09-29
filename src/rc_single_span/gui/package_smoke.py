@@ -32,6 +32,9 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
         assert reference.physical_girder_length_m == 14.95
         assert reference.deck_width_m == 11.0
         assert window._read_settings().lm1_step_m == 0.6
+        # Use the independently audited 1.2 m comparison grid for the package
+        # smoke gate. The normal application still defaults to the 0.6 m grid.
+        window.lm1_step.setValue(1.2)
         window.design_enabled.setChecked(True)
         window.deflection_enabled.setChecked(True)
         window.deflection_limit.setValue(50.0)
@@ -41,6 +44,7 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
         window.project_name.setText("Temporary changed name")
         window.open_project(project_path)
         assert window._read_state() == reference
+        assert window._read_settings().lm1_step_m == 1.2
         assert window._read_design_inputs().enabled
         assert window._last_summary is None
 
@@ -64,6 +68,7 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
                     "code_basis": summary.code_basis,
                     "girders": len(summary.rows),
                     "design_rows": len(summary.design_rows),
+                    "smoke_lm1_step_m": settings.lm1_step_m,
                     "governing_moment_knm": summary.governing_moment.moment_knm,
                     "pdf_bytes": pdf_path.stat().st_size,
                 },
