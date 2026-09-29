@@ -4,11 +4,13 @@ import json
 import traceback
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
-from PySide6.QtGui import QAction
+from PySide6.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
+from PySide6.QtGui import QAction, QPageSize, QTextDocument
+from PySide6.QtPrintSupport import QPrinter
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
     QGroupBox,
@@ -18,18 +20,24 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QSpinBox,
+    QSplitter,
     QStackedWidget,
     QStatusBar,
     QTabWidget,
     QTableWidget,
     QTableWidgetItem,
+    QTextBrowser,
     QTextEdit,
     QToolBar,
+    QTreeWidget,
+    QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
 )
 
 from rc_single_span.gui.design_adapter import GuiDesignInputs
+from rc_single_span.gui.dialogs import InputDialog
 from rc_single_span.gui.engine_adapter import (
     GuiAnalysisSettings,
     GuiAnalysisSummary,
@@ -37,6 +45,7 @@ from rc_single_span.gui.engine_adapter import (
     run_gui_analysis,
 )
 from rc_single_span.gui.project_state import GuiProjectState
+from rc_single_span.gui.reporting import render_calculation_report
 from rc_single_span.gui.widgets import double_spin, form_page, int_spin
 
 
@@ -95,11 +104,39 @@ class BridgeMainWindow(QMainWindow):
         self._thread_pool = QThreadPool.globalInstance()
         self._current_path: Path | None = None
         self._last_result = None
+        self._last_summary: GuiAnalysisSummary | None = None
+        self._report_html: str | None = None
+        self._run_fingerprint: str | None = None
+        self._run_state: GuiProjectState | None = None
+        self._run_settings: GuiAnalysisSettings | None = None
+        self._run_design: GuiDesignInputs | None = None
+        self._loading_inputs = False
         self._state = GuiProjectState()
 
+        self._workspace = QSplitter(Qt.Orientation.Horizontal)
+        self.project_tree = QTreeWidget()
+        self.project_tree.setHeaderLabel("BRIDGE PROJECT")
+        self.project_tree.setMinimumWidth(185)
+        self.project_tree.setMaximumWidth(300)
         self._tabs = QTabWidget()
-        self.setCentralWidget(self._tabs)
+        self._workspace.addWidget(self.project_tree)
+        self._workspace.addWidget(self._tabs)
+        self._workspace.setSizes([220, 1100])
+        self.setCentralWidget(self._workspace)
         self.setStatusBar(QStatusBar())
+        self.setStyleSheet(
+            "QMainWindow { background: #f2f5f8; }"
+            "QToolBar { background: #e4edf4; border-bottom: 1px solid #aabfce;"
+            " spacing: 5px; padding: 7px; }"
+            "QToolBar QToolButton { padding: 7px 6px; color: #173d59; font-weight: 600; }"
+            "QToolBar QToolButton:hover { background: #c8deec; }"
+            "QTreeWidget { background: #f7fafc; border-right: 1px solid #bdcbd5; }"
+            "QTreeWidget::item { padding: 6px; }"
+            "QTreeWidget::item:selected { background: #d6e9f5; color: #173d59; }"
+            "QTabWidget::pane { border: 1px solid #c8d5dd; background: white; }"
+            "QGroupBox { font-weight: 600; margin-top: 12px; }"
+            "QPushButton { padding: 7px 11px; }"
+        )
 
         self._build_toolbar()
         self._build_project_tab()
@@ -109,14 +146,20 @@ class BridgeMainWindow(QMainWindow):
         self._build_analysis_tab()
         self._build_design_tab()
         self._build_results_tab()
+        self._build_report_tab()
         self._build_verification_tab()
         self._build_research_tab()
         self._apply_state(self._state)
         self._sync_code_panels()
+        self._refresh_navigation()
+        self.project_tree.itemClicked.connect(self._navigate_from_tree)
+        self._tabs.currentChanged.connect(self._select_tree_item)
+        self._wire_input_changes()
         self.statusBar().showMessage("Ready")
 
     def _build_toolbar(self) -> None:
-        toolbar = QToolBar("Project")
+        toolbar = QToolBar("Bridge ribbon")
+        toolbar.setMovable(False)
         self.addToolBar(toolbar)
         for label, handler in (
             ("New", self._new_project),
@@ -127,9 +170,89 @@ class BridgeMainWindow(QMainWindow):
             action.triggered.connect(handler)
             toolbar.addAction(action)
         toolbar.addSeparator()
-        action_run = QAction("Run Analysis", self)
-        action_run.triggered.connect(self._run_analysis)
-        toolbar.addAction(action_run)
+        for label, group in (
+            ("Project", "project"), ("Layout", "layout"),
+            ("Girder section", "section"), ("Deck", "deck"),
+            ("Materials", "materials"), ("Loads", "loads"),
+            ("Traffic", "traffic"), ("Design criteria", "design"),
+        ):
+            action = QAction(label, self)
+            action.triggered.connect(lambda _checked=False, key=group: self._edit_group(key))
+            toolbar.addAction(action)
+        toolbar.addSeparator()
+        self._run_action = QAction("Run analysis", self)
+        self._run_action.triggered.connect(self._run_analysis)
+        toolbar.addAction(self._run_action)
+        result_action = QAction("Results", self)
+        result_action.triggered.connect(lambda: self._tabs.setCurrentWidget(self.results_page))
+        toolbar.addAction(result_action)
+        self._export_action = QAction("Export PDF", self)
+        self._export_action.setEnabled(False)
+        self._export_action.triggered.connect(self._export_pdf)
+        toolbar.addAction(self._export_action)
+
+    def _refresh_navigation(self) -> None:
+        self.project_tree.blockSignals(True)
+        self.project_tree.clear()
+        self._tree_items: dict[int, QTreeWidgetItem] = {}
+        groups = (
+            ("Model", ("Bridge view", "Project", "Geometry", "Materials")),
+            ("Actions", ("Loads", "Analysis", "Design checks")),
+            ("Review", ("Results", "Report", "Verification", "ANN / Reliability")),
+        )
+        for group_name, labels in groups:
+            parent = QTreeWidgetItem(self.project_tree, [group_name])
+            for label in labels:
+                index = next(
+                    (i for i in range(self._tabs.count()) if self._tabs.tabText(i) == label),
+                    -1,
+                )
+                if index >= 0:
+                    item = QTreeWidgetItem(parent, [label])
+                    item.setData(0, Qt.ItemDataRole.UserRole, index)
+                    self._tree_items[index] = item
+        self.project_tree.expandAll()
+        self.project_tree.blockSignals(False)
+        self._select_tree_item(self._tabs.currentIndex())
+
+    def _navigate_from_tree(self, item: QTreeWidgetItem, _column: int) -> None:
+        index = item.data(0, Qt.ItemDataRole.UserRole)
+        if isinstance(index, int):
+            self._tabs.setCurrentIndex(index)
+
+    def _select_tree_item(self, index: int) -> None:
+        item = self._tree_items.get(index)
+        if item is not None:
+            self.project_tree.setCurrentItem(item)
+
+    def _edit_group(self, group: str) -> None:
+        names = {
+            "project": "project_name",
+            "layout": "span_m physical_length_m deck_width_m carriageway_width_m "
+            "carriageway_offset_m girder_count girder_spacing_m",
+            "section": "section_type rect_width rect_depth t_flange_width "
+            "t_flange_thickness t_web_width t_total_depth i_top_flange_width "
+            "i_top_flange_thickness i_top_haunch i_web_width i_web_depth "
+            "i_bottom_haunch i_bottom_flange_width i_bottom_flange_thickness",
+            "deck": "false_slab_depth false_slab_composite in_situ_depth in_situ_composite",
+            "materials": "fck_mpa fcu_mpa fyk_mpa density elastic_modulus "
+            "rebar_layers bars_per_layer bar_diameter",
+            "loads": "surfacing_thickness surfacing_density barrier_load services_load",
+            "traffic": "code_profile psi1_tandem psi1_udl psi2_traffic lm1_step "
+            "hb_units retain_cases",
+            "design": "design_enabled effective_depth design_bar_diameter design_bar_spacing "
+            "ec_cover ec_fct_eff ec_crack_limit ec_na_ratio ec_sls_basis ec_alpha_cc "
+            "bs_cover bs_crack_point_depth bs_crack_limit bs_ec_modified bs_fyv "
+            "deflection_enabled deflection_limit deflection_basis",
+        }[group].split()
+        fields = [(name.replace("_", " ").title(), getattr(self, name)) for name in names]
+        dialog = InputDialog(
+            group.title(), fields,
+            validate=lambda: (self._read_state().build_project(), self._read_design_inputs()),
+            changed=self._inputs_changed,
+            parent=self,
+        )
+        dialog.exec()
 
     def _build_project_tab(self) -> None:
         page, form = form_page("Project")
@@ -438,6 +561,61 @@ class BridgeMainWindow(QMainWindow):
         layout.addWidget(self.result_notes)
         self._tabs.addTab(page, "Results")
 
+    def _build_report_tab(self) -> None:
+        page = QWidget()
+        self.report_page = page
+        layout = QVBoxLayout(page)
+        self.report_preview = QTextBrowser()
+        self.report_preview.setHtml(
+            "<h2>Calculation report</h2><p>Run the analysis to generate a report "
+            "from the current project inputs.</p>"
+        )
+        layout.addWidget(self.report_preview)
+        button = QPushButton("Export current calculation report to PDF")
+        button.clicked.connect(self._export_pdf)
+        layout.addWidget(button)
+        self._tabs.addTab(page, "Report")
+
+    def _wire_input_changes(self) -> None:
+        for widget in self.findChildren(QDoubleSpinBox):
+            widget.valueChanged.connect(self._inputs_changed)
+        for widget in self.findChildren(QSpinBox):
+            widget.valueChanged.connect(self._inputs_changed)
+        for widget in self.findChildren(QCheckBox):
+            widget.toggled.connect(self._inputs_changed)
+        for widget in self.findChildren(QComboBox):
+            widget.currentIndexChanged.connect(self._inputs_changed)
+        for widget in self.findChildren(QLineEdit):
+            if not isinstance(widget.parent(), (QDoubleSpinBox, QSpinBox)):
+                widget.textChanged.connect(self._inputs_changed)
+
+    def _invalidate_results(self, message: str) -> None:
+        self._last_result = None
+        self._last_summary = None
+        self._report_html = None
+        self._export_action.setEnabled(False)
+        self.results_table.setRowCount(0)
+        self.design_results_table.setRowCount(0)
+        self.result_basis.setText(message)
+        self.governing_moment.setText("—")
+        self.governing_shear.setText("—")
+        self.governing_torsion.setText("—")
+        self.result_notes.clear()
+        self.report_preview.setHtml(f"<h2>Calculation report</h2><p>{message}</p>")
+
+    def _inputs_changed(self, *_args: object) -> None:
+        if self._loading_inputs:
+            return
+        self._section_changed(self.section_type.currentIndex())
+        self._sync_code_panels()
+        self._invalidate_results("Inputs changed. Run the analysis again for current results.")
+        if hasattr(self, "bridge_schematic"):
+            self.bridge_schematic.set_state(self._read_state())
+        self.statusBar().showMessage("Project inputs changed")
+
+    def _fingerprint(self) -> str:
+        return repr((self._read_state(), self._read_settings(), self._read_design_inputs()))
+
     def _build_verification_tab(self) -> None:
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -659,89 +837,124 @@ class BridgeMainWindow(QMainWindow):
         self.deflection_enabled.setChecked(has_limit)
         if has_limit:
             self.deflection_limit.setValue(float(limit))
-        if isinstance(basis, str):
-            self.deflection_basis.setText(basis)
+        self.deflection_basis.setText(basis if isinstance(basis, str) else "")
 
     def _new_project(self) -> None:
         self._current_path = None
-        self._last_result = None
-        self._apply_state(GuiProjectState())
-        self.results_table.setRowCount(0)
-        self.design_results_table.setRowCount(0)
-        self.result_basis.setText("No analysis run yet.")
+        self._loading_inputs = True
+        try:
+            self._apply_state(GuiProjectState())
+            self._apply_analysis_payload(self._analysis_payload(GuiAnalysisSettings()))
+            self._apply_design_payload(GuiDesignInputs().__dict__)
+        finally:
+            self._loading_inputs = False
+        self._invalidate_results("No analysis run yet.")
+        if hasattr(self, "bridge_schematic"):
+            self.bridge_schematic.set_state(self._read_state())
         self.statusBar().showMessage("New project")
+
+    @staticmethod
+    def _analysis_payload(settings: GuiAnalysisSettings) -> dict[str, object]:
+        return {
+            "code_profile": settings.code_profile.value,
+            "psi1_tandem": settings.psi1_tandem,
+            "psi1_udl": settings.psi1_udl,
+            "psi2_traffic": settings.psi2_traffic,
+            "lm1_step_m": settings.lm1_step_m,
+            "hb_units": settings.hb_units,
+            "retain_all_cases": settings.retain_all_cases,
+        }
+
+    def open_project(self, target: Path) -> None:
+        payload = json.loads(target.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict) or payload.get("format") != "rc-single-span-bridge-gui-v2":
+            raise ValueError("Unsupported project file format.")
+        project_payload = payload.get("project")
+        if not isinstance(project_payload, dict):
+            raise TypeError("Project file is missing the project object.")
+        state = GuiProjectState.from_dict(project_payload)
+        state.build_project()
+        analysis = payload.get("analysis", {})
+        design = payload.get("design", {})
+        if not isinstance(analysis, dict) or not isinstance(design, dict):
+            raise TypeError("Analysis and design must be JSON objects.")
+        if analysis.get("code_profile", GuiCodeProfile.BS_EN.value) not in {
+            item.value for item in GuiCodeProfile
+        }:
+            raise ValueError("Unsupported code profile in project file.")
+        GuiDesignInputs(**design)
+        previous = (self._read_state(), self._read_settings(), self._read_design_inputs())
+        self._loading_inputs = True
+        try:
+            self._apply_state(state)
+            self._apply_analysis_payload(self._analysis_payload(GuiAnalysisSettings()))
+            self._apply_design_payload(GuiDesignInputs().__dict__)
+            self._apply_analysis_payload(analysis)
+            self._apply_design_payload(design)
+            if self._read_state() != state:
+                raise ValueError("Project geometry is outside the GUI's supported input range.")
+            actual_analysis = self._analysis_payload(self._read_settings())
+            actual_design = self._read_design_inputs().__dict__
+            for label, saved, actual in (
+                ("analysis", analysis, actual_analysis),
+                ("design", design, actual_design),
+            ):
+                if any(key not in actual or actual[key] != value for key, value in saved.items()):
+                    raise ValueError(f"Project {label} inputs exceed the GUI's supported range.")
+        except (ValueError, TypeError, KeyError):
+            self._apply_state(previous[0])
+            self._apply_analysis_payload(self._analysis_payload(previous[1]))
+            self._apply_design_payload(previous[2].__dict__)
+            raise
+        finally:
+            self._loading_inputs = False
+        self._current_path = target
+        self._invalidate_results("Project opened. Run the analysis for current results.")
+        if hasattr(self, "bridge_schematic"):
+            self.bridge_schematic.set_state(state)
+        self.statusBar().showMessage(f"Opened {target}")
 
     def _open_project(self) -> None:
         file_name, _ = QFileDialog.getOpenFileName(
-            self,
-            "Open bridge project",
-            "",
-            "Bridge project (*.json);;JSON (*.json)",
+            self, "Open bridge project", "", "Bridge project (*.json);;JSON (*.json)"
         )
         if not file_name:
             return
         try:
-            payload = json.loads(Path(file_name).read_text(encoding="utf-8"))
-            if not isinstance(payload, dict):
-                raise TypeError("Project file root must be a JSON object.")
-            project_payload = payload.get("project")
-            if not isinstance(project_payload, dict):
-                raise TypeError("Project file is missing the project object.")
-            state = GuiProjectState.from_dict(project_payload)
+            self.open_project(Path(file_name))
         except (OSError, json.JSONDecodeError, TypeError, ValueError, KeyError) as exc:
             QMessageBox.critical(self, "Open failed", str(exc))
-            return
-        self._current_path = Path(file_name)
-        self._apply_state(state)
-        analysis = payload.get("analysis")
-        if isinstance(analysis, dict):
-            self._apply_analysis_payload(analysis)
-        design = payload.get("design")
-        if isinstance(design, dict):
-            self._apply_design_payload(design)
-        self.statusBar().showMessage(f"Opened {file_name}")
+
+    def save_project(self, target: Path) -> None:
+        state = self._read_state()
+        state.build_project()
+        settings = self._read_settings()
+        design = self._read_design_inputs()
+        payload = {
+            "format": "rc-single-span-bridge-gui-v2",
+            "project": state.as_dict(),
+            "analysis": self._analysis_payload(settings),
+            "design": design.__dict__,
+        }
+        temporary = target.with_suffix(target.suffix + ".tmp")
+        temporary.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        temporary.replace(target)
+        self._current_path = target
+        self.statusBar().showMessage(f"Saved {target}")
 
     def _save_project(self) -> None:
-        try:
-            state = self._read_state()
-            state.build_project()
-            settings = self._read_settings()
-            design = self._read_design_inputs()
-        except (ValueError, TypeError, KeyError) as exc:
-            QMessageBox.warning(self, "Invalid project", str(exc))
-            return
         target = self._current_path
         if target is None:
             file_name, _ = QFileDialog.getSaveFileName(
-                self,
-                "Save bridge project",
-                "bridge_project.json",
-                "Bridge project (*.json)",
+                self, "Save bridge project", "bridge_project.json", "Bridge project (*.json)"
             )
             if not file_name:
                 return
             target = Path(file_name)
-        payload = {
-            "format": "rc-single-span-bridge-gui-v2",
-            "project": state.as_dict(),
-            "analysis": {
-                "code_profile": settings.code_profile.value,
-                "psi1_tandem": settings.psi1_tandem,
-                "psi1_udl": settings.psi1_udl,
-                "psi2_traffic": settings.psi2_traffic,
-                "lm1_step_m": settings.lm1_step_m,
-                "hb_units": settings.hb_units,
-                "retain_all_cases": settings.retain_all_cases,
-            },
-            "design": design.__dict__,
-        }
         try:
-            target.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-        except OSError as exc:
-            QMessageBox.critical(self, "Save failed", str(exc))
-            return
-        self._current_path = target
-        self.statusBar().showMessage(f"Saved {target}")
+            self.save_project(target)
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            QMessageBox.warning(self, "Save failed", str(exc))
 
     def _run_analysis(self) -> None:
         if not self.run_button.isEnabled():
@@ -754,7 +967,11 @@ class BridgeMainWindow(QMainWindow):
         except (ValueError, TypeError, KeyError) as exc:
             QMessageBox.warning(self, "Invalid analysis input", str(exc))
             return
+        self._run_state, self._run_settings, self._run_design = state, settings, design
+        self._run_fingerprint = self._fingerprint()
+        self._invalidate_results("Analysis in progress. Previous results were cleared.")
         self.run_button.setEnabled(False)
+        self._run_action.setEnabled(False)
         self.statusBar().showMessage("Running deterministic analysis…")
         worker = _AnalysisWorker(state, settings, design)
         worker.signals.finished.connect(self._analysis_finished)
@@ -763,8 +980,18 @@ class BridgeMainWindow(QMainWindow):
 
     @Slot(object, object)
     def _analysis_finished(self, result, summary: GuiAnalysisSummary) -> None:
-        self._last_result = result
         self.run_button.setEnabled(True)
+        self._run_action.setEnabled(True)
+        try:
+            current_fingerprint = self._fingerprint()
+        except (ValueError, TypeError, KeyError):
+            current_fingerprint = None
+        if current_fingerprint != self._run_fingerprint:
+            self._invalidate_results("Inputs changed during analysis. Run again for current results.")
+            self.statusBar().showMessage("Analysis result discarded: inputs changed")
+            return
+        self._last_result = result
+        self._last_summary = summary
         self.statusBar().showMessage("Analysis complete")
         self._show_summary(summary)
         self._tabs.setCurrentWidget(self.results_page)
@@ -772,6 +999,8 @@ class BridgeMainWindow(QMainWindow):
     @Slot(str)
     def _analysis_failed(self, details: str) -> None:
         self.run_button.setEnabled(True)
+        self._run_action.setEnabled(True)
+        self._invalidate_results("Analysis failed. No current result is available.")
         self.statusBar().showMessage("Analysis failed")
         QMessageBox.critical(self, "Analysis failed", details)
 
@@ -820,3 +1049,43 @@ class BridgeMainWindow(QMainWindow):
         if not summary.design_rows:
             notes.append("Code-specific design checks were not enabled for this run.")
         self.result_notes.setPlainText("\n".join(f"• {note}" for note in notes))
+        if self._run_state is None or self._run_settings is None or self._run_design is None:
+            raise RuntimeError("Analysis snapshot is missing; report cannot be generated.")
+        self._report_html = render_calculation_report(
+            self._run_state, self._run_settings, self._run_design, summary
+        )
+        self.report_preview.setHtml(self._report_html)
+        self._export_action.setEnabled(True)
+
+    def write_report_pdf(self, target: Path) -> None:
+        if self._report_html is None or self._last_summary is None:
+            raise ValueError("Run the current project before exporting a calculation report.")
+        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+        printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
+        printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+        printer.setOutputFileName(str(target))
+        document = QTextDocument()
+        document.setHtml(self._report_html)
+        document.print_(printer)
+        if not target.is_file() or target.stat().st_size == 0:
+            raise OSError(f"PDF export did not produce a file: {target}")
+
+    def _export_pdf(self, *_args: object) -> None:
+        if self._report_html is None:
+            QMessageBox.information(self, "No current report", "Run the analysis first.")
+            return
+        default = (
+            str(self._current_path.with_suffix(".pdf"))
+            if self._current_path is not None else "bridge_calculation_report.pdf"
+        )
+        file_name, _ = QFileDialog.getSaveFileName(
+            self, "Export calculation report", default, "PDF (*.pdf)"
+        )
+        if not file_name:
+            return
+        try:
+            self.write_report_pdf(Path(file_name))
+        except (OSError, ValueError) as exc:
+            QMessageBox.critical(self, "PDF export failed", str(exc))
+            return
+        self.statusBar().showMessage(f"Exported {file_name}")

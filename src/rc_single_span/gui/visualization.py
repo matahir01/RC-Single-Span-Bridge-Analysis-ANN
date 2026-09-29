@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from PySide6.QtCore import QRectF
-from PySide6.QtGui import QPainter, QPen
-from PySide6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtGui import QBrush, QColor, QPainter, QPen
+from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from rc_single_span.gui.project_state import GuiProjectState
 
@@ -23,9 +23,9 @@ class BridgeSchematicWidget(QWidget):
         super().paintEvent(event)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        palette = self.palette()
-        text_color = palette.color(self.foregroundRole())
-        line_color = palette.color(self.foregroundRole())
+        text_color = QColor("#24415a")
+        line_color = QColor("#527892")
+        painter.fillRect(self.rect(), QColor("#ffffff"))
         painter.setPen(QPen(line_color, 1.5))
 
         margin = 36.0
@@ -38,6 +38,7 @@ class BridgeSchematicWidget(QWidget):
         painter.drawText(int(margin), int(margin - 10.0), "PLAN VIEW")
         painter.setPen(QPen(line_color, 1.5))
         plan = QRectF(margin, margin, width, plan_height - 30.0)
+        painter.setBrush(QBrush(QColor("#f5f9fc")))
         painter.drawRect(plan)
 
         state = self._state
@@ -69,27 +70,56 @@ class BridgeSchematicWidget(QWidget):
 
         painter.drawText(int(margin), int(cross_y - 20.0), "CROSS SECTION (SCHEMATIC)")
         cross_left = margin
-        cross_right = margin + width
         deck_y = cross_y
-        painter.drawLine(int(cross_left), int(deck_y), int(cross_right), int(deck_y))
-        painter.drawLine(int(cross_left), int(deck_y + 12.0), int(cross_right), int(deck_y + 12.0))
+        deck_depth = max(state.false_slab_depth_m + state.in_situ_slab_depth_m, 1.0e-9)
+        in_situ_px = 18.0 * state.in_situ_slab_depth_m / deck_depth
+        painter.setBrush(QBrush(QColor("#dbeaf3")))
+        painter.drawRect(QRectF(cross_left, deck_y, width, in_situ_px))
+        painter.setBrush(QBrush(QColor("#b9d1e2")))
+        painter.drawRect(QRectF(cross_left, deck_y + in_situ_px, width, 18.0 - in_situ_px))
 
         available = width * 0.90
         spacing_px = available / max(state.girder_count - 1, 1)
         start_x = margin + 0.05 * width
         section_depth_px = min(115.0, max(45.0, 0.12 * height))
-        section_width_px = min(42.0, max(18.0, 0.30 * spacing_px))
+        section_width_px = min(54.0, max(22.0, 0.34 * spacing_px))
+        girder_top = deck_y + 18.0
+        painter.setBrush(QBrush(QColor("#d1a47a")))
         for index in range(state.girder_count):
             x = start_x + index * spacing_px
-            painter.drawRect(
-                QRectF(
-                    x - 0.5 * section_width_px,
-                    deck_y + 12.0,
-                    section_width_px,
-                    section_depth_px,
+            if state.section_type == "rectangular":
+                painter.drawRect(
+                    QRectF(x - section_width_px / 2, girder_top,
+                           section_width_px, section_depth_px)
                 )
-            )
-            painter.drawText(int(x - 10.0), int(deck_y + section_depth_px + 32.0), f"G{index + 1}")
+            elif state.section_type == "t":
+                flange = min(spacing_px * 0.78, section_width_px * 1.7)
+                flange_depth = section_depth_px * (
+                    state.t_flange_thickness_m / max(state.t_total_depth_m, 1.0e-9)
+                )
+                web = max(6.0, min(section_width_px, section_width_px *
+                          state.t_web_width_m / max(state.t_flange_width_m, 1.0e-9)))
+                painter.drawRect(QRectF(x - flange / 2, girder_top, flange, flange_depth))
+                painter.drawRect(QRectF(x - web / 2, girder_top + flange_depth,
+                                        web, max(0.0, section_depth_px - flange_depth)))
+            else:
+                total = (
+                    state.i_top_flange_thickness_m + state.i_top_haunch_depth_m
+                    + state.i_web_depth_m + state.i_bottom_haunch_depth_m
+                    + state.i_bottom_flange_thickness_m
+                )
+                top_depth = section_depth_px * state.i_top_flange_thickness_m / max(total, 1.0e-9)
+                bottom_depth = section_depth_px * state.i_bottom_flange_thickness_m / max(total, 1.0e-9)
+                flange = min(spacing_px * 0.78, section_width_px * 1.3)
+                web = max(6.0, section_width_px * state.i_web_width_m /
+                          max(state.i_top_flange_width_m, 1.0e-9))
+                painter.drawRect(QRectF(x - flange / 2, girder_top, flange, top_depth))
+                painter.drawRect(QRectF(x - web / 2, girder_top + top_depth,
+                                        web, max(0.0, section_depth_px - top_depth - bottom_depth)))
+                painter.drawRect(QRectF(x - flange / 2,
+                                        girder_top + section_depth_px - bottom_depth,
+                                        flange, bottom_depth))
+            painter.drawText(int(x - 10.0), int(deck_y + section_depth_px + 38.0), f"G{index + 1}")
 
         physical_deck_depth = state.false_slab_depth_m + state.in_situ_slab_depth_m
         painter.drawText(
@@ -107,15 +137,14 @@ def install_visualization_tab(window) -> BridgeSchematicWidget:
     page = QWidget()
     layout = QVBoxLayout(page)
     note = QLabel(
-        "Geometry schematic generated directly from the current project inputs. "
+        "Live geometry schematic generated directly from the current project inputs. "
         "This is a modelling aid, not a fabrication/detail drawing."
     )
     note.setWordWrap(True)
     layout.addWidget(note)
     schematic = BridgeSchematicWidget(window._read_state())
     layout.addWidget(schematic, 1)
-    refresh = QPushButton("Refresh schematic from current inputs")
-    refresh.clicked.connect(lambda: schematic.set_state(window._read_state()))
-    layout.addWidget(refresh)
     window._tabs.insertTab(2, page, "Bridge view")
+    window._refresh_navigation()
+    window._tabs.setCurrentWidget(page)
     return schematic

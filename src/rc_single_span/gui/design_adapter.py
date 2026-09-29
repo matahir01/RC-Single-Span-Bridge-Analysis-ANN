@@ -61,6 +61,10 @@ class GuiDesignInputs:
             raise ValueError("A deflection basis requires an explicit deflection limit.")
         if self.deflection_limit_mm is not None and self.deflection_limit_mm <= 0.0:
             raise ValueError("Deflection limit must be positive when supplied.")
+        if self.deflection_limit_mm is not None and self.deflection_limit_basis is None:
+            raise ValueError("An explicit deflection limit requires a project basis/provenance.")
+        if self.deflection_limit_basis is not None and not self.deflection_limit_basis.strip():
+            raise ValueError("Deflection basis must be non-empty when supplied.")
         if self.deflection_limit_basis is not None and not self.deflection_limit_basis.strip():
             raise ValueError("Deflection basis must be non-empty when supplied.")
 

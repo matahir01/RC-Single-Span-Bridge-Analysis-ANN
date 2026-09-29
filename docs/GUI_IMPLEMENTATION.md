@@ -1,6 +1,6 @@
 # Desktop GUI implementation
 
-Date: 26 September 2026
+Updated: 29 September 2026
 
 ## Current status
 
@@ -12,6 +12,9 @@ packages rather than being duplicated in Qt callbacks.
 The current functional GUI provides:
 
 - project create/open/save using a versioned JSON payload;
+- a ribbon whose project, layout, section, deck, materials, loads, traffic and
+  design buttons open focused, validated input windows;
+- a left project/navigation tree and central live plan/cross-section workspace;
 - editable 15 m C35/45 B500 thesis-bridge defaults;
 - rectangular, T and I precast-girder input panels;
 - deck construction and composite-participation inputs;
@@ -25,7 +28,10 @@ The current functional GUI provides:
 - BS EN flexure, shear, crack-width and deflection result rows when enabled;
 - BS 5400 flexure, shear, crack-width and deflection result rows when enabled;
 - an explicit project deflection-limit/provenance pair rather than a hidden L/n rule;
-- saved analysis and design settings in the GUI project file; and
+- saved analysis and design settings in the GUI project file;
+- stale-result invalidation after input edits, new/open and in-flight run changes;
+- calculation report preview and PDF export generated from the completed run
+  snapshot, including a full input register and code/result provenance;
 - dedicated verification and ANN/reliability workspace placeholders.
 
 The application entry point is:
@@ -54,7 +60,8 @@ interactive Windows acceptance testing.
 
 The GUI does not create new engineering rules. It collects explicit inputs,
 constructs the same `BridgeProject` models used by the tested engine and calls the
-existing deterministic runner.
+existing deterministic runner. It now requests only the selected BS EN or legacy
+route; the combined route remains available to verification callers.
 
 The BS EN result page exposes the persistent ULS girder envelope from the verified
 LM1 route. The legacy BS result page exposes the vertical-grillage HA/HB/HA+HB
@@ -79,11 +86,11 @@ constraints must remain explicit rather than being invented by the interface.
 2. Add full BS 5400 combination-4/5 effect import/input and governing envelope.
 3. Add the advanced detailing/fatigue/bearing/splice input and results workspace.
 4. Add STAAD export/import and comparison views.
-5. Add calculation-report PDF/Excel export and report browser.
+5. Extend the existing PDF/report browser with detailed calculations and Excel output.
 6. Add project-level validation messages and richer input provenance fields.
 7. Add ANN/LHS/FORM/Monte-Carlo/RBDO controls after the final probabilistic study
    basis is frozen.
-8. Package the tested GUI as a Windows executable after desktop acceptance tests.
+8. Build and smoke-test a real Windows x64 executable distribution.
 
 A GUI result is a software calculation output, not approval of a real bridge or a
 replacement for project-specific engineering review.

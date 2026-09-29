@@ -2,38 +2,44 @@
 
 Updated: 29 September 2026 (UTC)
 
-## Latest code batch
+## Pushed baseline
 
-Base on main: `0d9b6e5b46deef5b8c81da6144b32414088824b3`.
-The restored temporary checkout had lost the prior uncommitted drafts. The current
-batch routes the GUI to only the selected BS EN or BS 5400 / BD 37 deterministic
-traffic/design path. The reference runner retains its existing `both` default for
-verification callers. The BS EN ANN reference script requests its own route.
+Latest pushed code commit before this GUI batch: `c3c3fd571ba028a46e62a1d7d046badb78e8a191`.
+It selects BS EN or legacy BS 5400/BD 37 traffic/design calculations without
+running the other code route. The reference runner's `both` default remains for
+verification callers. Ruff passed; full suite 237 passed; new routing tests 3
+passed. A seven-girder BS EN reference run using a coarse 3.0 m LM1 step
+produced seven rows in 100.4 seconds. That is a performance check, not the
+final 0.6 m convergence basis.
 
-Checks: Ruff passes; new route tests 3 passed; GUI smoke/design adapter tests 5
-passed. A seven-girder BS EN reference run with a 3.0 m LM1 search step produced
-seven rows in 100.4 seconds locally. This coarse step is a performance check,
-not the final 0.6 m reference analysis or a convergence claim. Full suite: 237 passed in 66.67 seconds.
+## GUI batch under verification
 
-## Delivered research documentation
+- Original top ribbon and focused, transactional input windows for project,
+  layout, rectangular/T/I sections, deck, materials, loads, traffic and design.
+- Left project tree and central live plan/cross-section schematic.
+- Versioned JSON save/open with validation and no silent out-of-range clamping.
+- Input-change and in-flight result invalidation; only a completed current
+  analysis can populate results and the calculation report.
+- PDF export of the completed run snapshot, code basis, effects, design rows,
+  notes and complete input register.
+- Meaningful offscreen tests cover dialog rollback, ribbon action, JSON
+  round trip, invalid open rollback, stale results and PDF output.
 
-`docs/RESEARCH_EVIDENCE_REGISTER.md` records JCSS/JRC/Nigerian source claims,
-methods and unresolved probability-model assumptions. The illustrative ANN
-configuration remains unconfirmed. No thesis reliability/RBDO numerical conclusion
-has been accepted yet.
+GUI workflow tests (5), Ruff and the full suite (242 tests in 68.00 seconds) passed. This is
+source verification only. No Windows executable has passed a packaged-app test.
 
-## Remaining work
+## Research status
 
-1. Push the selected-route code batch after the full suite passes, record its SHA.
-2. Finish original ribbon dialogs, navigation tree, central bridge view, transactional
-   save/open, stale-result invalidation, traceable analysis/results and PDF report.
-3. Build the Windows x64 PyInstaller onedir distribution on Windows Actions. Run
-   the packaged EXE itself through GUI launch, reference analysis, save/reopen and
-   report output; publish the verified ZIP and SHA-256.
-4. Select explicit source-backed DL/LL distributions and dependence or a labelled
-   proxy, then run sample-size convergence, independent ANN validation, FORM/MC
-   comparison, RBDO and direct optimum recheck. Keep approval of a real bridge
-   distinct from software and research verification.
+`docs/RESEARCH_EVIDENCE_REGISTER.md` records source editions/sections, claims,
+check methods and outstanding assumptions. The example ANN configuration is
+unconfirmed. DL/LL probability models, dependence, sample-size convergence,
+independent ANN evaluation and RBDO numerical validation remain open. Software
+verification is not approval of a real bridge.
 
-Exact next action after this batch: implement and test the ribbon input dialogs
-and central workspace, then commit/push them before the Windows package batch.
+## Exact next action
+
+Finish the GUI suite, push the verified GUI batch, then add a Windows x64 onedir
+build workflow. On a Windows runner launch the packaged EXE, run the 15 m
+seven-girder reference, save/reopen JSON and produce/check a PDF. Publish the
+working ZIP with a hash and instructions. Continue the evidence-gated ANN/RBDO
+study after executable delivery.
