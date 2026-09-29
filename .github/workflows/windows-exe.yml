@@ -1,0 +1,71 @@
+name: windows-exe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/rc_single_span/**"
+      - "packaging/**"
+      - "pyproject.toml"
+      - ".github/workflows/windows-exe.yml"
+  pull_request:
+    paths:
+      - "src/rc_single_span/**"
+      - "packaging/**"
+      - "pyproject.toml"
+      - ".github/workflows/windows-exe.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-smoke:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          architecture: x64
+      - name: Install GUI and packaging dependencies
+        run: python -m pip install -e ".[dev,gui]" "pyinstaller>=6.16,<7"
+      - name: Source GUI workflow tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest -q tests/test_gui_smoke.py tests/test_gui_workflows.py
+      - name: Build Windows x64 onedir executable
+        run: python -m PyInstaller --noconfirm --clean packaging/bridge_gui.spec
+      - name: Check Qt plugin and packaged reference workflow
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = (Resolve-Path 'dist/RCBridgeAnalyzer/RCBridgeAnalyzer.exe').Path
+          $plugin = Get-ChildItem 'dist/RCBridgeAnalyzer' -Recurse -Filter 'qwindows.dll' | Select-Object -First 1
+          if (-not $plugin) { throw 'Windows Qt platform plugin missing from distribution' }
+          $env:QT_QPA_PLATFORM = 'offscreen'
+          $outputDir = Join-Path $pwd 'package-smoke'
+          $process = Start-Process -FilePath $exe -ArgumentList @('--package-smoke', $outputDir) -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            if (Test-Path 'package-smoke/smoke_error.txt') { Get-Content 'package-smoke/smoke_error.txt' }
+            throw "Packaged executable failed: $($process.ExitCode)"
+          }
+          $result = Get-Content 'package-smoke/smoke_result.json' -Raw | ConvertFrom-Json
+          if ($result.status -ne 'passed' -or $result.girders -ne 7 -or $result.design_rows -ne 7) {
+            throw 'Reference analysis or design checks did not complete'
+          }
+          if (-not (Test-Path 'package-smoke/reference_bridge.json')) { throw 'Project save/open missing' }
+          $pdf = [System.IO.File]::ReadAllBytes((Join-Path $outputDir 'reference_calculation_report.pdf'))
+          if ([System.Text.Encoding]::ASCII.GetString($pdf, 0, 5) -ne '%PDF-') {
+            throw 'PDF report invalid'
+          }
+      - name: Create release ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Copy-Item 'packaging/README_WINDOWS.txt' 'dist/RCBridgeAnalyzer/README_WINDOWS.txt'
+          Compress-Archive -Path 'dist/RCBridgeAnalyzer' -DestinationPath 'RCBridgeAnalyzer-Windows-x64.zip'
+          Get-FileHash 'RCBridgeAnalyzer-Windows-x64.zip' -Algorithm SHA256 | Format-List
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RCBridgeAnalyzer-Windows-x64
+          path: RCBridgeAnalyzer-Windows-x64.zip
+          if-no-files-found: error

@@ -2,44 +2,36 @@
 
 Updated: 29 September 2026 (UTC)
 
-## Pushed baseline
+## Latest verified commits
 
-Latest pushed code commit before this GUI batch: `c3c3fd571ba028a46e62a1d7d046badb78e8a191`.
-It selects BS EN or legacy BS 5400/BD 37 traffic/design calculations without
-running the other code route. The reference runner's `both` default remains for
-verification callers. Ruff passed; full suite 237 passed; new routing tests 3
-passed. A seven-girder BS EN reference run using a coarse 3.0 m LM1 step
-produced seven rows in 100.4 seconds. That is a performance check, not the
-final 0.6 m convergence basis.
+- `c3c3fd571ba028a46e62a1d7d046badb78e8a191`: selected-code route;
+  full suite 237 passed, Ruff passed. Coarse 3.0 m BS EN performance check
+  ran the seven-girder reference in 100.4 seconds. This is not the final
+  0.6 m convergence basis.
+- `ccdb9843ac948609e30bad5cf75172ee8ad160d6`: ribbon input dialogs,
+  original bridge workspace and project tree, JSON round trip, stale-result
+  invalidation and PDF calculation report. Ruff and 242 tests passed; offscreen
+  screenshot inspected. No Windows executable has passed its package test yet.
 
-## GUI batch under verification
+## Windows packaging batch
 
-- Original top ribbon and focused, transactional input windows for project,
-  layout, rectangular/T/I sections, deck, materials, loads, traffic and design.
-- Left project tree and central live plan/cross-section schematic.
-- Versioned JSON save/open with validation and no silent out-of-range clamping.
-- Input-change and in-flight result invalidation; only a completed current
-  analysis can populate results and the calculation report.
-- PDF export of the completed run snapshot, code basis, effects, design rows,
-  notes and complete input register.
-- Meaningful offscreen tests cover dialog rollback, ribbon action, JSON
-  round trip, invalid open rollback, stale results and PDF output.
+PyInstaller onedir spec, Windows x64 Actions build, bundled Qt plugin check,
+packaged-EXE smoke mode and use instructions have been added locally. Linux
+PyInstaller 6.22.3 built the onedir package and included Qt platform and print
+plugins. Source GUI tests passed. A full default 0.6 m BS EN reference smoke
+run remains in progress locally; Ruff and the full suite (242 tests in 74.53 seconds) passed. **The Windows executable ZIP is
+not delivered until the Windows CI packaged-app test succeeds.**
 
-GUI workflow tests (5), Ruff and the full suite (242 tests in 68.00 seconds) passed. This is
-source verification only. No Windows executable has passed a packaged-app test.
+Exact next action: push this batch to trigger Windows Actions, inspect its
+build/packaged smoke result, fix failures, then publish the tested ZIP, SHA-256
+and concise use instructions. Record the tested commit and artifact link here.
 
 ## Research status
 
 `docs/RESEARCH_EVIDENCE_REGISTER.md` records source editions/sections, claims,
-check methods and outstanding assumptions. The example ANN configuration is
-unconfirmed. DL/LL probability models, dependence, sample-size convergence,
-independent ANN evaluation and RBDO numerical validation remain open. Software
-verification is not approval of a real bridge.
-
-## Exact next action
-
-Finish the GUI suite, push the verified GUI batch, then add a Windows x64 onedir
-build workflow. On a Windows runner launch the packaged EXE, run the 15 m
-seven-girder reference, save/reopen JSON and produce/check a PDF. Publish the
-working ZIP with a hash and instructions. Continue the evidence-gated ANN/RBDO
-study after executable delivery.
+check methods and outstanding assumptions. The illustrative ANN configuration
+remains unconfirmed. Select source-backed DL/LL probability models, dependence,
+and sample size before training; independently evaluate held-out and near-limit
+ANN results, cross-check FORM/direct MC and re-evaluate the RBDO optimum.
+Software verification is separate from research acceptance and real-bridge
+approval. National Annex values must remain explicit project choices.
