@@ -182,6 +182,7 @@ def run_gui_analysis(
     result = run_reference_project(
         project,
         config=_reference_config(settings),
+        code_route="bs_en" if settings.code_profile is GuiCodeProfile.BS_EN else "bs5400",
         **_design_kwargs(settings, design_inputs),
     )
     if settings.code_profile is GuiCodeProfile.BS_EN:

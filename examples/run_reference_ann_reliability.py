@@ -160,7 +160,7 @@ def main() -> int:
         retain_all_cases=bool(reference.get("retain_all_cases", True)),
         lm1_udl_influence_surface=bool(reference.get("lm1_udl_influence_surface", True)),
     )
-    deterministic = run_reference_project(thesis_bridge_15m(), run_config)
+    deterministic = run_reference_project(thesis_bridge_15m(), config=run_config, code_route="bs_en")
     baseline = extract_bs_en_reliability_baseline(deterministic)
 
     limit_state = _expect_dict(data.get("limit_state_model"), "limit_state_model")

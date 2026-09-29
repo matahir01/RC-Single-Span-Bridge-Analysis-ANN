@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 from rc_single_span.analysis.construction import (
     ConstructionAnalysisResult,
@@ -106,8 +107,8 @@ class ReferenceRunConfig:
 class ReferenceRunResult:
     project: BridgeProject
     construction: ConstructionAnalysisResult
-    lm1: LM1SearchResult
-    bs_traffic: BS5400NominalTrafficSuite
+    lm1: LM1SearchResult | None
+    bs_traffic: BS5400NominalTrafficSuite | None
     eurocode_combinations: tuple[EurocodeGirderCombinationResult, ...]
     bs5400_combinations: tuple[BS5400GirderCombinationResult, ...]
     eurocode_design: tuple[EurocodeGirderDesignResult, ...] | None
@@ -267,6 +268,7 @@ def run_reference_project(
     bs5400_detailing_inputs: BS5400DetailingInputs | None = None,
     ec2_advanced_detailing_inputs: AdvancedStageDInputs | None = None,
     bs5400_advanced_detailing_inputs: AdvancedStageDInputs | None = None,
+    code_route: Literal["both", "bs_en", "bs5400"] = "both",
 ) -> ReferenceRunResult:
     """Run one reproducible deterministic verification project end to end.
 
@@ -275,6 +277,17 @@ def run_reference_project(
     explicit optional arguments and are skipped when not supplied. Advanced
     Stage D checks are also optional and require their project-specific inputs.
     """
+
+    if code_route not in {"both", "bs_en", "bs5400"}:
+        raise ValueError(f"Unsupported code route: {code_route}")
+    if code_route == "bs_en" and (
+        bs5400_design_inputs or bs5400_detailing_inputs or bs5400_advanced_detailing_inputs
+    ):
+        raise ValueError("BS 5400 inputs require the BS 5400 code route.")
+    if code_route == "bs5400" and (
+        ec2_design_inputs or ec2_detailing_inputs or ec2_advanced_detailing_inputs
+    ):
+        raise ValueError("EC2 inputs require the BS EN code route.")
 
     resolved = _with_elastic_modulus(project, config.elastic_modulus_mpa)
     construction = run_construction_stage_analysis(resolved)
@@ -285,13 +298,14 @@ def run_reference_project(
     lm1_kwargs = {} if config.lm1_udl_influence_surface else {
         "retain_all_cases": config.retain_all_cases,
     }
-    lm1 = lm1_search(
-        resolved,
-        longitudinal_step_m=config.lm1_longitudinal_step_m,
-        max_exhaustive_tandem_combinations=(
-            config.max_exhaustive_tandem_combinations
-        ),
-        **lm1_kwargs,
+    lm1 = (
+        lm1_search(
+            resolved,
+            longitudinal_step_m=config.lm1_longitudinal_step_m,
+            max_exhaustive_tandem_combinations=config.max_exhaustive_tandem_combinations,
+            **lm1_kwargs,
+        )
+        if code_route != "bs5400" else None
     )
     frequent_lm1 = (
         lm1_search(
@@ -301,18 +315,18 @@ def run_reference_project(
             max_exhaustive_tandem_combinations=config.max_exhaustive_tandem_combinations,
             **lm1_kwargs,
         )
-        if config.eurocode_sls_factors.frequent_components_differ else None
+        if lm1 is not None and config.eurocode_sls_factors.frequent_components_differ else None
     )
-    bs_traffic = _bs_suite(resolved, config)
-    ec_combinations = build_eurocode_project_combinations(
-        resolved,
-        lm1,
-        sls_factors=config.eurocode_sls_factors,
-        frequent_traffic=frequent_lm1,
+    bs_traffic = _bs_suite(resolved, config) if code_route != "bs_en" else None
+    ec_combinations = (
+        build_eurocode_project_combinations(
+            resolved, lm1, sls_factors=config.eurocode_sls_factors,
+            frequent_traffic=frequent_lm1,
+        ) if lm1 is not None else ()
     )
-    bs_combinations = build_bs5400_project_combinations(
-        resolved,
-        bs_traffic,
+    bs_combinations = (
+        build_bs5400_project_combinations(resolved, bs_traffic)
+        if bs_traffic is not None else ()
     )
 
     ec_design = (
@@ -410,12 +424,11 @@ def run_reference_project(
         bs5400_detailing=bs_detailing,
         eurocode_advanced_detailing=ec_advanced,
         bs5400_advanced_detailing=bs_advanced,
-        eurocode_characteristic_deflection=_ec_characteristic_deflection(
-            resolved,
-            lm1,
+        eurocode_characteristic_deflection=(
+            _ec_characteristic_deflection(resolved, lm1) if lm1 is not None else None
         ),
-        bs5400_characteristic_deflection=_bs_characteristic_deflection(
-            resolved,
-            bs_traffic,
+        bs5400_characteristic_deflection=(
+            _bs_characteristic_deflection(resolved, bs_traffic)
+            if bs_traffic is not None else {}
         ),
     )
