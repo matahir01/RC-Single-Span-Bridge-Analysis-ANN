@@ -3,6 +3,7 @@
 Updated: 29 September 2026 (UTC)
 
 ## Repository checkpoint
+- Latest pushed main commit before this status update: `6afcb321bff27ce83f941f68821d6f9af9ff082d` (source/evidence register). The previous interruption checkpoint is `217c2f72e3caed5e00c79ec47b408beadef9fe59`.
 - Main before this documentation commit: `bef26032aa65fc6f1080c518c78f001ff5c62d0e` (26 September 2026). The live tree had PySide6 GUI source, Linux GUI smoke and deterministic/research infrastructure, but no Windows distribution/build workflow.
 - This file is an interruption checkpoint. No Windows executable is delivered or verified yet.
 - The local working copy at `/workspace/scratch/729b9c7bc3cb/rc-single-span` contains **uncommitted and unverified** GUI, reporting, Windows packaging, route-selection and GUI-test drafts. The execution environment disconnected during testing. These files may disappear with the transient workspace; inspect them before any reconstruction.
@@ -11,6 +12,7 @@ Updated: 29 September 2026 (UTC)
 - Existing `main` was checked against README, project documentation, tests and CI. No `AGENTS.md` was found.
 - Installed GUI/dev dependencies and ran `QT_QPA_PLATFORM=offscreen python -m pytest -q tests/test_gui_smoke.py tests/test_gui_design_adapter.py`: 5 passed on the initial GUI edits. This was **before** later packaging/route edits and does not verify the current drafts.
 - Inspected existing source-backed probabilistic basis and pipeline; important unresolved items include permanent/traffic probabilistic model, dependence, sample-size convergence, independent ANN validation, and final RBDO study. The example study remains explicitly unconfirmed.
+- Created `docs/RESEARCH_EVIDENCE_REGISTER.md` with source edition/section, claim, check method and open status, including JCSS primary sources, JRC, Nigerian ministry traffic evidence and published WIM limitations. This is a documentation batch and does not imply numerical research closure.
 
 ## Unverified local drafts
 - Ribbon input dialogs (Project, Layout, section, Deck, Materials, Loads, Traffic, Design), navigation tree and original live bridge schematic.
