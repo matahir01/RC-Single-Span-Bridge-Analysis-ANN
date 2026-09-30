@@ -16,11 +16,13 @@ from rc_single_span.traffic.combinations import build_eurocode_project_combinati
 from rc_single_span.traffic.lm1 import (
     _fixed_search_grid,
     build_lm1_plan_loads,
+    frequent_lm1_adjustments,
     generate_lm1_search_placements,
     run_lm1_grillage_search,
 )
 from rc_single_span.traffic.lm1_influence import (
     optimize_lm1_udl_for_response,
+    prepare_lm1_influence_context,
     run_lm1_influence_grillage_search,
     run_lm1_signed_response_search,
 )
@@ -184,3 +186,55 @@ def test_influence_envelope_contains_valid_cases_and_covers_full_udl() -> None:
         item.combinations.persistent_uls.effects.moment_knm > 0
         for item in combinations
     )
+
+
+def test_indexed_vector_search_and_weighted_reuse_match_independent_solutions() -> None:
+    project = _project(carriageway_width_m=3.0)
+    factors = frequent_lm1_adjustments(EurocodeServiceabilityFactors(
+        psi1_traffic=0.75, psi1_udl_traffic=0.40, psi2_traffic=0.0,
+    ))
+    base = prepare_lm1_influence_context(project, longitudinal_step_m=7.5)
+    weighted = base.with_uniform_factors(factors)
+    independent = prepare_lm1_influence_context(
+        project, factors=factors, longitudinal_step_m=7.5,
+    )
+    member_id = base.member_ids[0]
+    attribute = "i_vertical_force_kn"
+    for sign in (-1, 1):
+
+        def response(result):
+            return next(getattr(item, attribute) for item in result.members
+                        if item.member_id == member_id)
+
+        old = independent.maximize(response, sign=sign)
+        new = weighted.maximize_member(member_id, attribute, sign=sign)
+        assert new.placement == old.placement
+        assert new.influence.regions == old.influence.regions
+        assert new.influence.response == pytest.approx(old.influence.response, abs=1e-7)
+        assert new.influence.analysis.vertical_equilibrium_residual_kn == pytest.approx(
+            0.0, abs=1e-6,
+        )
+    with pytest.raises(ValueError, match="uniform"):
+        base.with_uniform_factors(replace(factors, alpha_Q2=0.32))
+
+    run_lm1_influence_grillage_search(project, longitudinal_step_m=7.5, context=base)
+    reused = run_lm1_influence_grillage_search(
+        project, factors=factors, longitudinal_step_m=7.5, context=weighted,
+    )
+    fresh = run_lm1_influence_grillage_search(
+        project, factors=factors, longitudinal_step_m=7.5,
+    )
+    for old_girder, new_girder in zip(fresh.girders, reused.girders, strict=True):
+        for name in ("moment_knm", "shear_kn", "torsion_knm", "deflection_mm"):
+            before, after = getattr(old_girder, name), getattr(new_girder, name)
+            assert after.value == pytest.approx(before.value, rel=1e-8, abs=1e-8)
+            assert after.case_id == before.case_id
+    for old_stations, new_stations in zip(
+        fresh.station_moments, reused.station_moments, strict=True,
+    ):
+        assert [item.moment_knm.case_id for item in new_stations.stations] == [
+            item.moment_knm.case_id for item in old_stations.stations
+        ]
+    assert [case.placement.case_id for case in reused.cases] == [
+        case.placement.case_id for case in fresh.cases
+    ]

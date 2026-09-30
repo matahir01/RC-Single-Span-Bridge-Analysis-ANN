@@ -44,7 +44,10 @@ from rc_single_span.traffic.lm1 import (
     frequent_lm1_adjustments,
     run_lm1_grillage_search,
 )
-from rc_single_span.traffic.lm1_influence import run_lm1_influence_grillage_search
+from rc_single_span.traffic.lm1_influence import (
+    prepare_lm1_influence_context,
+    run_lm1_influence_grillage_search,
+)
 from rc_single_span.verification.full_bridge import (
     build_full_bridge_stage_model,
     build_girder_line_load_case,
@@ -358,25 +361,41 @@ def run_full_bridge_traffic_campaign(
         if current.lm1_udl_influence_surface
         else run_lm1_grillage_search
     )
-    lm1_kwargs = {} if current.lm1_udl_influence_surface else {
-        "retain_all_cases": False,
-    }
+    lm1_context = (
+        prepare_lm1_influence_context(
+            project,
+            longitudinal_step_m=current.lm1_longitudinal_step_m,
+            max_exhaustive_tandem_combinations=current.lm1_max_exhaustive_tandem_combinations,
+        ) if current.lm1_udl_influence_surface else None
+    )
+    lm1_kwargs = (
+        {"context": lm1_context} if lm1_context is not None
+        else {"retain_all_cases": False}
+    )
     lm1 = lm1_search(
         project,
         longitudinal_step_m=current.lm1_longitudinal_step_m,
         max_exhaustive_tandem_combinations=(current.lm1_max_exhaustive_tandem_combinations),
         **lm1_kwargs,
     )
+    frequent_factors = (
+        frequent_lm1_adjustments(eurocode_sls_factors)
+        if eurocode_sls_factors is not None
+        and eurocode_sls_factors.frequent_components_differ else None
+    )
+    frequent_kwargs = (
+        {"context": lm1_context.with_uniform_factors(frequent_factors)}
+        if lm1_context is not None and frequent_factors is not None else lm1_kwargs
+    )
     lm1_frequent = (
         lm1_search(
             project,
-            factors=frequent_lm1_adjustments(eurocode_sls_factors),
+            factors=frequent_factors,
             longitudinal_step_m=current.lm1_longitudinal_step_m,
             max_exhaustive_tandem_combinations=current.lm1_max_exhaustive_tandem_combinations,
-            **lm1_kwargs,
+            **frequent_kwargs,
         )
-        if eurocode_sls_factors is not None
-        and eurocode_sls_factors.frequent_components_differ else None
+        if frequent_factors is not None else None
     )
     ha = run_ha_grillage_search(
         project,

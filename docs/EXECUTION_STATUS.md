@@ -1,6 +1,6 @@
 # Execution status
 
-Updated: 29 September 2026 (UTC)
+Updated: 30 September 2026 (UTC)
 
 ## Latest pushed code
 
@@ -33,6 +33,9 @@ Updated: 29 September 2026 (UTC)
   tests and [research Actions run 36671364046](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36671364046)
   succeeded. The numerical study is **not accepted**; see
   [RESEARCH_EXPLORATORY_RESULTS.md](RESEARCH_EXPLORATORY_RESULTS.md).
+- `e7b40c763dfe63afd62e6825cfc8bf6b8c9c0883`: numerical exploratory
+  report, full research summary JSON, and pre-optimization 3.0 m LM1 golden
+  snapshot. This is the current remote parent for the LM1 performance batch.
 
 ## Windows package check
 
@@ -63,19 +66,26 @@ its candidate is outside the training domain. The source/action/dependence
 issues and numerical blockers remain open. Neither software verification nor
 this exploratory study approves a real bridge.
 
-## LM1 performance work in progress
+## LM1 performance verification
 
-The user identified repeated stiffness/influence and governing-case work at
-the verified 0.6 m grid. A 3.0 m pre-change C35/B500 golden run is saved in
-`docs/benchmarks/lm1_3m_legacy_2026-09-30.json`; a first optimized run reduced
-its time from 96.9 s to 7.7 s;
-governing numerical effects agreed to about 2.1e-10 in native units. Trial
-registration caused some case IDs to shift; these are under investigation.
-The 0.6 m legacy baseline and optimized comparison have not completed.
+The optimized engine shares characteristic/frequent stiffness, tandem and unit
+cell solutions, indexes member/nodal responses, vectorizes the placement search,
+and physically re-solves deferred unique cases with superposition checks. Its
+3.0 m C35/B500 BS EN reference run took 11.27 s versus 96.88 s before the
+change (about 8.6 times faster). The saved pre-change run is
+`docs/benchmarks/lm1_3m_legacy_2026-09-30.json`. A golden regression checks
+all seven governing girders, station IDs, retained physical case IDs/loads,
+and characteristic/frequent design combination effects. These match the
+pre-change run; differing numerical effects are under 1e-7 in native units.
+Near-tie selection preserves the original Python sum order and exact Hermite
+cell signs, including support roundoff. The focused four influence tests and
+golden regression pass; the preceding full suite had 244 passes, and Ruff
+passes after the new regression. The 0.6 m pre-change run is still computing.
 
-Exact next action: resolve case-ID/tie ordering, compare full 3.0 m and 0.6 m
-governing values, station IDs, physical load cases and combinations; run tests,
-then push the verified performance batch. Add GUI progress/cancellation after
-the engine result is numerically pinned. For research, retain
+Exact next action: run the optimized 0.6 m reference and compare its governing
+values, station and case IDs, retained physical loads, and combinations against
+the pre-change result. Re-run the full suite and Ruff, then push the verified
+0.6 m performance checkpoint. Add GUI progress/cancellation and explicit
+Quick/Standard/Final verification modes. For research, retain
 `assumptions_confirmed=false` and obtain action/correlation/project criteria
 before any accepted reliability or RBDO result.
