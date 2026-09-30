@@ -1,0 +1,4388 @@
+{
+  "commit": "88712208e00ec4c8b4d79d8d2e46769b5681d5f4",
+  "elapsed_s": 3051.3775793880004,
+  "lm1_count": 2304,
+  "girders": [
+    {
+      "moment_knm": {
+        "value": 305.4309557622247,
+        "case_id": 4682,
+        "member_id": 13
+      },
+      "shear_kn": {
+        "value": 54.205843127030676,
+        "case_id": 4744,
+        "member_id": 21
+      },
+      "torsion_knm": {
+        "value": 42.52324643164627,
+        "case_id": 4746,
+        "member_id": 21
+      },
+      "deflection_mm": {
+        "value": 2.2880349900752623,
+        "case_id": 4682,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 869.2687512406833,
+        "case_id": 4899,
+        "member_id": 37
+      },
+      "shear_kn": {
+        "value": 279.4427725561691,
+        "case_id": 4817,
+        "member_id": 26
+      },
+      "torsion_knm": {
+        "value": 68.26525314492739,
+        "case_id": 4858,
+        "member_id": 31
+      },
+      "deflection_mm": {
+        "value": 5.426596270130745,
+        "case_id": 4993,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 1128.8858450458897,
+        "case_id": 5080,
+        "member_id": 64
+      },
+      "shear_kn": {
+        "value": 361.56740100967,
+        "case_id": 5004,
+        "member_id": 51
+      },
+      "torsion_knm": {
+        "value": 58.0192226955659,
+        "case_id": 5030,
+        "member_id": 54
+      },
+      "deflection_mm": {
+        "value": 7.217583401188562,
+        "case_id": 5086,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 1197.861141449349,
+        "case_id": 5233,
+        "member_id": 87
+      },
+      "shear_kn": {
+        "value": 396.43528113057255,
+        "case_id": 5167,
+        "member_id": 76
+      },
+      "torsion_knm": {
+        "value": 54.429087129103664,
+        "case_id": 5275,
+        "member_id": 95
+      },
+      "deflection_mm": {
+        "value": 7.38166859765116,
+        "case_id": 5228,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 1128.8858450361704,
+        "case_id": 5389,
+        "member_id": 112
+      },
+      "shear_kn": {
+        "value": 361.5674010085131,
+        "case_id": 5463,
+        "member_id": 125
+      },
+      "torsion_knm": {
+        "value": 58.01922269566673,
+        "case_id": 5343,
+        "member_id": 104
+      },
+      "deflection_mm": {
+        "value": 7.217583401124217,
+        "case_id": 5400,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 869.2687512335228,
+        "case_id": 5568,
+        "member_id": 139
+      },
+      "shear_kn": {
+        "value": 279.44277255527413,
+        "case_id": 5648,
+        "member_id": 150
+      },
+      "torsion_knm": {
+        "value": 68.26525314446167,
+        "case_id": 5612,
+        "member_id": 145
+      },
+      "deflection_mm": {
+        "value": 5.4265962700842225,
+        "case_id": 5660,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 305.43095576062797,
+        "case_id": 5752,
+        "member_id": 163
+      },
+      "shear_kn": {
+        "value": 54.205843126619584,
+        "case_id": 5800,
+        "member_id": 171
+      },
+      "torsion_knm": {
+        "value": 42.52324643121119,
+        "case_id": 5803,
+        "member_id": 171
+      },
+      "deflection_mm": {
+        "value": 2.2880349900614196,
+        "case_id": 5752,
+        "member_id": null
+      }
+    }
+  ],
+  "stations": [
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 2.0326480352719045,
+          "case_id": 4610,
+          "member_id": 1
+        }
+      },
+      {
+        "x_m": 0.6,
+        "moment": {
+          "value": 23.371203275461085,
+          "case_id": 4618,
+          "member_id": 2
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 52.54177181555406,
+          "case_id": 4626,
+          "member_id": 3
+        }
+      },
+      {
+        "x_m": 1.7999999999999998,
+        "moment": {
+          "value": 86.2223829502559,
+          "case_id": 4633,
+          "member_id": 4
+        }
+      },
+      {
+        "x_m": 2.4,
+        "moment": {
+          "value": 122.05180176442718,
+          "case_id": 4639,
+          "member_id": 5
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 157.87907539687012,
+          "case_id": 4647,
+          "member_id": 6
+        }
+      },
+      {
+        "x_m": 3.5999999999999996,
+        "moment": {
+          "value": 191.91127203243423,
+          "case_id": 4655,
+          "member_id": 7
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 222.7751729614838,
+          "case_id": 4663,
+          "member_id": 8
+        }
+      },
+      {
+        "x_m": 4.8,
+        "moment": {
+          "value": 249.69203521143663,
+          "case_id": 4671,
+          "member_id": 9
+        }
+      },
+      {
+        "x_m": 5.4,
+        "moment": {
+          "value": 272.1217208453229,
+          "case_id": 4676,
+          "member_id": 10
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 289.0319502892628,
+          "case_id": 4682,
+          "member_id": 11
+        }
+      },
+      {
+        "x_m": 6.6,
+        "moment": {
+          "value": 300.09956344071196,
+          "case_id": 4682,
+          "member_id": 12
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 305.4309557622247,
+          "case_id": 4682,
+          "member_id": 13
+        }
+      },
+      {
+        "x_m": 7.8,
+        "moment": {
+          "value": 305.430955762193,
+          "case_id": 4696,
+          "member_id": 13
+        }
+      },
+      {
+        "x_m": 8.4,
+        "moment": {
+          "value": 300.09956344063767,
+          "case_id": 4696,
+          "member_id": 14
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 289.03195028912523,
+          "case_id": 4696,
+          "member_id": 15
+        }
+      },
+      {
+        "x_m": 9.6,
+        "moment": {
+          "value": 272.12172084504937,
+          "case_id": 4710,
+          "member_id": 16
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 249.69203521121744,
+          "case_id": 4716,
+          "member_id": 17
+        }
+      },
+      {
+        "x_m": 10.799999999999999,
+        "moment": {
+          "value": 222.77517296111546,
+          "case_id": 4724,
+          "member_id": 18
+        }
+      },
+      {
+        "x_m": 11.399999999999999,
+        "moment": {
+          "value": 191.91127203212727,
+          "case_id": 4732,
+          "member_id": 19
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 157.8790753966423,
+          "case_id": 4740,
+          "member_id": 20
+        }
+      },
+      {
+        "x_m": 12.6,
+        "moment": {
+          "value": 122.05180176419162,
+          "case_id": 4748,
+          "member_id": 21
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 86.22238295002899,
+          "case_id": 4756,
+          "member_id": 22
+        }
+      },
+      {
+        "x_m": 13.799999999999999,
+        "moment": {
+          "value": 52.54177181540945,
+          "case_id": 4762,
+          "member_id": 23
+        }
+      },
+      {
+        "x_m": 14.399999999999999,
+        "moment": {
+          "value": 23.37120327536286,
+          "case_id": 4769,
+          "member_id": 24
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 2.0326480352687213,
+          "case_id": 4777,
+          "member_id": 25
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 1.310823743313449,
+          "case_id": 4814,
+          "member_id": 26
+        }
+      },
+      {
+        "x_m": 0.6,
+        "moment": {
+          "value": 167.1761208312746,
+          "case_id": 4820,
+          "member_id": 26
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 310.70578637676226,
+          "case_id": 4828,
+          "member_id": 27
+        }
+      },
+      {
+        "x_m": 1.7999999999999998,
+        "moment": {
+          "value": 432.1596021892328,
+          "case_id": 4835,
+          "member_id": 28
+        }
+      },
+      {
+        "x_m": 2.4,
+        "moment": {
+          "value": 533.9685100922834,
+          "case_id": 4843,
+          "member_id": 29
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 618.5915354683893,
+          "case_id": 4851,
+          "member_id": 30
+        }
+      },
+      {
+        "x_m": 3.5999999999999996,
+        "moment": {
+          "value": 688.2660061535971,
+          "case_id": 4859,
+          "member_id": 31
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 744.8468838458666,
+          "case_id": 4867,
+          "member_id": 32
+        }
+      },
+      {
+        "x_m": 4.8,
+        "moment": {
+          "value": 789.7833062372829,
+          "case_id": 4875,
+          "member_id": 33
+        }
+      },
+      {
+        "x_m": 5.4,
+        "moment": {
+          "value": 824.0922934577193,
+          "case_id": 4881,
+          "member_id": 34
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 848.4972033802778,
+          "case_id": 4888,
+          "member_id": 35
+        }
+      },
+      {
+        "x_m": 6.6,
+        "moment": {
+          "value": 863.4675784481469,
+          "case_id": 4893,
+          "member_id": 36
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 869.2687512406833,
+          "case_id": 4899,
+          "member_id": 37
+        }
+      },
+      {
+        "x_m": 7.8,
+        "moment": {
+          "value": 869.2687512401335,
+          "case_id": 4904,
+          "member_id": 39
+        }
+      },
+      {
+        "x_m": 8.4,
+        "moment": {
+          "value": 863.4675784473407,
+          "case_id": 4910,
+          "member_id": 40
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 848.4972033806907,
+          "case_id": 4915,
+          "member_id": 41
+        }
+      },
+      {
+        "x_m": 9.6,
+        "moment": {
+          "value": 824.0922934587152,
+          "case_id": 4923,
+          "member_id": 42
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 789.7833062382242,
+          "case_id": 4928,
+          "member_id": 43
+        }
+      },
+      {
+        "x_m": 10.799999999999999,
+        "moment": {
+          "value": 744.8468838462068,
+          "case_id": 4936,
+          "member_id": 44
+        }
+      },
+      {
+        "x_m": 11.399999999999999,
+        "moment": {
+          "value": 688.266006154472,
+          "case_id": 4944,
+          "member_id": 45
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 618.5915354685349,
+          "case_id": 4952,
+          "member_id": 46
+        }
+      },
+      {
+        "x_m": 12.6,
+        "moment": {
+          "value": 533.9685100922998,
+          "case_id": 4960,
+          "member_id": 47
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 432.15960218910914,
+          "case_id": 4968,
+          "member_id": 48
+        }
+      },
+      {
+        "x_m": 13.799999999999999,
+        "moment": {
+          "value": 310.705786376815,
+          "case_id": 4976,
+          "member_id": 49
+        }
+      },
+      {
+        "x_m": 14.399999999999999,
+        "moment": {
+          "value": 167.17612083132553,
+          "case_id": 4983,
+          "member_id": 50
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 1.3108237433552858,
+          "case_id": 4989,
+          "member_id": 50
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 1.734676866173686,
+          "case_id": 5001,
+          "member_id": 51
+        }
+      },
+      {
+        "x_m": 0.6,
+        "moment": {
+          "value": 216.0493850985331,
+          "case_id": 5007,
+          "member_id": 51
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 400.7015473117026,
+          "case_id": 5015,
+          "member_id": 52
+        }
+      },
+      {
+        "x_m": 1.7999999999999998,
+        "moment": {
+          "value": 558.0040700303543,
+          "case_id": 5023,
+          "member_id": 53
+        }
+      },
+      {
+        "x_m": 2.4,
+        "moment": {
+          "value": 690.6510318455512,
+          "case_id": 5031,
+          "member_id": 54
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 801.1945251409816,
+          "case_id": 5037,
+          "member_id": 55
+        }
+      },
+      {
+        "x_m": 3.5999999999999996,
+        "moment": {
+          "value": 892.5907952202615,
+          "case_id": 5042,
+          "member_id": 56
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 966.5199602421708,
+          "case_id": 5047,
+          "member_id": 57
+        }
+      },
+      {
+        "x_m": 4.8,
+        "moment": {
+          "value": 1024.6343469409403,
+          "case_id": 5053,
+          "member_id": 58
+        }
+      },
+      {
+        "x_m": 5.4,
+        "moment": {
+          "value": 1069.4733048667313,
+          "case_id": 5060,
+          "member_id": 59
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 1101.0111351202213,
+          "case_id": 5065,
+          "member_id": 60
+        }
+      },
+      {
+        "x_m": 6.6,
+        "moment": {
+          "value": 1120.7723673087467,
+          "case_id": 5070,
+          "member_id": 61
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 1128.8858450451912,
+          "case_id": 5075,
+          "member_id": 62
+        }
+      },
+      {
+        "x_m": 7.8,
+        "moment": {
+          "value": 1128.8858450458897,
+          "case_id": 5080,
+          "member_id": 64
+        }
+      },
+      {
+        "x_m": 8.4,
+        "moment": {
+          "value": 1120.7723673096289,
+          "case_id": 5086,
+          "member_id": 65
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 1101.0111351209098,
+          "case_id": 5091,
+          "member_id": 66
+        }
+      },
+      {
+        "x_m": 9.6,
+        "moment": {
+          "value": 1069.473304867308,
+          "case_id": 5096,
+          "member_id": 67
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 1024.6343469415733,
+          "case_id": 5102,
+          "member_id": 68
+        }
+      },
+      {
+        "x_m": 10.799999999999999,
+        "moment": {
+          "value": 966.5199602423854,
+          "case_id": 5107,
+          "member_id": 69
+        }
+      },
+      {
+        "x_m": 11.399999999999999,
+        "moment": {
+          "value": 892.5907952209,
+          "case_id": 5113,
+          "member_id": 70
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 801.1945251414163,
+          "case_id": 5119,
+          "member_id": 71
+        }
+      },
+      {
+        "x_m": 12.6,
+        "moment": {
+          "value": 690.6510318459787,
+          "case_id": 5124,
+          "member_id": 72
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 558.0040700311365,
+          "case_id": 5132,
+          "member_id": 73
+        }
+      },
+      {
+        "x_m": 13.799999999999999,
+        "moment": {
+          "value": 400.70154731200273,
+          "case_id": 5140,
+          "member_id": 74
+        }
+      },
+      {
+        "x_m": 14.399999999999999,
+        "moment": {
+          "value": 216.0493850989642,
+          "case_id": 5148,
+          "member_id": 75
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 1.7346768659699592,
+          "case_id": 5154,
+          "member_id": 75
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 1.7033769934841985,
+          "case_id": 5164,
+          "member_id": 76
+        }
+      },
+      {
+        "x_m": 0.6,
+        "moment": {
+          "value": 236.89499451152005,
+          "case_id": 5170,
+          "member_id": 76
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 437.13750546291703,
+          "case_id": 5177,
+          "member_id": 77
+        }
+      },
+      {
+        "x_m": 1.7999999999999998,
+        "moment": {
+          "value": 605.1937451188169,
+          "case_id": 5183,
+          "member_id": 78
+        }
+      },
+      {
+        "x_m": 2.4,
+        "moment": {
+          "value": 745.1319009289873,
+          "case_id": 5189,
+          "member_id": 79
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 860.8354881624764,
+          "case_id": 5195,
+          "member_id": 80
+        }
+      },
+      {
+        "x_m": 3.5999999999999996,
+        "moment": {
+          "value": 955.6464277608429,
+          "case_id": 5201,
+          "member_id": 81
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 1032.2610613443176,
+          "case_id": 5206,
+          "member_id": 82
+        }
+      },
+      {
+        "x_m": 4.8,
+        "moment": {
+          "value": 1092.7744247248374,
+          "case_id": 5212,
+          "member_id": 83
+        }
+      },
+      {
+        "x_m": 5.4,
+        "moment": {
+          "value": 1138.6786669961657,
+          "case_id": 5218,
+          "member_id": 84
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 1171.0621115095855,
+          "case_id": 5223,
+          "member_id": 85
+        }
+      },
+      {
+        "x_m": 6.6,
+        "moment": {
+          "value": 1190.6498581811047,
+          "case_id": 5228,
+          "member_id": 86
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 1197.861141449349,
+          "case_id": 5233,
+          "member_id": 87
+        }
+      },
+      {
+        "x_m": 7.8,
+        "moment": {
+          "value": 1197.8611414488732,
+          "case_id": 5240,
+          "member_id": 89
+        }
+      },
+      {
+        "x_m": 8.4,
+        "moment": {
+          "value": 1190.649858180046,
+          "case_id": 5245,
+          "member_id": 90
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 1171.0621115089425,
+          "case_id": 5250,
+          "member_id": 91
+        }
+      },
+      {
+        "x_m": 9.6,
+        "moment": {
+          "value": 1138.6786669959765,
+          "case_id": 5255,
+          "member_id": 92
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 1092.7744247248102,
+          "case_id": 5260,
+          "member_id": 93
+        }
+      },
+      {
+        "x_m": 10.799999999999999,
+        "moment": {
+          "value": 1032.2610613450342,
+          "case_id": 5265,
+          "member_id": 94
+        }
+      },
+      {
+        "x_m": 11.399999999999999,
+        "moment": {
+          "value": 955.6464277615378,
+          "case_id": 5270,
+          "member_id": 95
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 860.8354881630839,
+          "case_id": 5276,
+          "member_id": 96
+        }
+      },
+      {
+        "x_m": 12.6,
+        "moment": {
+          "value": 745.1319009287981,
+          "case_id": 5281,
+          "member_id": 97
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 605.1937451188769,
+          "case_id": 5287,
+          "member_id": 98
+        }
+      },
+      {
+        "x_m": 13.799999999999999,
+        "moment": {
+          "value": 437.137505463028,
+          "case_id": 5293,
+          "member_id": 99
+        }
+      },
+      {
+        "x_m": 14.399999999999999,
+        "moment": {
+          "value": 236.89499451160918,
+          "case_id": 5302,
+          "member_id": 100
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 1.7033769931076677,
+          "case_id": 5306,
+          "member_id": 100
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 1.7346768661318492,
+          "case_id": 5315,
+          "member_id": 101
+        }
+      },
+      {
+        "x_m": 0.6,
+        "moment": {
+          "value": 216.04938509780914,
+          "case_id": 5321,
+          "member_id": 101
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 400.70154731019284,
+          "case_id": 5329,
+          "member_id": 102
+        }
+      },
+      {
+        "x_m": 1.7999999999999998,
+        "moment": {
+          "value": 558.0040700281934,
+          "case_id": 5337,
+          "member_id": 103
+        }
+      },
+      {
+        "x_m": 2.4,
+        "moment": {
+          "value": 690.6510318422697,
+          "case_id": 5345,
+          "member_id": 104
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 801.1945251366378,
+          "case_id": 5351,
+          "member_id": 105
+        }
+      },
+      {
+        "x_m": 3.5999999999999996,
+        "moment": {
+          "value": 892.5907952145644,
+          "case_id": 5356,
+          "member_id": 106
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 966.519960235044,
+          "case_id": 5361,
+          "member_id": 107
+        }
+      },
+      {
+        "x_m": 4.8,
+        "moment": {
+          "value": 1024.6343469332805,
+          "case_id": 5367,
+          "member_id": 108
+        }
+      },
+      {
+        "x_m": 5.4,
+        "moment": {
+          "value": 1069.4733048582148,
+          "case_id": 5374,
+          "member_id": 109
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 1101.0111351114829,
+          "case_id": 5379,
+          "member_id": 110
+        }
+      },
+      {
+        "x_m": 6.6,
+        "moment": {
+          "value": 1120.7723672999864,
+          "case_id": 5384,
+          "member_id": 111
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 1128.8858450361704,
+          "case_id": 5389,
+          "member_id": 112
+        }
+      },
+      {
+        "x_m": 7.8,
+        "moment": {
+          "value": 1128.8858450360385,
+          "case_id": 5394,
+          "member_id": 114
+        }
+      },
+      {
+        "x_m": 8.4,
+        "moment": {
+          "value": 1120.7723673008059,
+          "case_id": 5400,
+          "member_id": 115
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 1101.0111351128744,
+          "case_id": 5405,
+          "member_id": 116
+        }
+      },
+      {
+        "x_m": 9.6,
+        "moment": {
+          "value": 1069.4733048588296,
+          "case_id": 5410,
+          "member_id": 117
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 1024.6343469335097,
+          "case_id": 5416,
+          "member_id": 118
+        }
+      },
+      {
+        "x_m": 10.799999999999999,
+        "moment": {
+          "value": 966.5199602357497,
+          "case_id": 5421,
+          "member_id": 119
+        }
+      },
+      {
+        "x_m": 11.399999999999999,
+        "moment": {
+          "value": 892.5907952150337,
+          "case_id": 5427,
+          "member_id": 120
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 801.1945251367979,
+          "case_id": 5433,
+          "member_id": 121
+        }
+      },
+      {
+        "x_m": 12.6,
+        "moment": {
+          "value": 690.6510318423552,
+          "case_id": 5438,
+          "member_id": 122
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 558.0040700281261,
+          "case_id": 5446,
+          "member_id": 123
+        }
+      },
+      {
+        "x_m": 13.799999999999999,
+        "moment": {
+          "value": 400.70154731006915,
+          "case_id": 5454,
+          "member_id": 124
+        }
+      },
+      {
+        "x_m": 14.399999999999999,
+        "moment": {
+          "value": 216.04938509772,
+          "case_id": 5462,
+          "member_id": 125
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 1.7346768664210686,
+          "case_id": 5468,
+          "member_id": 125
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 1.310823743344372,
+          "case_id": 5478,
+          "member_id": 126
+        }
+      },
+      {
+        "x_m": 0.6,
+        "moment": {
+          "value": 167.17612083049426,
+          "case_id": 5484,
+          "member_id": 126
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 310.70578637491417,
+          "case_id": 5492,
+          "member_id": 127
+        }
+      },
+      {
+        "x_m": 1.7999999999999998,
+        "moment": {
+          "value": 432.1596021863843,
+          "case_id": 5499,
+          "member_id": 128
+        }
+      },
+      {
+        "x_m": 2.4,
+        "moment": {
+          "value": 533.9685100885508,
+          "case_id": 5507,
+          "member_id": 129
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 618.59153546382,
+          "case_id": 5515,
+          "member_id": 130
+        }
+      },
+      {
+        "x_m": 3.5999999999999996,
+        "moment": {
+          "value": 688.2660061483057,
+          "case_id": 5523,
+          "member_id": 131
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 744.8468838404133,
+          "case_id": 5531,
+          "member_id": 132
+        }
+      },
+      {
+        "x_m": 4.8,
+        "moment": {
+          "value": 789.7833062319041,
+          "case_id": 5539,
+          "member_id": 133
+        }
+      },
+      {
+        "x_m": 5.4,
+        "moment": {
+          "value": 824.0922934518603,
+          "case_id": 5545,
+          "member_id": 134
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 848.4972033740196,
+          "case_id": 5552,
+          "member_id": 135
+        }
+      },
+      {
+        "x_m": 6.6,
+        "moment": {
+          "value": 863.4675784407518,
+          "case_id": 5557,
+          "member_id": 136
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 869.2687512333459,
+          "case_id": 5563,
+          "member_id": 137
+        }
+      },
+      {
+        "x_m": 7.8,
+        "moment": {
+          "value": 869.2687512335228,
+          "case_id": 5568,
+          "member_id": 139
+        }
+      },
+      {
+        "x_m": 8.4,
+        "moment": {
+          "value": 863.4675784415604,
+          "case_id": 5574,
+          "member_id": 140
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 848.4972033751201,
+          "case_id": 5579,
+          "member_id": 141
+        }
+      },
+      {
+        "x_m": 9.6,
+        "moment": {
+          "value": 824.09229345325,
+          "case_id": 5587,
+          "member_id": 142
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 789.7833062336222,
+          "case_id": 5592,
+          "member_id": 143
+        }
+      },
+      {
+        "x_m": 10.799999999999999,
+        "moment": {
+          "value": 744.846883842205,
+          "case_id": 5600,
+          "member_id": 144
+        }
+      },
+      {
+        "x_m": 11.399999999999999,
+        "moment": {
+          "value": 688.2660061503539,
+          "case_id": 5608,
+          "member_id": 145
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 618.5915354656263,
+          "case_id": 5616,
+          "member_id": 146
+        }
+      },
+      {
+        "x_m": 12.6,
+        "moment": {
+          "value": 533.9685100898168,
+          "case_id": 5624,
+          "member_id": 147
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 432.1596021874211,
+          "case_id": 5632,
+          "member_id": 148
+        }
+      },
+      {
+        "x_m": 13.799999999999999,
+        "moment": {
+          "value": 310.70578637551444,
+          "case_id": 5640,
+          "member_id": 149
+        }
+      },
+      {
+        "x_m": 14.399999999999999,
+        "moment": {
+          "value": 167.176120830758,
+          "case_id": 5647,
+          "member_id": 150
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 1.3108237435881165,
+          "case_id": 5653,
+          "member_id": 150
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 2.03264803528009,
+          "case_id": 5666,
+          "member_id": 151
+        }
+      },
+      {
+        "x_m": 0.6,
+        "moment": {
+          "value": 23.371203275372864,
+          "case_id": 5674,
+          "member_id": 152
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 52.54177181518662,
+          "case_id": 5682,
+          "member_id": 153
+        }
+      },
+      {
+        "x_m": 1.7999999999999998,
+        "moment": {
+          "value": 86.22238294959652,
+          "case_id": 5689,
+          "member_id": 154
+        }
+      },
+      {
+        "x_m": 2.4,
+        "moment": {
+          "value": 122.05180176348131,
+          "case_id": 5695,
+          "member_id": 155
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 157.87907539556636,
+          "case_id": 5703,
+          "member_id": 156
+        }
+      },
+      {
+        "x_m": 3.5999999999999996,
+        "moment": {
+          "value": 191.91127203067754,
+          "case_id": 5711,
+          "member_id": 157
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 222.7751729595234,
+          "case_id": 5719,
+          "member_id": 158
+        }
+      },
+      {
+        "x_m": 4.8,
+        "moment": {
+          "value": 249.6920352092718,
+          "case_id": 5727,
+          "member_id": 159
+        }
+      },
+      {
+        "x_m": 5.4,
+        "moment": {
+          "value": 272.12172084310123,
+          "case_id": 5732,
+          "member_id": 160
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 289.0319502870942,
+          "case_id": 5738,
+          "member_id": 161
+        }
+      },
+      {
+        "x_m": 6.6,
+        "moment": {
+          "value": 300.09956343878196,
+          "case_id": 5738,
+          "member_id": 162
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 305.4309557604278,
+          "case_id": 5738,
+          "member_id": 163
+        }
+      },
+      {
+        "x_m": 7.8,
+        "moment": {
+          "value": 305.43095576062797,
+          "case_id": 5752,
+          "member_id": 163
+        }
+      },
+      {
+        "x_m": 8.4,
+        "moment": {
+          "value": 300.09956343913314,
+          "case_id": 5752,
+          "member_id": 164
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 289.0319502876914,
+          "case_id": 5752,
+          "member_id": 165
+        }
+      },
+      {
+        "x_m": 9.6,
+        "moment": {
+          "value": 272.1217208437247,
+          "case_id": 5766,
+          "member_id": 166
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 249.6920352098541,
+          "case_id": 5772,
+          "member_id": 167
+        }
+      },
+      {
+        "x_m": 10.799999999999999,
+        "moment": {
+          "value": 222.77517296007045,
+          "case_id": 5780,
+          "member_id": 168
+        }
+      },
+      {
+        "x_m": 11.399999999999999,
+        "moment": {
+          "value": 191.91127203118504,
+          "case_id": 5788,
+          "member_id": 169
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 157.87907539594107,
+          "case_id": 5796,
+          "member_id": 170
+        }
+      },
+      {
+        "x_m": 12.6,
+        "moment": {
+          "value": 122.05180176378417,
+          "case_id": 5804,
+          "member_id": 171
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 86.22238294987073,
+          "case_id": 5812,
+          "member_id": 172
+        }
+      },
+      {
+        "x_m": 13.799999999999999,
+        "moment": {
+          "value": 52.54177181536943,
+          "case_id": 5818,
+          "member_id": 173
+        }
+      },
+      {
+        "x_m": 14.399999999999999,
+        "moment": {
+          "value": 23.371203275421067,
+          "case_id": 5825,
+          "member_id": 174
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 2.0326480352505314,
+          "case_id": 5833,
+          "member_id": 175
+        }
+      }
+    ]
+  ],
+  "cases": [
+    {
+      "id": 4610,
+      "tandem": [
+        [
+          1,
+          4.2
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4618,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4626,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4633,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4639,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4647,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4655,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4663,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4671,
+      "tandem": [
+        [
+          1,
+          6.6
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4676,
+      "tandem": [
+        [
+          1,
+          6.6
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4682,
+      "tandem": [
+        [
+          1,
+          6.6
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4696,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4710,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4716,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4724,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4732,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4740,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4744,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4746,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4748,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4756,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4762,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4769,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4777,
+      "tandem": [
+        [
+          1,
+          9.6
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4814,
+      "tandem": [
+        [
+          1,
+          4.2
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4817,
+      "tandem": [
+        [
+          1,
+          0.6
+        ],
+        [
+          2,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4820,
+      "tandem": [
+        [
+          1,
+          0.6
+        ],
+        [
+          2,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4828,
+      "tandem": [
+        [
+          1,
+          1.2
+        ],
+        [
+          2,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4835,
+      "tandem": [
+        [
+          1,
+          1.8
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4843,
+      "tandem": [
+        [
+          1,
+          2.4
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4851,
+      "tandem": [
+        [
+          1,
+          3.0
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4858,
+      "tandem": [
+        [
+          1,
+          3.6
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4859,
+      "tandem": [
+        [
+          1,
+          3.6
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4867,
+      "tandem": [
+        [
+          1,
+          4.2
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4875,
+      "tandem": [
+        [
+          1,
+          4.8
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4881,
+      "tandem": [
+        [
+          1,
+          5.4
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4888,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4893,
+      "tandem": [
+        [
+          1,
+          6.6
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4899,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4904,
+      "tandem": [
+        [
+          1,
+          6.6
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4910,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4915,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4923,
+      "tandem": [
+        [
+          1,
+          8.4
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4928,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4936,
+      "tandem": [
+        [
+          1,
+          9.6
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4944,
+      "tandem": [
+        [
+          1,
+          10.2
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4952,
+      "tandem": [
+        [
+          1,
+          10.8
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4960,
+      "tandem": [
+        [
+          1,
+          11.4
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4968,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4976,
+      "tandem": [
+        [
+          1,
+          12.6
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4983,
+      "tandem": [
+        [
+          1,
+          13.2
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4989,
+      "tandem": [
+        [
+          1,
+          9.6
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 4993,
+      "tandem": [
+        [
+          1,
+          6.6
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5001,
+      "tandem": [
+        [
+          1,
+          4.8
+        ],
+        [
+          2,
+          13.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5004,
+      "tandem": [
+        [
+          1,
+          0.6
+        ],
+        [
+          2,
+          4.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5007,
+      "tandem": [
+        [
+          1,
+          0.6
+        ],
+        [
+          2,
+          4.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5015,
+      "tandem": [
+        [
+          1,
+          1.2
+        ],
+        [
+          2,
+          4.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5023,
+      "tandem": [
+        [
+          1,
+          1.8
+        ],
+        [
+          2,
+          4.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5030,
+      "tandem": [
+        [
+          1,
+          0.6
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5031,
+      "tandem": [
+        [
+          1,
+          2.4
+        ],
+        [
+          2,
+          4.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5037,
+      "tandem": [
+        [
+          1,
+          3.0
+        ],
+        [
+          2,
+          5.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5042,
+      "tandem": [
+        [
+          1,
+          3.6
+        ],
+        [
+          2,
+          5.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5047,
+      "tandem": [
+        [
+          1,
+          4.2
+        ],
+        [
+          2,
+          5.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5053,
+      "tandem": [
+        [
+          1,
+          4.8
+        ],
+        [
+          2,
+          5.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5060,
+      "tandem": [
+        [
+          1,
+          5.4
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5065,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5070,
+      "tandem": [
+        [
+          1,
+          6.6
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5075,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5080,
+      "tandem": [
+        [
+          1,
+          6.6
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5086,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5091,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5096,
+      "tandem": [
+        [
+          1,
+          8.4
+        ],
+        [
+          2,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5102,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          8.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5107,
+      "tandem": [
+        [
+          1,
+          9.6
+        ],
+        [
+          2,
+          8.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5113,
+      "tandem": [
+        [
+          1,
+          10.2
+        ],
+        [
+          2,
+          8.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5119,
+      "tandem": [
+        [
+          1,
+          10.8
+        ],
+        [
+          2,
+          8.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5124,
+      "tandem": [
+        [
+          1,
+          11.4
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5132,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5140,
+      "tandem": [
+        [
+          1,
+          12.6
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5148,
+      "tandem": [
+        [
+          1,
+          13.2
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5154,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          0.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5164,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          4.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5167,
+      "tandem": [
+        [
+          1,
+          0.6
+        ],
+        [
+          2,
+          0.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5170,
+      "tandem": [
+        [
+          2,
+          0.6
+        ],
+        [
+          1,
+          0.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5177,
+      "tandem": [
+        [
+          1,
+          1.2
+        ],
+        [
+          2,
+          1.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5183,
+      "tandem": [
+        [
+          2,
+          1.8
+        ],
+        [
+          1,
+          1.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5189,
+      "tandem": [
+        [
+          2,
+          2.4
+        ],
+        [
+          1,
+          2.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5195,
+      "tandem": [
+        [
+          1,
+          3.0
+        ],
+        [
+          2,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5201,
+      "tandem": [
+        [
+          1,
+          3.6
+        ],
+        [
+          2,
+          3.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5206,
+      "tandem": [
+        [
+          2,
+          4.2
+        ],
+        [
+          1,
+          4.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5212,
+      "tandem": [
+        [
+          2,
+          4.8
+        ],
+        [
+          1,
+          4.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5218,
+      "tandem": [
+        [
+          1,
+          5.4
+        ],
+        [
+          2,
+          5.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5223,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5228,
+      "tandem": [
+        [
+          1,
+          6.6
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5233,
+      "tandem": [
+        [
+          1,
+          7.2
+        ],
+        [
+          2,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5240,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5245,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5250,
+      "tandem": [
+        [
+          1,
+          7.8
+        ],
+        [
+          2,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5255,
+      "tandem": [
+        [
+          1,
+          8.4
+        ],
+        [
+          2,
+          8.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5260,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5265,
+      "tandem": [
+        [
+          1,
+          9.6
+        ],
+        [
+          2,
+          9.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5270,
+      "tandem": [
+        [
+          1,
+          10.2
+        ],
+        [
+          2,
+          10.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5275,
+      "tandem": [
+        [
+          1,
+          10.2
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5276,
+      "tandem": [
+        [
+          1,
+          10.8
+        ],
+        [
+          2,
+          10.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5281,
+      "tandem": [
+        [
+          1,
+          11.4
+        ],
+        [
+          2,
+          11.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5287,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5293,
+      "tandem": [
+        [
+          1,
+          12.6
+        ],
+        [
+          2,
+          12.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5302,
+      "tandem": [
+        [
+          1,
+          13.2
+        ],
+        [
+          2,
+          13.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5306,
+      "tandem": [
+        [
+          1,
+          9.6
+        ],
+        [
+          2,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5315,
+      "tandem": [
+        [
+          2,
+          13.2
+        ],
+        [
+          1,
+          4.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5321,
+      "tandem": [
+        [
+          2,
+          4.8
+        ],
+        [
+          1,
+          0.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5329,
+      "tandem": [
+        [
+          2,
+          4.8
+        ],
+        [
+          1,
+          1.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5337,
+      "tandem": [
+        [
+          2,
+          4.8
+        ],
+        [
+          1,
+          1.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5343,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          0.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5345,
+      "tandem": [
+        [
+          2,
+          4.8
+        ],
+        [
+          1,
+          2.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5351,
+      "tandem": [
+        [
+          2,
+          5.4
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5356,
+      "tandem": [
+        [
+          2,
+          5.4
+        ],
+        [
+          1,
+          3.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5361,
+      "tandem": [
+        [
+          2,
+          5.4
+        ],
+        [
+          1,
+          4.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5367,
+      "tandem": [
+        [
+          2,
+          5.4
+        ],
+        [
+          1,
+          4.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5374,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          5.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5379,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5384,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5389,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5394,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5400,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5405,
+      "tandem": [
+        [
+          2,
+          7.8
+        ],
+        [
+          1,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5410,
+      "tandem": [
+        [
+          2,
+          7.8
+        ],
+        [
+          1,
+          8.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5416,
+      "tandem": [
+        [
+          2,
+          8.4
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5421,
+      "tandem": [
+        [
+          2,
+          8.4
+        ],
+        [
+          1,
+          9.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5427,
+      "tandem": [
+        [
+          2,
+          8.4
+        ],
+        [
+          1,
+          10.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5433,
+      "tandem": [
+        [
+          2,
+          8.4
+        ],
+        [
+          1,
+          10.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5438,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          11.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5446,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5454,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          12.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5462,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          13.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5463,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          13.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5468,
+      "tandem": [
+        [
+          2,
+          0.6
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5478,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          4.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5484,
+      "tandem": [
+        [
+          2,
+          7.8
+        ],
+        [
+          1,
+          0.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5492,
+      "tandem": [
+        [
+          2,
+          7.8
+        ],
+        [
+          1,
+          1.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5499,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          1.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5507,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          2.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5515,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5523,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          3.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5531,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          4.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5539,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          4.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5545,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          5.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5552,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5557,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5563,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5568,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5574,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5579,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5587,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          8.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5592,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5600,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          9.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5608,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          10.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5612,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          10.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5616,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          10.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5624,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          11.4
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5632,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5640,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          12.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5647,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          13.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5648,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          13.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5653,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          9.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5660,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5666,
+      "tandem": [
+        [
+          2,
+          7.2
+        ],
+        [
+          1,
+          4.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5674,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5682,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5689,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5695,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5703,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5711,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5719,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5727,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5732,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5738,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.6
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5752,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5766,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5772,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5780,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5788,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5796,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5800,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5803,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          7.2
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5804,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5812,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5818,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5825,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          7.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 5833,
+      "tandem": [
+        [
+          2,
+          6.6
+        ],
+        [
+          1,
+          9.6
+        ]
+      ],
+      "uniform_loads": []
+    }
+  ],
+  "combinations": [
+    {
+      "girder": 1,
+      "uls": {
+        "moment_knm": 1511.8900393598851,
+        "shear_kn": 366.39342130972676,
+        "torsion_knm": 57.40638268272247
+      },
+      "frequent": {
+        "moment_knm": 1012.6791888315404,
+        "shear_kn": 252.3671215763283,
+        "torsion_knm": 27.553615237254917
+      }
+    },
+    {
+      "girder": 2,
+      "uls": {
+        "moment_knm": 2014.5183932190405,
+        "shear_kn": 601.515897362593,
+        "torsion_knm": 92.15809174565197
+      },
+      "frequent": {
+        "moment_knm": 1199.8651908806225,
+        "shear_kn": 353.2368988966379,
+        "torsion_knm": 45.660657657539616
+      }
+    },
+    {
+      "girder": 3,
+      "uls": {
+        "moment_knm": 2401.7194845619515,
+        "shear_kn": 722.1756163630546,
+        "torsion_knm": 78.32595063901397
+      },
+      "frequent": {
+        "moment_knm": 1400.414082835769,
+        "shear_kn": 414.0674504994144,
+        "torsion_knm": 39.115948753953276
+      }
+    },
+    {
+      "girder": 4,
+      "uls": {
+        "moment_knm": 2494.836134706621,
+        "shear_kn": 769.247254526273,
+        "torsion_knm": 73.47926762428995
+      },
+      "frequent": {
+        "moment_knm": 1454.390249548142,
+        "shear_kn": 442.4356567962945,
+        "torsion_knm": 35.27450457775552
+      }
+    },
+    {
+      "girder": 5,
+      "uls": {
+        "moment_knm": 2401.71948454883,
+        "shear_kn": 722.1756163614928,
+        "torsion_knm": 78.3259506391501
+      },
+      "frequent": {
+        "moment_knm": 1400.4140828295444,
+        "shear_kn": 414.0674504985995,
+        "torsion_knm": 39.115948754020614
+      }
+    },
+    {
+      "girder": 6,
+      "uls": {
+        "moment_knm": 2014.5183932093732,
+        "shear_kn": 601.5158973613848,
+        "torsion_knm": 92.15809174502326
+      },
+      "frequent": {
+        "moment_knm": 1199.8651908763106,
+        "shear_kn": 353.23689889609216,
+        "torsion_knm": 45.66065765722169
+      }
+    },
+    {
+      "girder": 7,
+      "uls": {
+        "moment_knm": 1511.8900393577296,
+        "shear_kn": 366.3934213091718,
+        "torsion_knm": 57.40638268213511
+      },
+      "frequent": {
+        "moment_knm": 1012.6791888305478,
+        "shear_kn": 252.3671215760427,
+        "torsion_knm": 27.553615236973258
+      }
+    }
+  ]
+}

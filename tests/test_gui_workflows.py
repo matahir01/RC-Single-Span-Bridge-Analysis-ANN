@@ -1,5 +1,6 @@
 import json
 import os
+from dataclasses import replace
 from threading import Event
 
 import pytest
@@ -14,11 +15,13 @@ from rc_single_span.core.progress import AnalysisCancelled, AnalysisControl
 from rc_single_span.gui.app import BridgeMainWindow
 from rc_single_span.gui.dialogs import InputDialog
 from rc_single_span.gui.engine_adapter import (
+    GuiAccuracyMode,
     GuiAnalysisSummary,
     GuiCodeProfile,
     GuiResultRow,
     run_gui_analysis,
 )
+from rc_single_span.gui.reporting import render_calculation_report
 
 
 @pytest.fixture
@@ -150,3 +153,29 @@ def test_cancel_stops_engine_during_influence_preparation_and_clears_gui(window)
     assert window._last_result is None
     assert window._last_summary is None
     assert "cancelled" in window.result_basis.text().lower()
+
+
+def test_accuracy_mode_and_custom_grid_round_trip(window, tmp_path) -> None:
+    assert window._read_settings().accuracy_mode is GuiAccuracyMode.FINAL
+    assert window.lm1_step.value() == 0.6
+    window.analysis_mode.setCurrentText(GuiAccuracyMode.STANDARD.value)
+    assert window.lm1_step.value() == 1.2
+    window.lm1_step.setValue(0.9)
+    assert window._read_settings().accuracy_mode is GuiAccuracyMode.CUSTOM
+    target = tmp_path / "accuracy.json"
+    window.save_project(target)
+    window.analysis_mode.setCurrentText(GuiAccuracyMode.QUICK.value)
+    assert window.lm1_step.value() == 3.0
+    window.open_project(target)
+    assert window._read_settings().accuracy_mode is GuiAccuracyMode.CUSTOM
+    assert window._read_settings().lm1_step_m == 0.9
+
+
+def test_quick_mode_runs_engine_and_labels_unverified_grid(window) -> None:
+    state = window._read_state()
+    settings = replace(window._read_settings(), accuracy_mode=GuiAccuracyMode.QUICK)
+    result, summary = run_gui_analysis(state.build_project(), settings)
+    assert result.lm1.longitudinal_step_m == summary.actual_lm1_step_m == 3.0
+    assert any("No grid convergence claim" in note for note in summary.notes)
+    report = render_calculation_report(state, settings, window._read_design_inputs(), summary)
+    assert "LM1 search step 3.000 m" in report

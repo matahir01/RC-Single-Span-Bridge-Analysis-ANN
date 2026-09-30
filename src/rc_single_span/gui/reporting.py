@@ -66,7 +66,7 @@ def render_calculation_report(
         else "Not provided; deflection pass/fail is not assessed."
     )
     traffic = (
-        f"LM1 search step {settings.lm1_step_m:.3f} m; "
+        f"LM1 search step {(summary.actual_lm1_step_m or settings.lm1_step_m):.3f} m; "
         f"ψ1 TS/UDL {settings.psi1_tandem:.2f}/{settings.psi1_udl:.2f}; "
         f"ψ2 {settings.psi2_traffic:.2f}"
         if summary.code_profile.value.startswith("BS EN")
@@ -82,6 +82,8 @@ def render_calculation_report(
                 "psi1_udl": settings.psi1_udl,
                 "psi2_traffic": settings.psi2_traffic,
                 "lm1_step_m": settings.lm1_step_m,
+                "accuracy_mode": settings.accuracy_mode.value,
+                "actual_lm1_step_m": summary.actual_lm1_step_m,
                 "hb_units": settings.hb_units,
                 "retain_all_cases": settings.retain_all_cases,
             }),

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 
 from rc_single_span.codes.bs5400.combinations import BS5400LimitState
@@ -9,9 +9,12 @@ from rc_single_span.core.models import BridgeProject
 from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.design.project import BS5400DesignInputs, EC2DesignInputs
 from rc_single_span.gui.design_adapter import GuiDesignInputs
+from rc_single_span.traffic.lm1_influence import run_lm1_influence_grillage_search
+from rc_single_span.traffic.lm1_influence_convergence import _influence_refinement
 from rc_single_span.verification.reference_runner import (
     ReferenceRunConfig,
     ReferenceRunResult,
+    _with_elastic_modulus,
     run_reference_project,
 )
 
@@ -19,6 +22,13 @@ from rc_single_span.verification.reference_runner import (
 class GuiCodeProfile(str, Enum):
     BS_EN = "BS EN 1990 / 1991-2 / 1992-2"
     BS_5400 = "BS 5400 / BD 37"
+
+
+class GuiAccuracyMode(str, Enum):
+    QUICK = "Quick"
+    STANDARD = "Standard"
+    FINAL = "Final Verification"
+    CUSTOM = "Custom grid"
 
 
 @dataclass(frozen=True)
@@ -31,6 +41,7 @@ class GuiAnalysisSettings:
     lm1_step_m: float = 0.6
     retain_all_cases: bool = False
     hb_units: float = 45.0
+    accuracy_mode: GuiAccuracyMode = GuiAccuracyMode.FINAL
 
 
 @dataclass(frozen=True)
@@ -69,6 +80,7 @@ class GuiAnalysisSummary:
     governing_torsion: GuiResultRow
     design_rows: tuple[GuiDesignRow, ...]
     notes: tuple[str, ...]
+    actual_lm1_step_m: float | None = None
 
 
 def _reference_config(settings: GuiAnalysisSettings) -> ReferenceRunConfig:
@@ -181,13 +193,59 @@ def run_gui_analysis(
 ) -> tuple[ReferenceRunResult, GuiAnalysisSummary]:
     """Run the verified deterministic bridge engine and build a GUI summary."""
 
-    result = run_reference_project(
-        project,
-        config=_reference_config(settings),
-        code_route="bs_en" if settings.code_profile is GuiCodeProfile.BS_EN else "bs5400",
-        control=control,
-        **_design_kwargs(settings, design_inputs),
-    )
+    route = "bs_en" if settings.code_profile is GuiCodeProfile.BS_EN else "bs5400"
+    audit_notes = []
+    coarse = None
+    if route == "bs_en" and settings.accuracy_mode in {
+        GuiAccuracyMode.STANDARD, GuiAccuracyMode.FINAL,
+    }:
+        initial = 2.4 if settings.accuracy_mode is GuiAccuracyMode.STANDARD else 1.2
+        coarse = run_lm1_influence_grillage_search(
+            _with_elastic_modulus(project, settings.elastic_modulus_mpa),
+            longitudinal_step_m=initial,
+            control=control,
+            phase=f"LM1 convergence {initial:g} m",
+        )
+        if not coarse.tandem_combinations_exhaustive:
+            raise RuntimeError("LM1 convergence requires exhaustive tandem placements.")
+
+    step_m = (
+        3.0 if settings.accuracy_mode is GuiAccuracyMode.QUICK else
+        1.2 if settings.accuracy_mode is GuiAccuracyMode.STANDARD else
+        0.6 if settings.accuracy_mode is GuiAccuracyMode.FINAL else
+        settings.lm1_step_m
+    ) if route == "bs_en" else settings.lm1_step_m
+
+    while True:
+        result = run_reference_project(
+            project,
+            config=replace(_reference_config(settings), lm1_longitudinal_step_m=step_m),
+            code_route=route,
+            control=control,
+            **_design_kwargs(settings, design_inputs),
+        )
+        if coarse is None:
+            break
+        fine = result.lm1
+        if fine is None or not fine.tandem_combinations_exhaustive:
+            raise RuntimeError("LM1 convergence requires exhaustive tandem placements.")
+        comparison = _influence_refinement(coarse, fine)
+        audit_notes.append(
+            f"LM1 {comparison.coarse_step_m:g} → {comparison.fine_step_m:g} m: "
+            f"maximum envelope change {comparison.maximum_relative_change:.3%} "
+            f"({comparison.governing_quantity}, girder {comparison.girder_index}); "
+            "adopted criterion 5%."
+        )
+        if comparison.maximum_relative_change <= 0.05:
+            break
+        if settings.accuracy_mode is GuiAccuracyMode.STANDARD and step_m == 1.2:
+            coarse, step_m = fine, 0.6
+            continue
+        raise RuntimeError(
+            f"LM1 {comparison.coarse_step_m:g} → {step_m:g} m changed by "
+            f"{comparison.maximum_relative_change:.3%}, above the 5% criterion. "
+            "No converged result was published; refine and recheck the grid."
+        )
     if settings.code_profile is GuiCodeProfile.BS_EN:
         rows = tuple(
             GuiResultRow(
@@ -204,6 +262,9 @@ def run_gui_analysis(
         notes = (
             "LM1 uses the verified complete-tandem/adverse-UDL search.",
             "Design results use only the explicit project inputs supplied to the GUI.",
+            f"Analysis mode: {settings.accuracy_mode.value}; final LM1 step {step_m:g} m."
+            + (" No grid convergence claim." if coarse is None else ""),
+            *audit_notes,
         )
     else:
         rows_list: list[GuiResultRow] = []
@@ -253,5 +314,6 @@ def run_gui_analysis(
         governing_torsion=max(rows, key=lambda row: row.torsion_knm),
         design_rows=design_rows,
         notes=notes,
+        actual_lm1_step_m=step_m if route == "bs_en" else None,
     )
     return result, summary

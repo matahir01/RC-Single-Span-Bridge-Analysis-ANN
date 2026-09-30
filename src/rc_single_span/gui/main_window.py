@@ -43,6 +43,7 @@ from rc_single_span.gui.design_adapter import GuiDesignInputs
 from rc_single_span.core.progress import AnalysisCancelled, AnalysisControl
 from rc_single_span.gui.dialogs import InputDialog
 from rc_single_span.gui.engine_adapter import (
+    GuiAccuracyMode,
     GuiAnalysisSettings,
     GuiAnalysisSummary,
     GuiCodeProfile,
@@ -264,7 +265,7 @@ class BridgeMainWindow(QMainWindow):
             "materials": "fck_mpa fcu_mpa fyk_mpa density elastic_modulus "
             "rebar_layers bars_per_layer bar_diameter",
             "loads": "surfacing_thickness surfacing_density barrier_load services_load",
-            "traffic": "code_profile psi1_tandem psi1_udl psi2_traffic lm1_step "
+            "traffic": "code_profile analysis_mode psi1_tandem psi1_udl psi2_traffic lm1_step "
             "hb_units retain_cases",
             "design": "design_enabled effective_depth design_bar_diameter design_bar_spacing "
             "ec_cover ec_fct_eff ec_crack_limit ec_na_ratio ec_sls_basis ec_alpha_cc "
@@ -432,17 +433,31 @@ class BridgeMainWindow(QMainWindow):
         self.code_profile = QComboBox()
         self.code_profile.addItems([GuiCodeProfile.BS_EN.value, GuiCodeProfile.BS_5400.value])
         self.code_profile.currentIndexChanged.connect(self._sync_code_panels)
+        self.analysis_mode = QComboBox()
+        self.analysis_mode.addItems([mode.value for mode in GuiAccuracyMode])
+        self.analysis_mode.setCurrentText(GuiAccuracyMode.FINAL.value)
+        self.analysis_mode.currentIndexChanged.connect(self._mode_changed)
         self.psi1_tandem = double_spin(0.75, maximum=1.0, decimals=2, step=0.05)
         self.psi1_udl = double_spin(0.40, maximum=1.0, decimals=2, step=0.05)
         self.psi2_traffic = double_spin(0.0, maximum=1.0, decimals=2, step=0.05)
         self.lm1_step = double_spin(0.6, minimum=0.05, maximum=5.0, suffix=" m")
+        self.lm1_step.valueChanged.connect(self._customize_grid)
         self.hb_units = double_spin(45.0, minimum=1.0, maximum=100.0, decimals=1)
         self.retain_cases = QCheckBox("Retain all traffic cases for detailed review")
         form.addRow("Code profile", self.code_profile)
+        form.addRow("Accuracy mode", self.analysis_mode)
         form.addRow("BS EN frequent TS factor ψ1", self.psi1_tandem)
         form.addRow("BS EN frequent UDL factor ψ1", self.psi1_udl)
         form.addRow("BS EN quasi-permanent ψ2", self.psi2_traffic)
         form.addRow("LM1 longitudinal step", self.lm1_step)
+        mode_note = QLabel(
+            "Quick: 3 m exploratory grid. Standard: 2.4 → 1.2 m, refining to "
+            "0.6 m if the 5% girder-envelope test fails. Final Verification: "
+            "audits 1.2 → 0.6 m. Editing the grid selects Custom, without "
+            "a convergence claim."
+        )
+        mode_note.setWordWrap(True)
+        form.addRow(mode_note)
         form.addRow("HB units", self.hb_units)
         form.addRow("", self.retain_cases)
         layout.addWidget(box)
@@ -689,12 +704,31 @@ class BridgeMainWindow(QMainWindow):
     def _section_changed(self, index: int) -> None:
         self.section_stack.setCurrentIndex(index)
 
+    def _mode_changed(self, _index: int) -> None:
+        steps = {
+            GuiAccuracyMode.QUICK.value: 3.0,
+            GuiAccuracyMode.STANDARD.value: 1.2,
+            GuiAccuracyMode.FINAL.value: 0.6,
+        }
+        selected = steps.get(self.analysis_mode.currentText())
+        if selected is not None:
+            self.lm1_step.blockSignals(True)
+            try:
+                self.lm1_step.setValue(selected)
+            finally:
+                self.lm1_step.blockSignals(False)
+
+    def _customize_grid(self, _value: float) -> None:
+        if not self._loading_inputs:
+            self.analysis_mode.setCurrentText(GuiAccuracyMode.CUSTOM.value)
+
     def _sync_code_panels(self) -> None:
         is_bs_en = self.code_profile.currentIndex() == 0
         self.design_code_stack.setCurrentIndex(0 if is_bs_en else 1)
         self.psi1_tandem.setEnabled(is_bs_en)
         self.psi1_udl.setEnabled(is_bs_en)
         self.psi2_traffic.setEnabled(is_bs_en)
+        self.analysis_mode.setEnabled(is_bs_en)
         self.lm1_step.setEnabled(is_bs_en)
         self.hb_units.setEnabled(not is_bs_en)
 
@@ -750,6 +784,7 @@ class BridgeMainWindow(QMainWindow):
             psi1_udl=self.psi1_udl.value(),
             psi2_traffic=self.psi2_traffic.value(),
             lm1_step_m=self.lm1_step.value(),
+            accuracy_mode=GuiAccuracyMode(self.analysis_mode.currentText()),
             retain_all_cases=self.retain_cases.isChecked(),
             hb_units=self.hb_units.value(),
         )
@@ -825,6 +860,9 @@ class BridgeMainWindow(QMainWindow):
         code = analysis.get("code_profile")
         if isinstance(code, str) and code in {item.value for item in GuiCodeProfile}:
             self.code_profile.setCurrentText(code)
+        mode = analysis.get("accuracy_mode", GuiAccuracyMode.CUSTOM.value)
+        if isinstance(mode, str) and mode in {item.value for item in GuiAccuracyMode}:
+            self.analysis_mode.setCurrentText(mode)
         numeric = (
             ("psi1_tandem", self.psi1_tandem),
             ("psi1_udl", self.psi1_udl),
@@ -897,6 +935,7 @@ class BridgeMainWindow(QMainWindow):
             "psi1_udl": settings.psi1_udl,
             "psi2_traffic": settings.psi2_traffic,
             "lm1_step_m": settings.lm1_step_m,
+            "accuracy_mode": settings.accuracy_mode.value,
             "hb_units": settings.hb_units,
             "retain_all_cases": settings.retain_all_cases,
         }

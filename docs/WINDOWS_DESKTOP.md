@@ -9,8 +9,13 @@ The CI packaged-app check starts **the built EXE**, constructs the 15 m,
 seven-girder reference, saves and reopens its JSON file, executes deterministic
 BS EN analysis and code-specific design checks, and writes a checked PDF
 report. The workflow fails if `qwindows.dll` is absent or if a check fails.
-The smoke mode uses a 1.2 m LM1 search step to keep the packaged check
-practical, while a normal new project defaults to the verified 0.6 m grid. The
+The smoke mode uses an explicit Custom 1.2 m LM1 search step to keep the packaged
+check practical, while a normal new project selects Final Verification and
+audits the 1.2 m and 0.6 m grids. Quick uses 3 m for exploratory modelling;
+Standard tests 2.4 m against 1.2 m and refines to 0.6 m if the adopted 5%
+criterion fails. Custom runs the edited grid without a convergence claim. The
+GUI reports analysis phases and elapsed time; cancellation discards partial
+results. The
 15 m search-grid convergence audit reports the 1.2 m-to-0.6 m comparison,
 and the smoke does not substitute for engineering verification. A Linux
 offscreen source test alone does not establish a working Windows distribution.

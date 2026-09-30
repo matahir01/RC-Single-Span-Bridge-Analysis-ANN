@@ -43,12 +43,20 @@ Updated: 30 September 2026 (UTC)
   fixed cross-platform case-ID snapshot (78 versus 79 retained cases). The
   next batch adds an old/new same-runner comparison so ordinal IDs are tested
   on the same solver build.
+- `0edbd7552afbd2ab274bc56d45ccf099019467b4`: GUI phase/elapsed progress,
+  cancellation, and an old/new 3 m comparator including EC2 design. The GUI
+  and Windows package workflows passed; Ubuntu pytest passed (239 passed, 2
+  skipped). The comparison step could not access the old commit because CI
+  checkout was shallow. Local same-environment comparison passed (108.36 s old,
+  10.54 s new, matching physical cases/IDs, effects and design). The next
+  commit configures full history checkout.
 
 ## Windows package check
 
-The default 0.6 m longitudinal grid is computationally expensive for a
-functional package gate. The updated packaged-app smoke asserts the normal
-default is 0.6 m, then saves/runs an explicit 1.2 m grid. This grid is among
+The default Final Verification mode audits the 1.2 m and 0.6 m longitudinal
+grids and is computationally expensive for a functional package gate. The
+updated packaged-app smoke asserts the normal displayed step is 0.6 m, then
+saves/runs an explicit Custom 1.2 m grid. This grid is among
 the repository's independently audited comparisons (4.09% maximum response
 envelope change versus 0.6 m, under the documented 5% criterion), but a
 package smoke is **only a functionality check**. Local Linux source smoke
@@ -87,17 +95,30 @@ pre-change run; differing numerical effects are under 1e-7 in native units.
 Near-tie selection preserves the original Python sum order and exact Hermite
 cell signs, including support roundoff. The optimized 0.6 m reference run
 completed in 213.89 s with 190 retained cases; the pre-change 0.6 m run is
-still computing. The subsequent progress/cancellation batch passes 246 local
+complete at 3,051.38 s with 190 retained cases: a 14.27x runtime reduction.
+The baseline snapshot is `docs/benchmarks/lm1_06m_legacy_2026-09-30.json`
+(SHA-256 `41b472807f46d3074a86a967800508cedc3696082d56b1c716be72ae08604914`).
+The seven girder numerical effects differ by at most approximately 2.6e-10,
+station moment effects by 8.6e-10 and design combinations by 1.2e-9 native
+units. Five near-tied governing components choose a different member/case;
+190 retained cases occur in both runs but case IDs/loads are not all identical.
+This **fails the requested strict 0.6 m case-identity gate** and remains open.
+The subsequent progress/cancellation batch passes 246 local
 tests and Ruff. CI will run the old and new 3.0 m engines on the same runner
 and compare girder/station case IDs, retained loads, combinations and EC2
 design outputs. GUI progress now reports real phases and elapsed time; cancel
 checks between influence solves and governing searches and discards partial
-results. This GUI batch is local until its CI comparison passes.
+results. A later local batch adds Quick (3 m exploratory), Standard (2.4 to
+1.2 m, then 0.6 m if needed), Final Verification (1.2 to 0.6 m) and Custom
+(explicit grid without convergence claim). The real Standard 15 m run
+finished in 256.76 s: it correctly rejected 2.4 to 1.2 m at 13.404% and
+accepted 1.2 to 0.6 m at 4.088%, retaining 0.6 m. Local Ruff and 248 tests
+pass, including a real Quick analysis.
 
-Exact next action: finish the pre-change 0.6 m run and compare governing
-values, station/case IDs, retained physical loads and combinations; verify the
-same-runner 3.0 m comparison, then push the GUI progress/cancellation and CI
-repair batch. Add explicit Quick/Standard/Final verification modes and run the
-packaged Windows application with the updated engine. For research, retain
+Exact next action: diagnose and fix the 0.6 m near-tie placement/registration
+ordering against the saved pre-change snapshot, keeping numerical effects and
+design combinations within strict tolerances. Push the accuracy-mode/full-
+checkout batch, confirm Linux CI and packaged Windows smoke against it, and
+record the exact ZIP artifact. For research, retain
 `assumptions_confirmed=false` and obtain action/correlation/project criteria
 before any accepted reliability or RBDO result.
