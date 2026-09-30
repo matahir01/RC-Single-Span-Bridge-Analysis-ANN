@@ -27,6 +27,12 @@ Updated: 29 September 2026 (UTC)
   `6C35DB82ACD931A7C06F9EF05F7610D22FFE07E0ADA987EEDA7EAA667CCDE49F`.
   Extract the inner ZIP, retain the full folder, and launch
   `RCBridgeAnalyzer.exe`; `README_WINDOWS.txt` is included.
+- `88712208e00ec4c8b4d79d8d2e46769b5681d5f4`: exploratory research
+  runner/configuration and CI artifact workflow, reproducibility hashes and
+  direct-MC confidence intervals. Ruff and 243 local tests passed; repository
+  tests and [research Actions run 36671364046](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36671364046)
+  succeeded. The numerical study is **not accepted**; see
+  [RESEARCH_EXPLORATORY_RESULTS.md](RESEARCH_EXPLORATORY_RESULTS.md).
 
 ## Windows package check
 
@@ -44,19 +50,32 @@ artifact has a finite retention period.
 ## Research
 
 The source and evidence register is in `docs/RESEARCH_EVIDENCE_REGISTER.md`.
-An exploratory config and runner are under verification. The source
+An exploratory config and runner produced a reproducible CI artifact. The source
 profiles for concrete, steel, geometry and generic model error are recorded;
 DL/LL distributions, dependence and project criteria are still provisional.
 Any exploratory numbers must remain labelled as sensitivity calculations.
-The next research batch adds a reproducible CI study and artifact, explicit
-exploratory flag, output hashes, source-derived material/geometry priors,
-direct-MC Wilson confidence bounds and RBDO candidate recheck. The action
-models and dependence remain unconfirmed; its numerical result will be
-reported only after the CI artifact is inspected. Neither software
-verification nor this exploratory study approves a real bridge.
+The 1,500-point study split is leakage controlled, but its LHS convergence
+check still changed 5.469% at 2,000 points against the declared 5% rule; no
+fresh near-flexure/deflection points were sampled. All baseline FORM searches
+failed to converge. Direct shear MC reported Pf=0.4022 [0.3887, 0.4159]
+under the provisional no-designed-link model; continuous-As RBDO failed and
+its candidate is outside the training domain. The source/action/dependence
+issues and numerical blockers remain open. Neither software verification nor
+this exploratory study approves a real bridge.
 
-Exact next action: push the verified research-code batch, inspect the CI study
-artifact and held-out/near-limit errors, convergence, FORM/MC intervals and
-RBDO candidate training-domain flag. Record numerical outcomes and decisions
-in the evidence register; keep `assumptions_confirmed=false` until action,
-correlation and project criteria evidence closes.
+## LM1 performance work in progress
+
+The user identified repeated stiffness/influence and governing-case work at
+the verified 0.6 m grid. A 3.0 m pre-change C35/B500 golden run is saved in
+`docs/benchmarks/lm1_3m_legacy_2026-09-30.json`; a first optimized run reduced
+its time from 96.9 s to 7.7 s;
+governing numerical effects agreed to about 2.1e-10 in native units. Trial
+registration caused some case IDs to shift; these are under investigation.
+The 0.6 m legacy baseline and optimized comparison have not completed.
+
+Exact next action: resolve case-ID/tie ordering, compare full 3.0 m and 0.6 m
+governing values, station IDs, physical load cases and combinations; run tests,
+then push the verified performance batch. Add GUI progress/cancellation after
+the engine result is numerically pinned. For research, retain
+`assumptions_confirmed=false` and obtain action/correlation/project criteria
+before any accepted reliability or RBDO result.

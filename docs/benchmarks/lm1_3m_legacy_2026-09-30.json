@@ -1,0 +1,2050 @@
+{
+  "commit": "88712208e00ec4c8b4d79d8d2e46769b5681d5f4",
+  "elapsed_s": 100.09828669800004,
+  "lm1_count": 144,
+  "girders": [
+    {
+      "moment_knm": {
+        "value": 306.01641824503577,
+        "case_id": 318,
+        "member_id": 5
+      },
+      "shear_kn": {
+        "value": 54.05638309163123,
+        "case_id": 300,
+        "member_id": 2
+      },
+      "torsion_knm": {
+        "value": 41.529662120028576,
+        "case_id": 294,
+        "member_id": 2
+      },
+      "deflection_mm": {
+        "value": 2.2827946593835726,
+        "case_id": 328,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 861.8915604404674,
+        "case_id": 399,
+        "member_id": 17
+      },
+      "shear_kn": {
+        "value": 244.2119696038353,
+        "case_id": 438,
+        "member_id": 22
+      },
+      "torsion_knm": {
+        "value": 60.84686222350807,
+        "case_id": 387,
+        "member_id": 13
+      },
+      "deflection_mm": {
+        "value": 5.341276772537554,
+        "case_id": 399,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 1121.7710711775421,
+        "case_id": 469,
+        "member_id": 27
+      },
+      "shear_kn": {
+        "value": 323.07752907074246,
+        "case_id": 501,
+        "member_id": 33
+      },
+      "torsion_knm": {
+        "value": 56.707455282104576,
+        "case_id": 497,
+        "member_id": 32
+      },
+      "deflection_mm": {
+        "value": 7.089180391024923,
+        "case_id": 469,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 1185.7891925405008,
+        "case_id": 537,
+        "member_id": 39
+      },
+      "shear_kn": {
+        "value": 343.19270592825524,
+        "case_id": 568,
+        "member_id": 44
+      },
+      "torsion_knm": {
+        "value": 50.430492599004126,
+        "case_id": 552,
+        "member_id": 41
+      },
+      "deflection_mm": {
+        "value": 7.245275836006953,
+        "case_id": 537,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 1121.7710711769562,
+        "case_id": 600,
+        "member_id": 49
+      },
+      "shear_kn": {
+        "value": 323.0775290707097,
+        "case_id": 633,
+        "member_id": 55
+      },
+      "torsion_knm": {
+        "value": 56.70745528214515,
+        "case_id": 630,
+        "member_id": 54
+      },
+      "deflection_mm": {
+        "value": 7.089180391019227,
+        "case_id": 600,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 861.891560438831,
+        "case_id": 667,
+        "member_id": 61
+      },
+      "shear_kn": {
+        "value": 244.21196960352063,
+        "case_id": 706,
+        "member_id": 66
+      },
+      "torsion_knm": {
+        "value": 60.846862223550374,
+        "case_id": 654,
+        "member_id": 57
+      },
+      "deflection_mm": {
+        "value": 5.341276772526643,
+        "case_id": 667,
+        "member_id": null
+      }
+    },
+    {
+      "moment_knm": {
+        "value": 306.01641824396177,
+        "case_id": 323,
+        "member_id": 71
+      },
+      "shear_kn": {
+        "value": 54.056383091411135,
+        "case_id": 723,
+        "member_id": 68
+      },
+      "torsion_knm": {
+        "value": 41.52966211997955,
+        "case_id": 716,
+        "member_id": 68
+      },
+      "deflection_mm": {
+        "value": 2.2827946593752215,
+        "case_id": 317,
+        "member_id": null
+      }
+    }
+  ],
+  "stations": [
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 4.946129020542685,
+          "case_id": 290,
+          "member_id": 1
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 58.76155291014743,
+          "case_id": 298,
+          "member_id": 2
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 165.37988687606025,
+          "case_id": 304,
+          "member_id": 3
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 230.59231470501845,
+          "case_id": 312,
+          "member_id": 4
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 291.9113388561925,
+          "case_id": 318,
+          "member_id": 5
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 306.01641824503577,
+          "case_id": 318,
+          "member_id": 5
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 288.08111928703295,
+          "case_id": 328,
+          "member_id": 6
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 246.36667578937158,
+          "case_id": 335,
+          "member_id": 7
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 159.83944561350518,
+          "case_id": 343,
+          "member_id": 8
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 88.75290328452684,
+          "case_id": 351,
+          "member_id": 9
+        }
+      },
+      {
+        "x_m": 13.8,
+        "moment": {
+          "value": 54.3210342459879,
+          "case_id": 359,
+          "member_id": 10
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 5.092586349947851,
+          "case_id": 365,
+          "member_id": 11
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 3.191987447548854,
+          "case_id": 374,
+          "member_id": 12
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 259.26118134525495,
+          "case_id": 380,
+          "member_id": 12
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 614.7394590280401,
+          "case_id": 388,
+          "member_id": 13
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 700.4456506970182,
+          "case_id": 388,
+          "member_id": 14
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 844.4697727018233,
+          "case_id": 399,
+          "member_id": 15
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 861.8915604404674,
+          "case_id": 399,
+          "member_id": 17
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 828.2149413890534,
+          "case_id": 408,
+          "member_id": 18
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 786.8602176087347,
+          "case_id": 408,
+          "member_id": 19
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 555.2627792201356,
+          "case_id": 421,
+          "member_id": 20
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 430.60721050594475,
+          "case_id": 429,
+          "member_id": 21
+        }
+      },
+      {
+        "x_m": 13.8,
+        "moment": {
+          "value": 291.047024952054,
+          "case_id": 437,
+          "member_id": 22
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 3.273891932931292,
+          "case_id": 443,
+          "member_id": 22
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 4.266538906684218,
+          "case_id": 446,
+          "member_id": 23
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 350.1426088732733,
+          "case_id": 452,
+          "member_id": 23
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 800.0165029652835,
+          "case_id": 290,
+          "member_id": 24
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 923.3324441089799,
+          "case_id": 290,
+          "member_id": 25
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 1100.5601127474224,
+          "case_id": 469,
+          "member_id": 26
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 1121.7710711775421,
+          "case_id": 469,
+          "member_id": 27
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 1075.391012305196,
+          "case_id": 478,
+          "member_id": 29
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 1022.7504558261244,
+          "case_id": 478,
+          "member_id": 30
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 737.3918304721255,
+          "case_id": 488,
+          "member_id": 31
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 557.4385286286306,
+          "case_id": 493,
+          "member_id": 32
+        }
+      },
+      {
+        "x_m": 13.8,
+        "moment": {
+          "value": 384.7393502307368,
+          "case_id": 500,
+          "member_id": 33
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 4.393858179844756,
+          "case_id": 506,
+          "member_id": 33
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 4.241519006734052,
+          "case_id": 509,
+          "member_id": 34
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 360.2595674840086,
+          "case_id": 512,
+          "member_id": 34
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 857.2774831464449,
+          "case_id": 521,
+          "member_id": 35
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 966.346316684223,
+          "case_id": 521,
+          "member_id": 36
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 1164.9907538907446,
+          "case_id": 532,
+          "member_id": 37
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 1185.7891925405008,
+          "case_id": 537,
+          "member_id": 39
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 1139.7470313531471,
+          "case_id": 543,
+          "member_id": 40
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 1088.4420064476726,
+          "case_id": 543,
+          "member_id": 41
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 768.5094815183393,
+          "case_id": 553,
+          "member_id": 42
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 602.7446914278844,
+          "case_id": 561,
+          "member_id": 43
+        }
+      },
+      {
+        "x_m": 13.8,
+        "moment": {
+          "value": 408.4318313832937,
+          "case_id": 568,
+          "member_id": 44
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 4.275448706181123,
+          "case_id": 572,
+          "member_id": 44
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 4.266538906682399,
+          "case_id": 576,
+          "member_id": 45
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 350.1426088730641,
+          "case_id": 582,
+          "member_id": 45
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 800.0165029648015,
+          "case_id": 590,
+          "member_id": 46
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 923.3324441084305,
+          "case_id": 590,
+          "member_id": 47
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 1100.5601127464515,
+          "case_id": 600,
+          "member_id": 48
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 1121.7710711769562,
+          "case_id": 600,
+          "member_id": 49
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 1075.3910123044243,
+          "case_id": 610,
+          "member_id": 51
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 1022.7504558254013,
+          "case_id": 610,
+          "member_id": 52
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 737.391830471789,
+          "case_id": 620,
+          "member_id": 53
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 557.438528628445,
+          "case_id": 625,
+          "member_id": 54
+        }
+      },
+      {
+        "x_m": 13.8,
+        "moment": {
+          "value": 384.7393502306895,
+          "case_id": 632,
+          "member_id": 55
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 4.393858179995732,
+          "case_id": 638,
+          "member_id": 55
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 3.191987447552492,
+          "case_id": 642,
+          "member_id": 56
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 259.2611813447129,
+          "case_id": 648,
+          "member_id": 56
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 614.7394590268559,
+          "case_id": 656,
+          "member_id": 57
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 700.4456506952638,
+          "case_id": 656,
+          "member_id": 58
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 844.4697727000362,
+          "case_id": 667,
+          "member_id": 59
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 861.891560438831,
+          "case_id": 667,
+          "member_id": 61
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 828.2149413880834,
+          "case_id": 676,
+          "member_id": 62
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 786.8602176081281,
+          "case_id": 676,
+          "member_id": 63
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 555.2627792193789,
+          "case_id": 689,
+          "member_id": 64
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 430.6072105054518,
+          "case_id": 697,
+          "member_id": 65
+        }
+      },
+      {
+        "x_m": 13.8,
+        "moment": {
+          "value": 291.0470249517348,
+          "case_id": 705,
+          "member_id": 66
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 3.273891932951301,
+          "case_id": 711,
+          "member_id": 66
+        }
+      }
+    ],
+    [
+      {
+        "x_m": 0.0,
+        "moment": {
+          "value": 4.946129020539502,
+          "case_id": 590,
+          "member_id": 67
+        }
+      },
+      {
+        "x_m": 1.2,
+        "moment": {
+          "value": 58.761552909871625,
+          "case_id": 721,
+          "member_id": 68
+        }
+      },
+      {
+        "x_m": 3.0,
+        "moment": {
+          "value": 165.379886875362,
+          "case_id": 727,
+          "member_id": 69
+        }
+      },
+      {
+        "x_m": 4.2,
+        "moment": {
+          "value": 230.59231470413022,
+          "case_id": 735,
+          "member_id": 70
+        }
+      },
+      {
+        "x_m": 6.0,
+        "moment": {
+          "value": 291.91133885512335,
+          "case_id": 323,
+          "member_id": 71
+        }
+      },
+      {
+        "x_m": 7.2,
+        "moment": {
+          "value": 306.01641824396177,
+          "case_id": 323,
+          "member_id": 71
+        }
+      },
+      {
+        "x_m": 9.0,
+        "moment": {
+          "value": 288.0811192860683,
+          "case_id": 317,
+          "member_id": 72
+        }
+      },
+      {
+        "x_m": 10.2,
+        "moment": {
+          "value": 246.36667578855167,
+          "case_id": 754,
+          "member_id": 73
+        }
+      },
+      {
+        "x_m": 12.0,
+        "moment": {
+          "value": 159.83944561294675,
+          "case_id": 762,
+          "member_id": 74
+        }
+      },
+      {
+        "x_m": 13.2,
+        "moment": {
+          "value": 88.75290328414394,
+          "case_id": 770,
+          "member_id": 75
+        }
+      },
+      {
+        "x_m": 13.8,
+        "moment": {
+          "value": 54.32103424572597,
+          "case_id": 778,
+          "member_id": 76
+        }
+      },
+      {
+        "x_m": 15.0,
+        "moment": {
+          "value": 5.092586349921476,
+          "case_id": 639,
+          "member_id": 77
+        }
+      }
+    ]
+  ],
+  "cases": [
+    {
+      "id": 290,
+      "tandem": [
+        [
+          1,
+          3.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 294,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 298,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 300,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 304,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 312,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 317,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 318,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 323,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 328,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 335,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 343,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 351,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 359,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 365,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 374,
+      "tandem": [
+        [
+          1,
+          3.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 380,
+      "tandem": [
+        [
+          1,
+          3.0
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 387,
+      "tandem": [
+        [
+          1,
+          3.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 388,
+      "tandem": [
+        [
+          1,
+          3.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 399,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 408,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 421,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 429,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 437,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 438,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 443,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 446,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 452,
+      "tandem": [
+        [
+          1,
+          3.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 469,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 478,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 488,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 493,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 497,
+      "tandem": [
+        [
+          1,
+          13.8
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 500,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 501,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 506,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 509,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 512,
+      "tandem": [
+        [
+          2,
+          3.0
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 521,
+      "tandem": [
+        [
+          2,
+          3.0
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 532,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 537,
+      "tandem": [
+        [
+          1,
+          6.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 543,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 552,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          0.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 553,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 561,
+      "tandem": [
+        [
+          1,
+          12.0
+        ],
+        [
+          2,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 568,
+      "tandem": [
+        [
+          2,
+          12.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 572,
+      "tandem": [
+        [
+          1,
+          9.0
+        ],
+        [
+          2,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 576,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 582,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 590,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 600,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 610,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 620,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 625,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 630,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          13.8
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 632,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 633,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 638,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 639,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 642,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 648,
+      "tandem": [
+        [
+          2,
+          9.0
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 654,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 656,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          3.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 667,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 676,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 689,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 697,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 705,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 706,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          12.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 711,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 716,
+      "tandem": [
+        [
+          2,
+          6.0
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 721,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 723,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 727,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 735,
+      "tandem": [
+        [
+          2,
+          13.8
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 754,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          6.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 762,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 770,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    },
+    {
+      "id": 778,
+      "tandem": [
+        [
+          2,
+          0.0
+        ],
+        [
+          1,
+          9.0
+        ]
+      ],
+      "uniform_loads": []
+    }
+  ],
+  "combinations": [
+    {
+      "girder": 1,
+      "uls": {
+        "moment_knm": 1512.68041371168,
+        "shear_kn": 366.1916502619375,
+        "torsion_knm": 56.06504386203858
+      },
+      "frequent": {
+        "moment_knm": 1012.8817707749772,
+        "shear_kn": 252.38800330185146,
+        "torsion_knm": 26.906513859198895
+      }
+    },
+    {
+      "girder": 2,
+      "uls": {
+        "moment_knm": 2004.5591856387489,
+        "shear_kn": 553.9543133769424,
+        "torsion_knm": 82.1432640017359
+      },
+      "frequent": {
+        "moment_knm": 1194.4537342977278,
+        "shear_kn": 328.4239126905265,
+        "torsion_knm": 40.19991982621825
+      }
+    },
+    {
+      "girder": 3,
+      "uls": {
+        "moment_knm": 2392.114539839682,
+        "shear_kn": 670.2142892455024,
+        "torsion_knm": 76.55506463084119
+      },
+      "frequent": {
+        "moment_knm": 1395.4057349234477,
+        "shear_kn": 387.5314972514729,
+        "torsion_knm": 38.49369033119287
+      }
+    },
+    {
+      "girder": 4,
+      "uls": {
+        "moment_knm": 2478.539003679676,
+        "shear_kn": 697.3697780031446,
+        "torsion_knm": 68.08116500865557
+      },
+      "frequent": {
+        "moment_knm": 1445.7403070249507,
+        "shear_kn": 404.5005549284119,
+        "torsion_knm": 32.79860305126222
+      }
+    },
+    {
+      "girder": 5,
+      "uls": {
+        "moment_knm": 2392.1145398388912,
+        "shear_kn": 670.2142892454582,
+        "torsion_knm": 76.55506463089596
+      },
+      "frequent": {
+        "moment_knm": 1395.4057349230113,
+        "shear_kn": 387.53149725133284,
+        "torsion_knm": 38.493690331220414
+      }
+    },
+    {
+      "girder": 6,
+      "uls": {
+        "moment_knm": 2004.5591856365395,
+        "shear_kn": 553.9543133765176,
+        "torsion_knm": 82.14326400179301
+      },
+      "frequent": {
+        "moment_knm": 1194.4537342966569,
+        "shear_kn": 328.4239126904009,
+        "torsion_knm": 40.19991982624948
+      }
+    },
+    {
+      "girder": 7,
+      "uls": {
+        "moment_knm": 1512.6804137102304,
+        "shear_kn": 366.1916502616404,
+        "torsion_knm": 56.06504386197239
+      },
+      "frequent": {
+        "moment_knm": 1012.8817707742865,
+        "shear_kn": 252.3880033017107,
+        "torsion_knm": 26.906513859166168
+      }
+    }
+  ]
+}
