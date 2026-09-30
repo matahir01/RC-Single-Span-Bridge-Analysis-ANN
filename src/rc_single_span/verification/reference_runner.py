@@ -15,6 +15,7 @@ from rc_single_span.codes.bs5400.combinations import (
 )
 from rc_single_span.codes.eurocode.combinations import EurocodeServiceabilityFactors
 from rc_single_span.core.models import BridgeProject
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.design.project import (
     BS5400DesignInputs,
     BS5400GirderDesignResult,
@@ -272,6 +273,7 @@ def run_reference_project(
     ec2_advanced_detailing_inputs: AdvancedStageDInputs | None = None,
     bs5400_advanced_detailing_inputs: AdvancedStageDInputs | None = None,
     code_route: Literal["both", "bs_en", "bs5400"] = "both",
+    control: AnalysisControl | None = None,
 ) -> ReferenceRunResult:
     """Run one reproducible deterministic verification project end to end.
 
@@ -292,6 +294,8 @@ def run_reference_project(
     ):
         raise ValueError("EC2 inputs require the BS EN code route.")
 
+    if control is not None:
+        control.report("Construction stages")
     resolved = _with_elastic_modulus(project, config.elastic_modulus_mpa)
     construction = run_construction_stage_analysis(resolved)
     lm1_search = (
@@ -303,11 +307,13 @@ def run_reference_project(
             resolved,
             longitudinal_step_m=config.lm1_longitudinal_step_m,
             max_exhaustive_tandem_combinations=config.max_exhaustive_tandem_combinations,
+            control=control,
         )
         if code_route != "bs5400" and config.lm1_udl_influence_surface else None
     )
     lm1_kwargs = (
-        {"context": lm1_context} if lm1_context is not None
+        {"context": lm1_context, "control": control, "phase": "LM1 characteristic"}
+        if lm1_context is not None
         else {} if config.lm1_udl_influence_surface
         else {"retain_all_cases": config.retain_all_cases}
     )
@@ -325,7 +331,8 @@ def run_reference_project(
         frequent_lm1_adjustments(config.eurocode_sls_factors) if needs_frequent else None
     )
     frequent_kwargs = (
-        {"context": lm1_context.with_uniform_factors(frequent_factors)}
+        {"context": lm1_context.with_uniform_factors(frequent_factors),
+         "control": control, "phase": "LM1 frequent"}
         if lm1_context is not None and frequent_factors is not None else lm1_kwargs
     )
     frequent_lm1 = (
@@ -338,7 +345,11 @@ def run_reference_project(
         )
         if needs_frequent else None
     )
+    if control is not None:
+        control.report("Legacy traffic" if code_route == "bs5400" else "Combinations")
     bs_traffic = _bs_suite(resolved, config) if code_route != "bs_en" else None
+    if control is not None:
+        control.report("Combinations")
     ec_combinations = (
         build_eurocode_project_combinations(
             resolved, lm1, sls_factors=config.eurocode_sls_factors,
@@ -350,6 +361,8 @@ def run_reference_project(
         if bs_traffic is not None else ()
     )
 
+    if control is not None:
+        control.report("EC2 design" if code_route == "bs_en" else "BS 5400 design")
     ec_design = (
         None
         if ec2_design_inputs is None
@@ -432,6 +445,8 @@ def run_reference_project(
         )
     )
 
+    if control is not None:
+        control.report("Finalizing results")
     return ReferenceRunResult(
         project=resolved,
         construction=construction,

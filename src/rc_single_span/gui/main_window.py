@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import traceback
 from pathlib import Path
+from threading import Event
+from time import monotonic
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide6.QtGui import QAction, QPageSize, QTextDocument
@@ -19,6 +21,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMainWindow,
     QMessageBox,
+    QProgressBar,
     QPushButton,
     QSpinBox,
     QSplitter,
@@ -37,6 +40,7 @@ from PySide6.QtWidgets import (
 )
 
 from rc_single_span.gui.design_adapter import GuiDesignInputs
+from rc_single_span.core.progress import AnalysisCancelled, AnalysisControl
 from rc_single_span.gui.dialogs import InputDialog
 from rc_single_span.gui.engine_adapter import (
     GuiAnalysisSettings,
@@ -52,6 +56,8 @@ from rc_single_span.gui.widgets import double_spin, form_page, int_spin
 class _WorkerSignals(QObject):
     finished = Signal(object, object)
     error = Signal(str)
+    progress = Signal(str, int, int, float)
+    cancelled = Signal()
 
 
 class _AnalysisWorker(QRunnable):
@@ -60,22 +66,41 @@ class _AnalysisWorker(QRunnable):
         state: GuiProjectState,
         settings: GuiAnalysisSettings,
         design_inputs: GuiDesignInputs,
+        cancel_event: Event,
     ) -> None:
         super().__init__()
         self.state = state
         self.settings = settings
         self.design_inputs = design_inputs
+        self.cancel_event = cancel_event
         self.signals = _WorkerSignals()
 
     @Slot()
     def run(self) -> None:
+        started = monotonic()
+        last_update: tuple[str, int] | None = None
+
+        def progress(phase: str, completed: int, total: int) -> None:
+            nonlocal last_update
+            percent = min(100, round(100 * completed / max(1, total)))
+            update = phase, percent
+            if update != last_update:
+                self.signals.progress.emit(phase, completed, total, monotonic() - started)
+                last_update = update
+
         try:
             project = self.state.build_project()
             result, summary = run_gui_analysis(
                 project,
                 self.settings,
                 self.design_inputs,
+                control=AnalysisControl(progress, self.cancel_event.is_set),
             )
+            if self.cancel_event.is_set():
+                raise AnalysisCancelled("Analysis cancelled by user.")
+        except AnalysisCancelled:
+            self.signals.cancelled.emit()
+            return
         except Exception:  # noqa: BLE001 - GUI worker must return engine errors to the UI.
             self.signals.error.emit(traceback.format_exc())
             return
@@ -111,6 +136,7 @@ class BridgeMainWindow(QMainWindow):
         self._run_settings: GuiAnalysisSettings | None = None
         self._run_design: GuiDesignInputs | None = None
         self._loading_inputs = False
+        self._cancel_event: Event | None = None
         self._state = GuiProjectState()
 
         self._workspace = QSplitter(Qt.Orientation.Horizontal)
@@ -423,6 +449,16 @@ class BridgeMainWindow(QMainWindow):
         self.run_button = QPushButton("Run deterministic analysis")
         self.run_button.clicked.connect(self._run_analysis)
         layout.addWidget(self.run_button)
+        self.cancel_button = QPushButton("Cancel analysis")
+        self.cancel_button.setEnabled(False)
+        self.cancel_button.clicked.connect(self._cancel_analysis)
+        layout.addWidget(self.cancel_button)
+        self.analysis_progress = QProgressBar()
+        self.analysis_progress.setRange(0, 100)
+        self.analysis_progress.setValue(0)
+        layout.addWidget(self.analysis_progress)
+        self.analysis_phase = QLabel("Ready")
+        layout.addWidget(self.analysis_phase)
         self.analysis_note = QLabel(
             "The same verified deterministic engine is used by the GUI. Code-specific design "
             "checks are optional and require the explicit Design tab inputs."
@@ -972,16 +1008,54 @@ class BridgeMainWindow(QMainWindow):
         self._invalidate_results("Analysis in progress. Previous results were cleared.")
         self.run_button.setEnabled(False)
         self._run_action.setEnabled(False)
-        self.statusBar().showMessage("Running deterministic analysis…")
-        worker = _AnalysisWorker(state, settings, design)
+        self.cancel_button.setEnabled(True)
+        self.analysis_progress.setValue(0)
+        self.analysis_phase.setText("Preparing analysis…")
+        self.statusBar().showMessage("Preparing analysis…")
+        self._cancel_event = Event()
+        worker = _AnalysisWorker(state, settings, design, self._cancel_event)
         worker.signals.finished.connect(self._analysis_finished)
         worker.signals.error.connect(self._analysis_failed)
+        worker.signals.progress.connect(self._analysis_progress)
+        worker.signals.cancelled.connect(self._analysis_cancelled)
         self._thread_pool.start(worker)
+
+    @Slot()
+    def _cancel_analysis(self) -> None:
+        if self._cancel_event is not None:
+            self._cancel_event.set()
+            self.cancel_button.setEnabled(False)
+            self.analysis_phase.setText("Cancelling…")
+            self.statusBar().showMessage("Cancelling analysis…")
+
+    @Slot(str, int, int, float)
+    def _analysis_progress(self, phase: str, completed: int, total: int,
+                           elapsed_seconds: float) -> None:
+        if self._cancel_event is not None and self._cancel_event.is_set():
+            return
+        percent = min(100, round(100 * completed / max(1, total)))
+        self.analysis_progress.setValue(percent)
+        message = f"{phase} {percent}% · elapsed {elapsed_seconds:.1f} s"
+        self.analysis_phase.setText(message)
+        self.statusBar().showMessage(message)
+
+    @Slot()
+    def _analysis_cancelled(self) -> None:
+        self._cancel_event = None
+        self.run_button.setEnabled(True)
+        self._run_action.setEnabled(True)
+        self.cancel_button.setEnabled(False)
+        self.analysis_progress.setValue(0)
+        self.analysis_phase.setText("Analysis cancelled")
+        self._invalidate_results("Analysis cancelled. No current result is available.")
+        self.statusBar().showMessage("Analysis cancelled")
 
     @Slot(object, object)
     def _analysis_finished(self, result, summary: GuiAnalysisSummary) -> None:
+        self._cancel_event = None
         self.run_button.setEnabled(True)
         self._run_action.setEnabled(True)
+        self.cancel_button.setEnabled(False)
         try:
             current_fingerprint = self._fingerprint()
         except (ValueError, TypeError, KeyError):
@@ -993,13 +1067,19 @@ class BridgeMainWindow(QMainWindow):
         self._last_result = result
         self._last_summary = summary
         self.statusBar().showMessage("Analysis complete")
+        self.analysis_progress.setValue(100)
+        self.analysis_phase.setText("Analysis complete")
         self._show_summary(summary)
         self._tabs.setCurrentWidget(self.results_page)
 
     @Slot(str)
     def _analysis_failed(self, details: str) -> None:
+        self._cancel_event = None
         self.run_button.setEnabled(True)
         self._run_action.setEnabled(True)
+        self.cancel_button.setEnabled(False)
+        self.analysis_progress.setValue(0)
+        self.analysis_phase.setText("Analysis failed")
         self._invalidate_results("Analysis failed. No current result is available.")
         self.statusBar().showMessage("Analysis failed")
         QMessageBox.critical(self, "Analysis failed", details)

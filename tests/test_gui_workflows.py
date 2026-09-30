@@ -1,5 +1,6 @@
 import json
 import os
+from threading import Event
 
 import pytest
 
@@ -9,9 +10,15 @@ pytest.importorskip("PySide6")
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QMessageBox
 
+from rc_single_span.core.progress import AnalysisCancelled, AnalysisControl
 from rc_single_span.gui.app import BridgeMainWindow
 from rc_single_span.gui.dialogs import InputDialog
-from rc_single_span.gui.engine_adapter import GuiAnalysisSummary, GuiCodeProfile, GuiResultRow
+from rc_single_span.gui.engine_adapter import (
+    GuiAnalysisSummary,
+    GuiCodeProfile,
+    GuiResultRow,
+    run_gui_analysis,
+)
 
 
 @pytest.fixture
@@ -115,3 +122,31 @@ def test_pdf_report_uses_completed_snapshot_and_stale_run_is_discarded(window, t
     window._analysis_finished(object(), summary)
     assert window._last_summary is None
     assert window._report_html is None
+
+
+def test_cancel_stops_engine_during_influence_preparation_and_clears_gui(window) -> None:
+    cancelled = Event()
+    events = []
+
+    def progress(phase: str, completed: int, total: int) -> None:
+        events.append((phase, completed, total))
+        if phase == "Preparing grillage: UDL cells" and completed == 1:
+            cancelled.set()
+
+    with pytest.raises(AnalysisCancelled):
+        run_gui_analysis(
+            window._read_state().build_project(),
+            window._read_settings(),
+            window._read_design_inputs(),
+            control=AnalysisControl(progress, cancelled.is_set),
+        )
+    assert any(phase == "Preparing grillage: UDL cells" for phase, _, _ in events)
+
+    window._cancel_event = cancelled
+    window._last_result = object()
+    window._analysis_cancelled()
+    assert window.run_button.isEnabled()
+    assert not window.cancel_button.isEnabled()
+    assert window._last_result is None
+    assert window._last_summary is None
+    assert "cancelled" in window.result_basis.text().lower()

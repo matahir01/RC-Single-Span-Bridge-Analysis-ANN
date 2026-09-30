@@ -35,6 +35,7 @@ from rc_single_span.codes.eurocode.lm1 import (
     notional_lane_layout,
 )
 from rc_single_span.core.models import BridgeProject
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.traffic.lm1 import (
     GoverningComponent,
     LM1CaseResult,
@@ -393,6 +394,7 @@ class LM1InfluenceContext:
 def prepare_lm1_udl_influence_surface(
     model: StructuralModel,
     prepared: PreparedVerticalGrillage,
+    *, control: AnalysisControl | None = None,
 ) -> LM1UDLInfluenceSurface:
     """Factor once, solve one unit-pressure case per carriageway grid cell.
 
@@ -407,6 +409,8 @@ def prepare_lm1_udl_influence_surface(
         for y1, y2 in pairwise(y)
     )
     analyses = []
+    if control is not None:
+        control.report("Preparing grillage: UDL cells", 0, len(cells))
     for index, (x1, x2, y1, y2) in enumerate(cells, start=1):
         case = build_plan_load_case(
             model,
@@ -420,6 +424,8 @@ def prepare_lm1_udl_influence_surface(
                 replace(model, load_cases=(case,)),
             )
         )
+        if control is not None:
+            control.report("Preparing grillage: UDL cells", index, len(cells))
     return LM1UDLInfluenceSurface(cells, tuple(analyses))
 
 
@@ -550,6 +556,7 @@ def prepare_lm1_influence_context(
     factors: LM1AdjustmentFactors | None = None,
     longitudinal_step_m: float = 1.2,
     max_exhaustive_tandem_combinations: int = 5000,
+    control: AnalysisControl | None = None,
 ) -> LM1InfluenceContext:
     """Prepare the shared influence surface and complete tandem solutions."""
     placements = generate_lm1_search_placements(
@@ -566,11 +573,13 @@ def prepare_lm1_influence_context(
         additional_y_lines_m=y,
     ).model
     prepared = prepare_vertical_grillage(model)
-    surface = prepare_lm1_udl_influence_surface(model, prepared)
+    surface = prepare_lm1_udl_influence_surface(model, prepared, control=control)
     adjustment = factors or LM1AdjustmentFactors()
     tandems = []
     all_pressures = []
-    for placement in placements:
+    if control is not None:
+        control.report("Preparing grillage: tandems", 0, len(placements))
+    for index, placement in enumerate(placements, start=1):
         active = {
             (cell.x_start_m, cell.x_end_m, cell.y_start_m, cell.y_end_m):
             cell.pressure_kn_m2
@@ -597,6 +606,8 @@ def prepare_lm1_influence_context(
         all_pressures.append(
             tuple(active.get(bounds, 0.0) for bounds in surface.cells)
         )
+        if control is not None:
+            control.report("Preparing grillage: tandems", index, len(placements))
     member_ids = tuple(member.member_id for member in tandems[0].members)
     member_attributes = (
         "i_vertical_force_kn", "i_vertical_bending_moment_knm", "i_torsion_knm",
@@ -686,6 +697,8 @@ def run_lm1_influence_grillage_search(
     longitudinal_step_m: float = 1.2,
     max_exhaustive_tandem_combinations: int = 5000,
     context: LM1InfluenceContext | None = None,
+    control: AnalysisControl | None = None,
+    phase: str = "LM1 characteristic",
 ) -> LM1SearchResult:
     """Envelope member ends and fixed deflection stations with favourable UDL.
 
@@ -699,6 +712,7 @@ def run_lm1_influence_grillage_search(
             factors=factors,
             longitudinal_step_m=longitudinal_step_m,
             max_exhaustive_tandem_combinations=max_exhaustive_tandem_combinations,
+            control=control,
         )
     elif (context.project != project or context.factors != (factors or LM1AdjustmentFactors())
           or context.placements != generate_lm1_search_placements(
@@ -801,6 +815,8 @@ def run_lm1_influence_grillage_search(
         return case
 
     full_udl_cases = []
+    if control is not None:
+        control.report(f"{phase}: full UDL", 0, len(context.placements))
     for index, placement in enumerate(context.placements):
         points, areas = build_lm1_plan_loads(
             project,
@@ -829,6 +845,8 @@ def run_lm1_influence_grillage_search(
         if characteristic is not None:
             superposed_full_ids.add(registered_case.placement.case_id)
         full_udl_cases.append(registered_case)
+        if control is not None:
+            control.report(f"{phase}: full UDL", index + 1, len(context.placements))
 
     # Symmetric traffic positions can have indistinguishable deflections in
     # superposition to machine precision. Re-solve the few near-tied full-UDL
@@ -850,6 +868,8 @@ def run_lm1_influence_grillage_search(
 
     girders = []
     station_girders = []
+    if control is not None:
+        control.report(f"{phase}: governing girders", 0, len(groups))
     for girder_index, (y_m, beams) in enumerate(groups, start=1):
         best = {
             name: GoverningComponent(-1.0, 0, None)
@@ -858,6 +878,8 @@ def run_lm1_influence_grillage_search(
         stations: dict[float, GoverningComponent] = {}
         deflection_position = 0.0
         for beam in beams:
+            if control is not None:
+                control.report(f"{phase}: governing girders", girder_index - 1, len(groups))
             for end in ("i", "j"):
                 x_m = nodes[beam.node_i if end == "i" else beam.node_j].x_m
                 for name, attribute in (
@@ -896,6 +918,8 @@ def run_lm1_influence_grillage_search(
                 for ratio in (0.25, 0.5, 0.75)
             )
         for x_m in sorted(x_samples):
+            if control is not None:
+                control.report(f"{phase}: governing girders", girder_index - 1, len(groups))
             for sign in (-1, 1):
                 placement, regions, predicted, exact, exact_position = (
                     context.select_displacement(girder_index, x_m, sign=sign)
@@ -952,6 +976,8 @@ def run_lm1_influence_grillage_search(
                 ),
             )
         )
+        if control is not None:
+            control.report(f"{phase}: governing girders", girder_index, len(groups))
     lane_count = notional_lane_layout(
         float(project.geometry.carriageway_width_m),
     ).lane_count
@@ -990,14 +1016,18 @@ def run_lm1_influence_grillage_search(
                     raise RuntimeError("Superposed and physically solved LM1 full UDL differ.")
         return replace(case, analysis=physical, girders=exact)
 
+    if control is not None:
+        control.report(f"{phase}: verifying cases", 0, len(needed))
+    retained_cases = []
+    for case in registered.values():
+        if case.placement.case_id in needed:
+            retained_cases.append(final_case(case))
+            if control is not None:
+                control.report(f"{phase}: verifying cases", len(retained_cases), len(needed))
     return LM1SearchResult(
         tuple(girders),
         tuple(station_girders),
-        tuple(
-            final_case(case)
-            for case in registered.values()
-            if case.placement.case_id in needed
-        ),
+        tuple(retained_cases),
         len(context.placements),
         longitudinal_step_m,
         exhaustive,

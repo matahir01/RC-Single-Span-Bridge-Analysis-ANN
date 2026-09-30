@@ -35,7 +35,14 @@ Updated: 30 September 2026 (UTC)
   [RESEARCH_EXPLORATORY_RESULTS.md](RESEARCH_EXPLORATORY_RESULTS.md).
 - `e7b40c763dfe63afd62e6825cfc8bf6b8c9c0883`: numerical exploratory
   report, full research summary JSON, and pre-optimization 3.0 m LM1 golden
-  snapshot. This is the current remote parent for the LM1 performance batch.
+  snapshot.
+- `b8fab9cd0470909744a11df69534e8a585cde436`: shared LM1 influence
+  basis, vector placement search, deferred governing-case verification, and
+  3.0 m regression. Local Ruff and 245 tests passed; Windows package build
+  passed. The Ubuntu test job found a floating-point tie difference in the
+  fixed cross-platform case-ID snapshot (78 versus 79 retained cases). The
+  next batch adds an old/new same-runner comparison so ordinal IDs are tested
+  on the same solver build.
 
 ## Windows package check
 
@@ -78,14 +85,19 @@ all seven governing girders, station IDs, retained physical case IDs/loads,
 and characteristic/frequent design combination effects. These match the
 pre-change run; differing numerical effects are under 1e-7 in native units.
 Near-tie selection preserves the original Python sum order and exact Hermite
-cell signs, including support roundoff. The focused four influence tests and
-golden regression pass; the preceding full suite had 244 passes, and Ruff
-passes after the new regression. The 0.6 m pre-change run is still computing.
+cell signs, including support roundoff. The optimized 0.6 m reference run
+completed in 213.89 s with 190 retained cases; the pre-change 0.6 m run is
+still computing. The subsequent progress/cancellation batch passes 246 local
+tests and Ruff. CI will run the old and new 3.0 m engines on the same runner
+and compare girder/station case IDs, retained loads, combinations and EC2
+design outputs. GUI progress now reports real phases and elapsed time; cancel
+checks between influence solves and governing searches and discards partial
+results. This GUI batch is local until its CI comparison passes.
 
-Exact next action: run the optimized 0.6 m reference and compare its governing
-values, station and case IDs, retained physical loads, and combinations against
-the pre-change result. Re-run the full suite and Ruff, then push the verified
-0.6 m performance checkpoint. Add GUI progress/cancellation and explicit
-Quick/Standard/Final verification modes. For research, retain
+Exact next action: finish the pre-change 0.6 m run and compare governing
+values, station/case IDs, retained physical loads and combinations; verify the
+same-runner 3.0 m comparison, then push the GUI progress/cancellation and CI
+repair batch. Add explicit Quick/Standard/Final verification modes and run the
+packaged Windows application with the updated engine. For research, retain
 `assumptions_confirmed=false` and obtain action/correlation/project criteria
 before any accepted reliability or RBDO result.

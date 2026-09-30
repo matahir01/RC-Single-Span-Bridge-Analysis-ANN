@@ -6,6 +6,7 @@ from enum import Enum
 from rc_single_span.codes.bs5400.combinations import BS5400LimitState
 from rc_single_span.codes.eurocode.combinations import EurocodeServiceabilityFactors
 from rc_single_span.core.models import BridgeProject
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.design.project import BS5400DesignInputs, EC2DesignInputs
 from rc_single_span.gui.design_adapter import GuiDesignInputs
 from rc_single_span.verification.reference_runner import (
@@ -176,6 +177,7 @@ def run_gui_analysis(
     project: BridgeProject,
     settings: GuiAnalysisSettings,
     design_inputs: GuiDesignInputs | None = None,
+    *, control: AnalysisControl | None = None,
 ) -> tuple[ReferenceRunResult, GuiAnalysisSummary]:
     """Run the verified deterministic bridge engine and build a GUI summary."""
 
@@ -183,6 +185,7 @@ def run_gui_analysis(
         project,
         config=_reference_config(settings),
         code_route="bs_en" if settings.code_profile is GuiCodeProfile.BS_EN else "bs5400",
+        control=control,
         **_design_kwargs(settings, design_inputs),
     )
     if settings.code_profile is GuiCodeProfile.BS_EN:
@@ -239,6 +242,8 @@ def run_gui_analysis(
 
     if not rows:
         raise RuntimeError("The deterministic engine returned no girder result rows.")
+    if control is not None:
+        control.report("Preparing summary")
     summary = GuiAnalysisSummary(
         code_profile=settings.code_profile,
         code_basis=basis,
