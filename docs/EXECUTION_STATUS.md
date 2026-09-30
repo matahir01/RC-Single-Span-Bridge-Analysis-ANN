@@ -14,9 +14,21 @@ Updated: 29 September 2026 (UTC)
   Linux bundle built with Qt platform and print plugins; 242 tests and Ruff
   passed. Its Windows Actions run is
   [36594986479](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36594986479),
-  currently testing the packaged executable with the default 0.6 m LM1 grid.
+  used the computationally expensive default 0.6 m LM1 grid; its original
+  Windows package smoke was still running when the next run finished.
+- `d8851734f9bca4e7cd142d8e56e260f505ffbf3d`: audited 1.2 m package
+  smoke grid; Ruff and 243 tests passed locally. [Windows Actions run
+  36600269210](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36600269210)
+  **passed** the real Windows x64 PyInstaller build, Qt plugin check, packaged
+  EXE launch, seven-girder analysis/design, JSON save/open and PDF report check.
+  The [downloadable artifact](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36600269210/artifacts/11049069112)
+  is a GitHub Actions ZIP containing `RCBridgeAnalyzer-Windows-x64.zip`.
+  The inner distribution ZIP SHA-256 is
+  `6C35DB82ACD931A7C06F9EF05F7610D22FFE07E0ADA987EEDA7EAA667CCDE49F`.
+  Extract the inner ZIP, retain the full folder, and launch
+  `RCBridgeAnalyzer.exe`; `README_WINDOWS.txt` is included.
 
-## Current Windows batch
+## Windows package check
 
 The default 0.6 m longitudinal grid is computationally expensive for a
 functional package gate. The updated packaged-app smoke asserts the normal
@@ -25,23 +37,26 @@ the repository's independently audited comparisons (4.09% maximum response
 envelope change versus 0.6 m, under the documented 5% criterion), but a
 package smoke is **only a functionality check**. Local Linux source smoke
 completed: seven girders, seven design rows, project JSON save/reopen, and
-40 KB PDF with a valid header. Windows build, packaged-app smoke, ZIP and
-download/hash still need to pass on a Windows runner. Ruff and 243 tests passed.
-
-Exact next action: monitor the new Windows Actions job, inspect plugin and
-report checks, and only then deliver the tested ZIP and use instructions.
-If it fails, fix and rerun on Windows.
+40 KB PDF with a valid header. The Windows CI package check and ZIP upload
+passed on 29 September. The distribution is unsigned and the GitHub Actions
+artifact has a finite retention period.
 
 ## Research
 
 The source and evidence register is in `docs/RESEARCH_EVIDENCE_REGISTER.md`.
-An exploratory config and runner are being verified separately. The source
+An exploratory config and runner are under verification. The source
 profiles for concrete, steel, geometry and generic model error are recorded;
 DL/LL distributions, dependence and project criteria are still provisional.
 Any exploratory numbers must remain labelled as sensitivity calculations.
-Direct Monte Carlo locally reports Wilson binomial confidence bounds, including
-the zero-failure case. The running study will evaluate dataset splits, fresh
-and near-limit ANN checks, response/sample-size convergence, direct and
-surrogate reliability, and an RBDO candidate recheck; its result and any
-failure will be recorded after execution. Neither software verification nor
-this exploratory study approves a real bridge.
+The next research batch adds a reproducible CI study and artifact, explicit
+exploratory flag, output hashes, source-derived material/geometry priors,
+direct-MC Wilson confidence bounds and RBDO candidate recheck. The action
+models and dependence remain unconfirmed; its numerical result will be
+reported only after the CI artifact is inspected. Neither software
+verification nor this exploratory study approves a real bridge.
+
+Exact next action: push the verified research-code batch, inspect the CI study
+artifact and held-out/near-limit errors, convergence, FORM/MC intervals and
+RBDO candidate training-domain flag. Record numerical outcomes and decisions
+in the evidence register; keep `assumptions_confirmed=false` until action,
+correlation and project criteria evidence closes.

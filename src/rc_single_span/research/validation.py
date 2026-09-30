@@ -8,7 +8,7 @@ from scipy.stats import norm
 
 from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.evaluator import LimitStateEvaluation
-from rc_single_span.research.reliability import SurrogatePredictor
+from rc_single_span.research.reliability import SurrogatePredictor, _wilson_interval
 from rc_single_span.research.sampling import RandomVariable, independent_random_samples
 from rc_single_span.research.surrogate import RegressionMetrics, regression_metrics
 
@@ -27,6 +27,9 @@ class DirectMonteCarloResult:
     failure_count: int
     probability_of_failure: float
     reliability_index: float
+    confidence_low: float
+    confidence_high: float
+    confidence_level: float
     invalid_count: int
     seed: int | None
 
@@ -57,6 +60,7 @@ def direct_monte_carlo_reliability(
     sample_count: int,
     *,
     seed: int | None = None,
+    confidence: float = 0.95,
     invalid_policy: str = "raise",
     dependence: GaussianCopula | None = None,
 ) -> DirectMonteCarloResult:
@@ -69,6 +73,8 @@ def direct_monte_carlo_reliability(
 
     if invalid_policy not in {"raise", "skip"}:
         raise ValueError("invalid_policy must be 'raise' or 'skip'.")
+    if not 0.0 < confidence < 1.0:
+        raise ValueError("confidence must lie in (0, 1).")
     _validate_order(evaluator, variables)
     try:
         target_index = evaluator.target_names.index(target_name)
@@ -102,12 +108,16 @@ def direct_monte_carlo_reliability(
     probability = failures / valid
     probability_for_beta = (failures + 0.5) / (valid + 1.0)
     beta = -float(norm.ppf(probability_for_beta))
+    low, high = _wilson_interval(failures, valid, confidence)
     return DirectMonteCarloResult(
         target_name=target_name,
         sample_count=valid,
         failure_count=failures,
         probability_of_failure=probability,
         reliability_index=beta,
+        confidence_low=low,
+        confidence_high=high,
+        confidence_level=confidence,
         invalid_count=invalid,
         seed=seed,
     )

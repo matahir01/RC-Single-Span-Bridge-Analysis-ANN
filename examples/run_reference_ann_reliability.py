@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
-from dataclasses import asdict
+import platform
+from dataclasses import asdict, is_dataclass
 from pathlib import Path
 
+import numpy as np
+import scipy
 from thesis_bridge_15m import thesis_bridge_15m
 
 from rc_single_span.codes.eurocode.combinations import EurocodeServiceabilityFactors
 from rc_single_span.research.baseline import extract_bs_en_reliability_baseline
+from rc_single_span.research.convergence import sample_size_convergence
 from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.evaluator import (
     FEATURE_NAMES,
@@ -37,6 +42,10 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("config", type=Path, help="JSON study configuration")
     parser.add_argument("--output", type=Path, default=Path("artifacts/research"))
+    parser.add_argument(
+        "--exploratory", action="store_true",
+        help="Run an unconfirmed example as a clearly labelled sensitivity experiment.",
+    )
     return parser
 
 
@@ -98,6 +107,10 @@ def _write_json(path: Path, payload: object) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def _rbdo(
     data: dict[str, object],
     model,
@@ -142,7 +155,13 @@ def main() -> int:
     args = _parser().parse_args()
     raw_data = json.loads(args.config.read_text(encoding="utf-8"))
     data = _expect_dict(raw_data, "Study configuration root")
-    _require_confirmed(data)
+    if args.exploratory:
+        if data.get("assumptions_confirmed") is True:
+            raise ValueError("Confirmed studies should run without --exploratory.")
+    else:
+        _require_confirmed(data)
+    if args.output.exists() and any(args.output.iterdir()):
+        raise FileExistsError("Study output directory must be empty for a reproducible run.")
 
     reference = _expect_dict(data.get("reference_run"), "reference_run")
     sls = _expect_dict(
@@ -216,6 +235,7 @@ def main() -> int:
 
     output = args.output
     output.mkdir(parents=True, exist_ok=True)
+    _write_json(output / "study_config.json", data)
     result.dataset.write_csv(output / "dataset.csv")
     result.split.train.write_csv(output / "train.csv")
     result.split.validation.write_csv(output / "validation.csv")
@@ -254,9 +274,61 @@ def main() -> int:
         else {}
     )
     rbdo_result = _rbdo(data, result.model, variables, dependence)
+    convergence_raw = data.get("sample_size_convergence")
+    convergence_result = None
+    if isinstance(convergence_raw, dict) and convergence_raw.get("enabled") is True:
+        convergence_result = sample_size_convergence(
+            evaluator,
+            variables,
+            tuple(int(value) for value in convergence_raw["sample_counts"]),
+            base_seed=int(convergence_raw.get("base_seed", 20260930)),
+            tolerance=float(convergence_raw.get("tolerance", 0.05)),
+            dependence=dependence,
+        )
+    candidate_direct = None
+    if rbdo_result is not None:
+        candidate_variables = tuple(
+            variable.with_mean(rbdo_result.design[variable.name])
+            if variable.name in rbdo_result.design else variable
+            for variable in variables
+        )
+        candidate_nominal = evaluator.evaluate(
+            {variable.name: variable.expected_value for variable in candidate_variables}
+        )
+        candidate_direct = {"nominal_margins": asdict(candidate_nominal)}
+        candidate_direct["nominal_within_training_feature_domain"] = (
+            result.feature_domain.contains(np.asarray(
+                [variable.expected_value for variable in candidate_variables], dtype=float
+            ))
+        )
+        candidate_samples = int(_expect_dict(data["rbdo"], "rbdo").get("direct_check_samples", 0))
+        if candidate_samples > 0:
+            candidate_direct["monte_carlo"] = {
+                target: asdict(direct_monte_carlo_reliability(
+                    evaluator, candidate_variables, target, candidate_samples,
+                    seed=int(validation_raw.get("seed", 20260929)) + 100 + index,
+                    dependence=dependence,
+                ))
+                for index, target in enumerate(evaluator.target_names)
+            }
+
+    output_files = sorted(path for path in output.iterdir() if path.is_file())
 
     summary = {
-        "status": "research outputs generated; acceptance still depends on validation review",
+        "status": (
+            "EXPLORATORY: unconfirmed probability/action/dependence assumptions; "
+            "no reliability or RBDO result is accepted for design or thesis conclusions"
+            if args.exploratory else
+            "confirmed configuration executed; numerical results still require validation review"
+        ),
+        "assumptions_confirmed": data.get("assumptions_confirmed") is True,
+        "config_sha256": _sha256(args.config),
+        "environment": {
+            "python": platform.python_version(),
+            "numpy": np.__version__,
+            "scipy": scipy.__version__,
+        },
+        "output_sha256": {path.name: _sha256(path) for path in output_files},
         "target_reliability": asdict(target_reliability),
         "dependence": (
             None
@@ -279,6 +351,17 @@ def main() -> int:
         },
         "dataset_rows": result.dataset.size,
         "invalid_dataset_rows": result.dataset.invalid_samples,
+        "split_rows": {
+            "train": result.split.train.size,
+            "validation": result.split.validation.size,
+            "test": result.split.test.size,
+        },
+        "training_history": (
+            asdict(result.history)
+            if is_dataclass(result.history)
+            else getattr(result.history, "history", {})
+        ),
+        "training_feature_domain": asdict(result.feature_domain),
         "test_metrics": asdict(result.test_metrics),
         "fresh_direct_validation": asdict(direct_check),
         "form": {name: asdict(value) for name, value in result.form.items()},
@@ -287,6 +370,10 @@ def main() -> int:
         },
         "direct_monte_carlo": {name: asdict(value) for name, value in direct_mc.items()},
         "rbdo": None if rbdo_result is None else asdict(rbdo_result),
+        "rbdo_candidate_direct": candidate_direct,
+        "sample_size_convergence": (
+            None if convergence_result is None else asdict(convergence_result)
+        ),
     }
     _write_json(output / "summary.json", summary)
     print(json.dumps(summary, indent=2))

@@ -62,3 +62,21 @@ def test_direct_monte_carlo_reliability_matches_linear_normal_solution() -> None
     )
     analytical_beta = 30.0 / np.sqrt(10.0**2 + 8.0**2)
     assert abs(result.reliability_index - analytical_beta) < 0.12
+    assert result.confidence_low <= result.probability_of_failure <= result.confidence_high
+    assert result.confidence_level == 0.95
+
+
+def test_direct_monte_carlo_zero_failures_reports_finite_upper_bound() -> None:
+    result = direct_monte_carlo_reliability(
+        _LinearEvaluator(),
+        (
+            RandomVariable("resistance", "normal", mean=1000.0, std=1.0),
+            RandomVariable("load", "normal", mean=70.0, std=1.0),
+        ),
+        "g",
+        1000,
+        seed=5,
+    )
+    assert result.failure_count == 0
+    assert result.confidence_low < 1.0e-12
+    assert 0.0 < result.confidence_high < 0.005
