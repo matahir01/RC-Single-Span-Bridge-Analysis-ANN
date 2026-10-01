@@ -86,6 +86,34 @@ Updated: 1 October 2026 (UTC)
   5% response rule; no sample size is accepted. Local research tests (7) and
   Ruff passed. GitHub [tests run 36920444192](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36920444192)
   passed.
+- `7a317106177550e8a99771e352e1d6455aa57876`: exhaustive half-step BS
+  traffic audit, replicated LHS and saved-ANN direct-boundary challenge,
+  plus GUI/report BS grid warnings. Local 257 tests, Ruff and a rendered BS
+  analysis sheet passed. [GUI workflow 36927717170](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36927717170)
+  passed. The Linux test job failed during collection because the new audit
+  test imported `examples` as a package in installed-package CI.
+- `4fb027930ac235c72549d493867359286da3235d`: fixed that test import
+  by loading the script by path; focused test and Ruff passed locally.
+  [Linux tests 36927972278](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36927972278)
+  **passed**, including the same-runner legacy engine comparisons.
+  [Windows EXE 36927717385](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36927717385)
+  **passed** source GUI tests, PyInstaller build, Qt plugin and packaged
+  reference workflow, ZIP creation and upload. [Artifact 11195350209](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36927717385/artifacts/11195350209)
+  expires 30 December 2026; Actions artifact SHA-256 is
+  `8371a9118b642239b0b5b422283319fe02ddc6dfaf5bcba8148e3d9d37ca97bd`.
+  [Research 36927717493](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36927717493)
+  **passed**; the correction changed only a Linux test import.
+
+The next GUI clarification is staged for commit: the former “Shear PASS” field
+is explicitly the **maximum web resistance** check. The worked sheets state
+that required link steel is calculated but installed links were not provided;
+therefore a complete shear reinforcement pass is not asserted. Nine focused
+GUI/calculation-sheet tests and Ruff passed locally. A Windows packaged-app
+smoke for this clarification is required before updating the download link.
+A separate trial indexed per-member loads in the prepared grillage solver.
+Default BS outputs were identical, but a paired same-machine benchmark took
+150.92 s for the prior engine and 176.32 s for the trial; it was rejected and
+reverted. See `docs/BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md`.
 
 ## Windows package check
 
@@ -101,6 +129,11 @@ smoke completed seven girders, seven design rows, JSON save/reopen and a
 Windows CI built the actual EXE, found `qwindows.dll`, ran the packaged
 reference workflow and uploaded the ZIP on 1 October. The distribution is
 unsigned; the Actions artifact expires on 30 December 2026.
+The subsequent updated GUI/report build also passed the Windows packaged
+smoke. [Download its artifact](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36927717385/artifacts/11195350209),
+extract the outer Actions ZIP, then extract `RCBridgeAnalyzer-Windows-x64.zip`
+and run `RCBridgeAnalyzer.exe` from the full folder. This build includes the
+BS grid warning in the GUI and calculation sheets.
 
 ## Research
 
@@ -122,6 +155,15 @@ An additional independent-LHS audit with 2,000, 3,000, 4,000, 6,000 and
 criterion at every step; the shear-margin lower 5% quantile dominates.
 The result and runnable script are in `docs/research_runs/2026-10-01_lhs_extension.json`
 and `examples/audit_provisional_lhs.py`. No larger count is accepted yet.
+Three independent LHS replications at each of 2,000, 4,000 and 8,000 points
+still fail the 5% response-stability screen at the last size (7.417% between
+seeds). A restored, unchanged ANN reproduced the held-out test metrics to
+floating-point precision, but at a fresh direct shear `g=0` point it predicted
+**+3.805 kN** safe margin. The direct search found no flexure/deflection
+bracket in the chosen marginal quantile hyperrectangle; that does not certify
+their reliability. See `docs/research_runs/2026-10-01_replicated_lhs_boundary.json`
+and `docs/RESEARCH_EXPLORATORY_RESULTS.md`. This ANN is not accepted for tail
+probability or RBDO decisions.
 
 ## LM1 performance verification
 
@@ -175,7 +217,12 @@ including retained case IDs/loads, girder/station envelopes, combinations,
 seven design results and summary rows. Both fine snapshots and the capture
 script are preserved in this repository. This is a local fine-grid check; CI
 continues to gate the coarse same-runner comparison. BS grid convergence and
-all-cases retention remain unverified.
+all-cases retention remain unverified. A subsequent exhaustive half-step audit
+found the default HA and HB searches within the provisional 5% girder response
+criterion, but the default HA+HB grid **failed** at 7.412% torsion change on
+girder 5. See `docs/BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md`. The GUI and
+calculation sheets now flag this limitation; neither default nor half-step
+combined grid is accepted as a final converged traffic search.
 
 ## Calculation-sheet batch (pushed and Windows verified)
 
@@ -193,10 +240,13 @@ design at 1.2 m saved/reopened the reference project and exported a 12-page,
 package smoke now requires equations, diagrams and a substantive PDF. The
 built Windows EXE passed that packaged smoke and the ZIP was uploaded.
 
-Exact next action: verify DL/LL and dependence inputs, physical shear links
-and a project deflection criterion; then design replicated/tail-focused
-sampling and near-limit ANN validation using the recorded 2,000–8,000 failures.
-Rerun reliability and RBDO only within a validated design domain and without
-extrapolating unconverged FORM results. Keep
+Exact next action: commit/push and verify the maximum-web-resistance wording
+in the real Windows EXE workflow; record its downloadable ZIP. Then refine
+the **combined BS** placement search beyond 1.0/0.5/1.0 m or
+otherwise establish a convergence bound, and benchmark any new speedup against
+the preserved exact-output legacy gate. Obtain defensible DL/LL and dependence
+inputs, physical shear-link data and a project deflection criterion; build
+tail-focused training and independent direct boundary validation before
+retrying FORM/RBDO within a validated design domain. Keep
 `assumptions_confirmed=false` until action/correlation/project criteria are
 verified; exploratory reliability results do not approve a bridge.

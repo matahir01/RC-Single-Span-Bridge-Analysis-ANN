@@ -79,6 +79,9 @@ def test_bs_worked_sheet_has_governing_case_substitutions_and_diagrams(tmp_path)
     assert f"{case.nominal_traffic.moment_knm:.4f}" in html
     assert f"{result.bs5400_design[0].flexure.design_moment_knm:.4f}" in html
     assert "Nominal ha_hb case" in html
+    assert "No complete shear reinforcement pass is asserted" in html
+    assert "WEB LIMIT PASS" in html or "WEB LIMIT FAIL" in html
+    assert "Web limit</th>" in html
     assert "No project limit supplied; no pass/fail asserted" in html
     assert html.count("data:image/png;base64,") == 3
     target = tmp_path / "bs_calculation_sheets.pdf"

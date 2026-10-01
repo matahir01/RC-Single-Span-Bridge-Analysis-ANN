@@ -96,6 +96,7 @@ def test_project_round_trip_keeps_code_route_and_clears_old_outputs(window, tmp_
 
 
 def test_input_edit_invalidates_result_and_report(window) -> None:
+    assert window.design_results_table.horizontalHeaderItem(5).text() == "Web limit"
     window._report_html = "prior report"
     window._export_action.setEnabled(True)
     window.span_m.setValue(16.0)

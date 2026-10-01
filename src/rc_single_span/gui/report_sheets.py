@@ -259,7 +259,7 @@ def design_sheets(result, settings, inputs) -> str:
                 "PASS" if passes else "CHECK"))
         shear = design.shear
         if eurocode:
-            rows.append(row(reference + "\nshear",
+            rows.append(row(reference + "\nmaximum web resistance",
                 f"Ved = {n(shear.design_shear_kn)} kN, bw = {n(bw * 1000)} mm, "
                 f"d = {n(d * 1000)} mm. k = min[1 + sqrt(200/{n(d*1000)}), 2] = "
                 f"{n(shear.k)}; rho_l = min[{n(area)}/"
@@ -272,10 +272,12 @@ def design_sheets(result, settings, inputs) -> str:
                 f"{n(shear.vrdmax_kn)} = "
                 f"{n(shear.design_shear_kn/shear.vrdmax_kn)}; "
                 f"required Asw/s = {n(shear.required_asw_per_s_mm2_per_m)} mm2/m. "
-                f"Concrete-only: {shear.concrete_only_passes}.",
-                "PASS" if shear.web_crushing_passes else "CHECK"))
+                f"Concrete-only: {shear.concrete_only_passes}. "
+                "Required links are calculated; provided links were not specified. "
+                "No complete shear reinforcement pass is asserted.",
+                "WEB LIMIT PASS" if shear.web_crushing_passes else "WEB LIMIT FAIL"))
         else:
-            rows.append(row(reference + "\nshear",
+            rows.append(row(reference + "\nmaximum web resistance",
                 f"Ved = {n(shear.design_shear_kn)} kN; "
                 f"vEd = Ved/(bw d) = {n(shear.design_shear_kn)} x 1000 / "
                 f"({n(bw*1000)} x {n(d*1000)}) = "
@@ -284,8 +286,10 @@ def design_sheets(result, settings, inputs) -> str:
                 f"VR,c = {n(shear.concrete_resistance_kn)} kN; "
                 f"VR,max = min[0.75 sqrt(fcu), 4.75] bw d/1000 = "
                 f"{n(shear.maximum_resistance_kn)} kN; "
-                f"Asv/s = {n(shear.governing_asv_per_s_mm2_per_m)} mm2/m.",
-                "CHECK" if shear.exceeds_maximum_shear else "PASS"))
+                f"Asv/s = {n(shear.governing_asv_per_s_mm2_per_m)} mm2/m. "
+                "Required links are calculated; provided links were not specified. "
+                "No complete shear reinforcement pass is asserted.",
+                "WEB LIMIT FAIL" if shear.exceeds_maximum_shear else "WEB LIMIT PASS"))
         crack = design.cracking
         if eurocode:
             strain = crack.crack_width_mm / crack.max_crack_spacing_mm if crack.max_crack_spacing_mm else 0

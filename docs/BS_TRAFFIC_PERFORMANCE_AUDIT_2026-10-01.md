@@ -65,3 +65,14 @@ All-cases retention remains unbenchmarked. The subsequent
 default HA+HB grid fails the provisional 5% response criterion: girder 5
 torsion changes by 7.412%. The speed improvement does not resolve project
 loading, code scope or independent bridge-review questions.
+
+## Rejected load-indexing experiment
+
+After this audit, a trial changed the prepared solver to group uniform and
+point loads by member before each placement. The full default BS outputs were
+identical to the preserved optimized snapshot. In a sequential same-machine
+comparison, however, the previous source took **150.92 s** and the trial took
+**176.32 s** (0.86×). The trial was **reverted** and is not in the executable.
+The next performance batch should profile physical case assembly and solves,
+then test a response-basis or batched-solve approach against exact physical
+case and design outputs. Speed must be measured on paired runs before adoption.

@@ -60,7 +60,7 @@ class GuiDesignRow:
     flexure_passes: bool | None
     shear_demand_kn: float
     shear_max_resistance_kn: float
-    shear_passes: bool
+    shear_maximum_passes: bool
     required_shear_steel_mm2_per_m: float
     crack_width_mm: float
     crack_limit_mm: float
@@ -136,7 +136,7 @@ def _ec_design_rows(result: ReferenceRunResult) -> tuple[GuiDesignRow, ...]:
                 flexure_passes=flexure_passes,
                 shear_demand_kn=float(item.shear.design_shear_kn),
                 shear_max_resistance_kn=float(item.shear.vrdmax_kn),
-                shear_passes=bool(item.shear.web_crushing_passes),
+                shear_maximum_passes=bool(item.shear.web_crushing_passes),
                 required_shear_steel_mm2_per_m=float(
                     item.shear.required_asw_per_s_mm2_per_m
                 ),
@@ -170,7 +170,7 @@ def _bs_design_rows(result: ReferenceRunResult) -> tuple[GuiDesignRow, ...]:
                 flexure_passes=flexure_passes,
                 shear_demand_kn=float(item.shear.design_shear_kn),
                 shear_max_resistance_kn=float(item.shear.maximum_resistance_kn),
-                shear_passes=not item.shear.exceeds_maximum_shear,
+                shear_maximum_passes=not item.shear.exceeds_maximum_shear,
                 required_shear_steel_mm2_per_m=float(
                     item.shear.governing_asv_per_s_mm2_per_m
                 ),
@@ -262,6 +262,10 @@ def run_gui_analysis(
         notes = (
             "LM1 uses the verified complete-tandem/adverse-UDL search.",
             "Design results use only the explicit project inputs supplied to the GUI.",
+            (
+                "The shear PASS/CHECK status concerns maximum web resistance only. "
+                "Required link steel is reported, but provided links are not an input or a pass check."
+            ),
             f"Analysis mode: {settings.accuracy_mode.value}; final LM1 step {step_m:g} m."
             + (" No grid convergence claim." if coarse is None else ""),
             *audit_notes,
@@ -299,6 +303,10 @@ def run_gui_analysis(
         notes = (
             "HA, HB and HA+HB combinations 1-3 are generated from the native vertical grillage.",
             "Combinations 4-5 require explicit secondary-action/bearing-friction structural effects and provenance.",
+            (
+                "The shear PASS/CHECK status concerns maximum web resistance only. "
+                "Required link steel is reported, but provided links are not an input or a pass check."
+            ),
             (
                 "BS traffic placement-grid convergence is unverified for this run. On the 15 m "
                 "reference, halving the default HA+HB steps changed girder 5 torsion by 7.412%, "

@@ -63,7 +63,7 @@ def render_calculation_report(
         f"<td>{_optional_number(row.flexure_utilization)}</td>"
         f"<td>{_status(row.flexure_passes)}</td>"
         f"<td>{row.shear_demand_kn:.2f} / {row.shear_max_resistance_kn:.2f}</td>"
-        f"<td>{_status(row.shear_passes)}</td>"
+        f"<td>{_status(row.shear_maximum_passes)}</td>"
         f"<td>{row.crack_width_mm:.3f} / {row.crack_limit_mm:.3f}</td>"
         f"<td>{_status(row.crack_passes)}</td>"
         f"<td>{row.deflection_mm:.3f} / {_optional_number(row.deflection_limit_mm)}</td>"
@@ -165,7 +165,7 @@ Torsion: Girder {summary.governing_torsion.girder},
 <th>Source</th></tr>{effects}</table>
 <h2>Resistance and serviceability</h2>
 <table><tr><th>Girder</th><th>Flex. util.</th><th>Flexure</th><th>VEd/Vmax (kN)</th>
-<th>Shear</th><th>Crack/limit (mm)</th><th>Crack</th><th>Defl./limit (mm)</th>
+<th>Web limit</th><th>Crack/limit (mm)</th><th>Crack</th><th>Defl./limit (mm)</th>
 <th>Deflection</th></tr>{design_rows}</table>
 <h2>Scope and provenance notes</h2><ul>{notes}</ul>
 {calculations}
