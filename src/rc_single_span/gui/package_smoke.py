@@ -57,10 +57,15 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
         window._analysis_finished(result, summary)
         assert window._last_summary is summary
         assert len(summary.rows) == len(summary.design_rows) == 7
+        assert window._report_html is not None
+        assert "Analysis, loading and combinations" in window._report_html
+        assert "Governing" in window._report_html
+        assert window._report_html.count("data:image/png;base64,") == 3
 
         pdf_path = target / "reference_calculation_report.pdf"
         window.write_report_pdf(pdf_path)
         assert pdf_path.read_bytes().startswith(b"%PDF-")
+        assert pdf_path.stat().st_size > 50000
         (target / "smoke_result.json").write_text(
             json.dumps(
                 {

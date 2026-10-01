@@ -8,7 +8,9 @@ ZIP contains the entire `RCBridgeAnalyzer` folder; extract it before starting
 The CI packaged-app check starts **the built EXE**, constructs the 15 m,
 seven-girder reference, saves and reopens its JSON file, executes deterministic
 BS EN analysis and code-specific design checks, and writes a checked PDF
-report. The workflow fails if `qwindows.dll` is absent or if a check fails.
+report with substituted calculations and three response plots. The workflow
+fails if `qwindows.dll` is absent, the result-backed sheets are missing or a
+check fails.
 The smoke mode uses an explicit Custom 1.2 m LM1 search step to keep the packaged
 check practical, while a normal new project selects Final Verification and
 audits the 1.2 m and 0.6 m grids. Quick uses 3 m for exploratory modelling;

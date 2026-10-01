@@ -52,6 +52,7 @@ from rc_single_span.gui.engine_adapter import (
 from rc_single_span.gui.project_state import GuiProjectState
 from rc_single_span.gui.reporting import render_calculation_report
 from rc_single_span.gui.widgets import double_spin, form_page, int_spin
+from rc_single_span.verification.reference_runner import ReferenceRunResult
 
 
 class _WorkerSignals(QObject):
@@ -1171,7 +1172,8 @@ class BridgeMainWindow(QMainWindow):
         if self._run_state is None or self._run_settings is None or self._run_design is None:
             raise RuntimeError("Analysis snapshot is missing; report cannot be generated.")
         self._report_html = render_calculation_report(
-            self._run_state, self._run_settings, self._run_design, summary
+            self._run_state, self._run_settings, self._run_design, summary,
+            result=self._last_result if isinstance(self._last_result, ReferenceRunResult) else None,
         )
         self.report_preview.setHtml(self._report_html)
         self._export_action.setEnabled(True)

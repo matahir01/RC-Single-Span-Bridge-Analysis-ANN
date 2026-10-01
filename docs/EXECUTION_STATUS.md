@@ -140,20 +140,25 @@ On the explicit coarse benchmark, 40/129/1,032 cases took 7.62 s before and
 exactly. The same-runner BS comparison and Windows EXE smoke passed in CI at commit `1c2c38e`.
 See [BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md](BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md).
 
-## 1 October report work interruption
+## Calculation-sheet batch (verified locally, pending Windows CI)
 
-The local workspace disconnected before the calculation-sheet batch could be
-pushed. Local changes in gui/reporting.py, gui/report_diagrams.py,
-gui/main_window.py and tests/test_gui_workflows.py / test_calculation_sheets.py
-rendered a real BS reference to a 13-page A4 PDF with three response plots.
-The BS sheet test (2 passed), actual Quick LM1 PDF smoke (1 passed) and Ruff
-passed before the last unverified equation edits. These report edits are **not**
-in main and the published Windows ZIP still has the old summary report.
+The clean checkout from `9a46d55` has a new result-backed report generator:
+analysis load cases and factored substitutions, per-girder BS/EC2 design
+checks, nominal physical traffic case/member IDs, and three plotted response
+curves. The permanent bending and shear plots use the summed construction
+loads; the traffic moment plot is explicitly an absolute station envelope,
+not a single-case signed bending diagram. The program never assigns a
+deflection pass without a project-supplied criterion. The BS coarse design
+PDF renders to 12 A4 pages and was visually checked; the BS EN Quick PDF
+renders to 6 pages. A real BS EN source application smoke with code-specific
+design at 1.2 m saved/reopened the reference project and exported a 12-page,
+177+ KB PDF. The full suite passed (252 tests), and Ruff passed. The Windows
+package smoke now requires equations, diagrams and a substantive PDF. This
+source batch has not yet run on Windows CI.
 
-Exact next action: reconnect the workspace; inspect the local uncommitted report
-files and finish the BS governing case-ID row, rerun Ruff and the full suite,
-render both routes and visually inspect the A4 pages, extend the packaged-app
-smoke to assert equations/diagrams, then push the report batch and verify the
-new Windows EXE artifact. For research, keep `assumptions_confirmed=false`
-and obtain action/correlation/project criteria before accepting reliability or
-RBDO outcomes.
+Exact next action: commit and push the calculation sheets, wait for the real
+Windows build and packaged-app smoke, and publish the new artifact link and
+hash. Then time/check the default fine
+BS traffic grid and continue the source-based ANN/RBDO research. Keep
+`assumptions_confirmed=false` until action/correlation/project criteria are
+verified; exploratory reliability results do not approve a bridge.

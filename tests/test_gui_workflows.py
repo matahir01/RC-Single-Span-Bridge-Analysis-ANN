@@ -171,11 +171,24 @@ def test_accuracy_mode_and_custom_grid_round_trip(window, tmp_path) -> None:
     assert window._read_settings().lm1_step_m == 0.9
 
 
-def test_quick_mode_runs_engine_and_labels_unverified_grid(window) -> None:
+def test_quick_mode_runs_engine_and_labels_unverified_grid(window, tmp_path) -> None:
     state = window._read_state()
     settings = replace(window._read_settings(), accuracy_mode=GuiAccuracyMode.QUICK)
     result, summary = run_gui_analysis(state.build_project(), settings)
     assert result.lm1.longitudinal_step_m == summary.actual_lm1_step_m == 3.0
     assert any("No grid convergence claim" in note for note in summary.notes)
-    report = render_calculation_report(state, settings, window._read_design_inputs(), summary)
+    report = render_calculation_report(
+        state, settings, window._read_design_inputs(), summary, result=result)
     assert "LM1 search step 3.000 m" in report
+    assert "MEd = gammaG x MG + gammaQ x MLM1" in report
+    assert "Traffic case" in report
+    assert report.count("data:image/png;base64,") == 3
+    window.analysis_mode.setCurrentText(GuiAccuracyMode.QUICK.value)
+    window._run_state, window._run_settings = state, settings
+    window._run_design = window._read_design_inputs()
+    window._run_fingerprint = window._fingerprint()
+    window._analysis_finished(result, summary)
+    pdf = tmp_path / "quick_calculation_sheets.pdf"
+    window.write_report_pdf(pdf)
+    assert pdf.read_bytes().startswith(b"%PDF-")
+    assert pdf.stat().st_size > 30000

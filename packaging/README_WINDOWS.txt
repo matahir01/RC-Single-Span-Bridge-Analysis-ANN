@@ -10,7 +10,10 @@ RC Single-Span Bridge Analysis — Windows x64
    m), or Final Verification (checks 1.2 against 0.6 m). Editing the LM1
    grid selects Custom, which makes no convergence claim. The app reports
    actual phases and elapsed time. Cancel discards the partial run.
-6. Run analysis, review girder results, and export the calculation report PDF.
+6. Run analysis, review girder results, and export the calculation sheets PDF.
+   The sheets show run assumptions, substituted load/design equations, case
+   IDs and bending/shear diagrams from the completed result. The nominal
+   traffic moment plot is an envelope, not a signed single-case diagram.
    Save/Open use JSON project files; reopening requires a fresh analysis run.
 
 The reference starts at a 15 m span and seven rectangular girders. BS EN is

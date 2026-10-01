@@ -6,8 +6,14 @@ from datetime import UTC, datetime
 from html import escape
 
 from rc_single_span.gui.design_adapter import GuiDesignInputs
-from rc_single_span.gui.engine_adapter import GuiAnalysisSettings, GuiAnalysisSummary
+from rc_single_span.gui.engine_adapter import (
+    GuiAnalysisSettings,
+    GuiAnalysisSummary,
+    GuiCodeProfile,
+)
 from rc_single_span.gui.project_state import GuiProjectState
+from rc_single_span.gui.report_sheets import analysis_sheets, design_sheets, row, sheet
+from rc_single_span.verification.reference_runner import ReferenceRunResult
 
 
 def _cell(value: object) -> str:
@@ -30,12 +36,19 @@ def render_calculation_report(
     design: GuiDesignInputs,
     summary: GuiAnalysisSummary,
     *,
+    result: ReferenceRunResult | None = None,
     generated_at: datetime | None = None,
 ) -> str:
     """Render only the completed run snapshot, never the currently edited form."""
 
     if not summary.rows or settings.code_profile is not summary.code_profile:
         raise ValueError("Report requires a completed analysis for the selected code profile.")
+    if result is not None:
+        if (result.project.name != state.name or
+                len(result.construction.cumulative_by_girder) != len(summary.rows)):
+            raise ValueError("Report project does not match the completed engine result.")
+        if (settings.code_profile is GuiCodeProfile.BS_EN) != (result.lm1 is not None):
+            raise ValueError("Report code route does not match the completed engine result.")
     generated_at = generated_at or datetime.now(UTC)
     effects = "".join(
         "<tr>"
@@ -91,6 +104,20 @@ def render_calculation_report(
         )
         for key, value in values.items()
     )
+    calculations = (
+        analysis_sheets(result, summary) + design_sheets(result, settings, design)
+        if result is not None else sheet(2, "Detailed engine record unavailable", state.name, [
+            row("Result", "The completed engine object was not supplied. Equations, "
+                "case IDs and diagrams cannot be generated from this summary.", "Incomplete")])
+    )
+    provenance = sheet(4 + len(summary.rows), "Provenance and limits", state.name, [
+        row("Engine source", "src/rc_single_span/analysis, traffic, codes, design "
+            "and verification/reference_runner.py. The source evidence register "
+            "is docs/RESEARCH_EVIDENCE_REGISTER.md; these sheets report the "
+            "implemented calculation, not every code provision.", "Traceable"),
+        row("Scope", f"<ul>{notes}</ul>Software verification is separate from "
+            "independent approval of a real bridge.", "Review required"),
+    ])
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>
 body {{ font-family: Arial, sans-serif; color: #24344a; font-size: 9pt; }}
 h1 {{ color: #193653; font-size: 19pt; }}
@@ -99,8 +126,13 @@ table {{ border-collapse: collapse; width: 100%; margin: 8pt 0; }}
 th, td {{ border: 1px solid #bfccd6; padding: 4pt; text-align: left; }}
 th {{ background: #e9f1f6; }}
 .notice {{ border: 1px solid #b79b58; background: #fff9e7; padding: 8pt; }}
+.sheet {{ page-break-before: always; }}
+.sheet-head td {{ width: 50%; }}
+.calculations th:first-child {{ width: 18%; }}
+.calculations th:last-child {{ width: 15%; }}
+.calculations tr {{ page-break-inside: avoid; }}
 </style></head><body>
-<h1>RC Single-Span Bridge — Calculation Summary</h1>
+<h1>RC Single-Span Bridge — Analysis &amp; Design Calculation Sheets</h1>
 <p>Project: {_cell(state.name)}<br>Generated: {_cell(generated_at.isoformat(timespec="seconds"))}
 <br>Code basis: {_cell(summary.code_basis)}</p>
 <p class="notice">Software calculation for the input snapshot below. This report is not
@@ -136,6 +168,8 @@ Torsion: Girder {summary.governing_torsion.girder},
 <th>Shear</th><th>Crack/limit (mm)</th><th>Crack</th><th>Defl./limit (mm)</th>
 <th>Deflection</th></tr>{design_rows}</table>
 <h2>Scope and provenance notes</h2><ul>{notes}</ul>
+{calculations}
+{provenance}
 <h2>Complete run input register</h2>
 <p>Values below are the frozen inputs used for this run; opening or editing a
 project clears the report until a new analysis completes.</p>
