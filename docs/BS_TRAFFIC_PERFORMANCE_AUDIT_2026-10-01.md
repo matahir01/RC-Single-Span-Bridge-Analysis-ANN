@@ -26,7 +26,40 @@ real case counts and cooperative cancellation through all three BS searches.
 Cancellation is checked between placement solves and during HA+HB placement
 generation. Grillage factorization itself is not interruptible mid-call.
 
-The default finer BS grids, all-cases retention and design calculation remain
-to be timed and checked after this coarse gate. This optimization does not
-establish traffic-search convergence, correctness of project load assumptions,
-or approval of a real bridge.
+## Default GUI fine-grid comparison
+
+A second same-runner check used the normal GUI reference project and BS 5400
+route with design enabled, 45 HB units and `retain_all_cases=false`. The
+`ReferenceRunConfig` defaults were HA 1.0 m; HB 1.0 m longitudinal and 0.5 m
+transverse; HA+HB 2.0 m HB longitudinal, 1.0 m transverse and 2.0 m HA KEL.
+These are current software defaults, **not** a demonstrated convergence grid.
+
+| Search | Placements | Retained physical cases |
+| --- | ---: | ---: |
+| HA | 612 | 14 |
+| HB | 1,845 | 13 |
+| HA+HB | 9,672 | 15 |
+
+The pre-optimization commit `d84d423` took **263.73 s**; the current
+`0bc6106` source took **150.33 s** with the same capture script and runner,
+or **1.75×** faster. A separate interactive optimized run took 128.36 s,
+showing ordinary timing variation; the paired 263.73/150.33 s result is the
+reported comparison. The full JSON outputs were **exactly identical after
+removing elapsed time**: all seven girder and station envelopes, retained case
+IDs and physical load records, BS combinations, seven code-specific design
+results, and GUI summary rows. No numerical tolerance was used.
+
+Reproduce with `scripts/benchmark_bs_fine.py --root <checkout> --output
+<path.json>` on each commit, then use `scripts/compare_bs_traffic.py <old.json>
+<new.json>`. The preserved [legacy](benchmarks/bs_traffic_fine_legacy_2026-10-01.json.gz)
+and [optimized](benchmarks/bs_traffic_fine_optimized_2026-10-01.json.gz)
+records are compressed JSON; the comparison script reads `.json.gz` directly.
+Their compressed-file SHA-256 values are
+`97ad385beb819a02d661c90dd2bc8c1b122373eb4b58091510d565aba5374dd2`
+and `171e89479458066a440055e1690a0b81b3c227fc2d379933d3e510f867b0487e`,
+respectively. The CI gate still compares the faster coarse grid on one runner;
+this default fine comparison is a preserved local audit, not a CI job.
+
+All-cases retention remains unbenchmarked. No BS traffic-grid convergence
+study has yet justified these default search increments. The improvement does
+not resolve project loading, code-scope or independent bridge-review questions.

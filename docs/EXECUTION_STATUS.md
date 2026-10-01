@@ -63,6 +63,18 @@ Updated: 1 October 2026 (UTC)
   physical check and strict identity audit; 248 local tests and Ruff passed.
   The 0.6 m old/new result matched exactly apart from elapsed time on the
   local runner (3,051.38 s to 234.69 s); CI still gates same-runner 3.0 m.
+- `0bc6106b0b4b677466f13eef36f926223131bc67`: result-backed worked
+  analysis/design sheets and three diagrams, BS EN and BS 5400/BD 37 routes.
+  252 local tests and Ruff passed; a real source GUI run saved/reopened the
+  15 m project and rendered a 12-page PDF. GitHub [tests run
+  36915851648](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36915851648),
+  [GUI run 36915851439](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36915851439),
+  and [Windows EXE run 36915851447](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36915851447)
+  all passed. The [downloadable Windows artifact](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36915851447/artifacts/11188993946)
+  contains the full folder ZIP and README. Inner distribution ZIP SHA-256:
+  `08DA8FB4340D324C370BD93DAE6F66ED9CBEF277C62F0469401DD38000E57702`;
+  Actions artifact SHA-256:
+  `4de8194f54c30b8bd2508da99261390c292ca2dcfdcf5626df9cb06ae0005e08`.
 
 ## Windows package check
 
@@ -72,11 +84,12 @@ updated packaged-app smoke asserts the normal displayed step is 0.6 m, then
 saves/runs an explicit Custom 1.2 m grid. This grid is among
 the repository's independently audited comparisons (4.09% maximum response
 envelope change versus 0.6 m, under the documented 5% criterion), but a
-package smoke is **only a functionality check**. Local Linux source smoke
-completed: seven girders, seven design rows, project JSON save/reopen, and
-40 KB PDF with a valid header. The Windows CI package check and ZIP upload
-passed on 29 September. The distribution is unsigned and the GitHub Actions
-artifact has a finite retention period.
+package smoke is **only a functionality check**. The current Linux source
+smoke completed seven girders, seven design rows, JSON save/reopen and a
+178 KB, 12-page PDF containing the calculation sheets and three diagrams.
+Windows CI built the actual EXE, found `qwindows.dll`, ran the packaged
+reference workflow and uploaded the ZIP on 1 October. The distribution is
+unsigned; the Actions artifact expires on 30 December 2026.
 
 ## Research
 
@@ -139,8 +152,16 @@ On the explicit coarse benchmark, 40/129/1,032 cases took 7.62 s before and
 4.20 s after (1.81x); full JSON outputs excluding elapsed time matched
 exactly. The same-runner BS comparison and Windows EXE smoke passed in CI at commit `1c2c38e`.
 See [BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md](BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md).
+The default GUI BS grid with code-specific design was also compared on one
+runner: 612/1,845/9,672 placements took 263.73 s before versus 150.33 s
+after (1.75x). Complete captured JSON outputs were identical excluding time,
+including retained case IDs/loads, girder/station envelopes, combinations,
+seven design results and summary rows. Both fine snapshots and the capture
+script are preserved in this repository. This is a local fine-grid check; CI
+continues to gate the coarse same-runner comparison. BS grid convergence and
+all-cases retention remain unverified.
 
-## Calculation-sheet batch (verified locally, pending Windows CI)
+## Calculation-sheet batch (pushed and Windows verified)
 
 The clean checkout from `9a46d55` has a new result-backed report generator:
 analysis load cases and factored substitutions, per-girder BS/EC2 design
@@ -153,12 +174,13 @@ PDF renders to 12 A4 pages and was visually checked; the BS EN Quick PDF
 renders to 6 pages. A real BS EN source application smoke with code-specific
 design at 1.2 m saved/reopened the reference project and exported a 12-page,
 177+ KB PDF. The full suite passed (252 tests), and Ruff passed. The Windows
-package smoke now requires equations, diagrams and a substantive PDF. This
-source batch has not yet run on Windows CI.
+package smoke now requires equations, diagrams and a substantive PDF. The
+built Windows EXE passed that packaged smoke and the ZIP was uploaded.
 
-Exact next action: commit and push the calculation sheets, wait for the real
-Windows build and packaged-app smoke, and publish the new artifact link and
-hash. Then time/check the default fine
-BS traffic grid and continue the source-based ANN/RBDO research. Keep
+Exact next action: continue the source-based ANN/RBDO work: resolve the DL/LL and dependence
+model, physical shear links and deflection criterion, expand direct sampling
+past the failed 2,000-point convergence check, validate near-limit and design-
+domain ANN behavior, and rerun reliability and RBDO without extrapolating an
+unconverged result. Keep
 `assumptions_confirmed=false` until action/correlation/project criteria are
 verified; exploratory reliability results do not approve a bridge.
