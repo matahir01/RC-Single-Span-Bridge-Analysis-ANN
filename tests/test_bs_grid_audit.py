@@ -1,10 +1,11 @@
 from pathlib import Path
-
-from examples.audit_bs_reference_grid import compare
+from runpy import run_path
 
 
 def test_default_reference_bs_grid_does_not_pass_halved_grid_check() -> None:
-    root = Path(__file__).resolve().parents[1] / "docs" / "benchmarks"
+    repository = Path(__file__).resolve().parents[1]
+    compare = run_path(str(repository / "examples" / "audit_bs_reference_grid.py"))["compare"]
+    root = repository / "docs" / "benchmarks"
     audit = compare(
         root / "bs_traffic_fine_optimized_2026-10-01.json.gz",
         root / "bs_traffic_halved_grid_2026-10-01.json.gz",
