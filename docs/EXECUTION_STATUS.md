@@ -1,6 +1,6 @@
 # Execution status
 
-Updated: 30 September 2026 (UTC)
+Updated: 1 October 2026 (UTC)
 
 ## Latest pushed code
 
@@ -50,6 +50,10 @@ Updated: 30 September 2026 (UTC)
   checkout was shallow. Local same-environment comparison passed (108.36 s old,
   10.54 s new, matching physical cases/IDs, effects and design). The next
   commit configures full history checkout.
+- `2faf442ae5b5e19c21cddbe2006e5191b3b20d4f`: Quick, Standard, Final and
+  Custom accuracy modes; full-history LM1 comparison and 0.6 m baseline. Linux
+  tests, same-runner legacy comparison, GUI smoke and Windows packaged EXE
+  smoke all passed. Windows artifact 11079853650 includes the working EXE ZIP.
 
 ## Windows package check
 
@@ -93,16 +97,20 @@ all seven governing girders, station IDs, retained physical case IDs/loads,
 and characteristic/frequent design combination effects. These match the
 pre-change run; differing numerical effects are under 1e-7 in native units.
 Near-tie selection preserves the original Python sum order and exact Hermite
-cell signs, including support roundoff. The optimized 0.6 m reference run
-completed in 213.89 s with 190 retained cases; the pre-change 0.6 m run is
-complete at 3,051.38 s with 190 retained cases: a 14.27x runtime reduction.
+cell signs, including support roundoff. An initial optimized 0.6 m reference
+run completed in 213.89 s with 190 retained cases; the pre-change run took
+3,051.38 s with 190 retained cases.
 The baseline snapshot is `docs/benchmarks/lm1_06m_legacy_2026-09-30.json`
 (SHA-256 `41b472807f46d3074a86a967800508cedc3696082d56b1c716be72ae08604914`).
 The seven girder numerical effects differ by at most approximately 2.6e-10,
 station moment effects by 8.6e-10 and design combinations by 1.2e-9 native
 units. Five near-tied governing components choose a different member/case;
 190 retained cases occur in both runs but case IDs/loads are not all identical.
-This **fails the requested strict 0.6 m case-identity gate** and remains open.
+The near-tie physical check restores exact JSON equality (apart from
+elapsed time) with the saved baseline: all 190 retained cases and IDs,
+girder/station envelopes and combinations agree. The final optimized 0.6 m
+run took 234.69 s versus 3,051.38 s, a 13.00x speedup. The 3 m strict
+golden regression passed. This 0.6 m identity check was local, not a CI gate.
 The subsequent progress/cancellation batch passes 246 local
 tests and Ruff. CI will run the old and new 3.0 m engines on the same runner
 and compare girder/station case IDs, retained loads, combinations and EC2
@@ -115,10 +123,11 @@ finished in 256.76 s: it correctly rejected 2.4 to 1.2 m at 13.404% and
 accepted 1.2 to 0.6 m at 4.088%, retaining 0.6 m. Local Ruff and 248 tests
 pass, including a real Quick analysis.
 
-Exact next action: diagnose and fix the 0.6 m near-tie placement/registration
-ordering against the saved pre-change snapshot, keeping numerical effects and
-design combinations within strict tolerances. Push the accuracy-mode/full-
-checkout batch, confirm Linux CI and packaged Windows smoke against it, and
-record the exact ZIP artifact. For research, retain
+Exact next action: push the near-tie identity fix and performance audit, then
+optimize and instrument the BS 5400 HA/HB/HA+HB route with numerical regression
+checks. Replace the GUI calculation summary with paginated, source-labelled
+calculation sheets whose equations and substituted values come from the
+completed engine result. Rebuild and smoke-test the Windows ZIP. For research,
+retain
 `assumptions_confirmed=false` and obtain action/correlation/project criteria
 before any accepted reliability or RBDO result.

@@ -121,6 +121,11 @@ materially different bridge geometry must establish its own convergence.
 
 See `docs/BS_EN_LM1_CONVERGENCE_AUDIT.md`.
 
+The [LM1 performance audit](docs/LM1_PERFORMANCE_AUDIT_2026-09-30.md)
+compares the optimized engine to the pre-change source on the 15 m reference:
+the verified 0.6 m result retained the same cases, IDs, loads and combinations
+in 235 s versus 3,051 s on the same runner.
+
 ## BS EN frequent SLS — CLOSED
 
 The frequent-LM1 implementation weights tandem and UDL components before the

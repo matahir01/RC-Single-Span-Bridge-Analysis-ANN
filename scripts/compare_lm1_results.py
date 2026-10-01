@@ -28,12 +28,21 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("old", type=Path)
     parser.add_argument("new", type=Path)
+    parser.add_argument("--exact", action="store_true",
+                        help="Require identical JSON fields except elapsed time.")
     args = parser.parse_args()
     old, new = (json.loads(path.read_text(encoding="utf-8"))
                 for path in (args.old, args.new))
-    compare(old, new)
-    print(f"LM1 governing cases, IDs, loads, combinations and design match; "
-          f"{old['elapsed_s'] / new['elapsed_s']:.2f}x faster")
+    if args.exact:
+        assert {key: value for key, value in old.items() if key != "elapsed_s"} == {
+            key: value for key, value in new.items() if key != "elapsed_s"
+        }, "The LM1 outputs differ."
+    else:
+        compare(old, new)
+    scope = "cases, IDs, loads and combinations"
+    if "design" in old:
+        scope += " and design"
+    print(f"LM1 governing {scope} match; {old['elapsed_s'] / new['elapsed_s']:.2f}x faster")
 
 
 if __name__ == "__main__":

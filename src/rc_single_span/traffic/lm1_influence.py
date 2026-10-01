@@ -721,6 +721,7 @@ def run_lm1_influence_grillage_search(
         raise ValueError("Supplied LM1 context does not match project, factors or search grid.")
     groups = _longitudinal_groups(context.model)
     nodes = {node.node_id: node for node in context.model.nodes}
+    member_index_by_id = {member_id: index for index, member_id in enumerate(context.member_ids)}
     registered: dict[
         tuple[int, tuple[Bounds, ...] | None], LM1CaseResult | _DeferredLM1Case
     ] = {}
@@ -899,12 +900,29 @@ def run_lm1_influence_grillage_search(
                             value, case_id, None,
                         )
                         candidate = replace(candidate, member_id=beam.member_id)
+                        station_best = stations.get(
+                            x_m, GoverningComponent(-1.0, 0, None),
+                        ) if name == "moment" else None
+                        near_global = candidate.value >= best[name].value - (
+                            1.0e-8 * max(1.0, abs(best[name].value))
+                        )
+                        near_station = (
+                            station_best is not None and candidate.value >= station_best.value -
+                            1.0e-8 * max(1.0, abs(station_best.value))
+                        )
+                        if near_global or near_station:
+                            # The legacy search compares *physically solved*
+                            # responses for every trial. Superposition can
+                            # reverse near-equal member-end winners by roundoff;
+                            # re-solve record breakers and close contenders.
+                            physical = resolve_by_id(case_id).analysis
+                            member = physical.members[member_index_by_id[beam.member_id]]
+                            candidate = replace(
+                                candidate, value=sign * float(getattr(member, attribute)),
+                            )
                         if candidate.value > best[name].value:
                             best[name] = candidate
-                        if name == "moment" and candidate.value > stations.get(
-                            x_m,
-                            GoverningComponent(-1.0, 0, None),
-                        ).value:
+                        if station_best is not None and candidate.value > station_best.value:
                             stations[x_m] = candidate
         x_samples = {
             node.x_m
