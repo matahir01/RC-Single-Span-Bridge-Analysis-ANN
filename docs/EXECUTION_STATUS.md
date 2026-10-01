@@ -54,6 +54,11 @@ Updated: 1 October 2026 (UTC)
   Custom accuracy modes; full-history LM1 comparison and 0.6 m baseline. Linux
   tests, same-runner legacy comparison, GUI smoke and Windows packaged EXE
   smoke all passed. Windows artifact 11079853650 includes the working EXE ZIP.
+- `1c2c38ecf3a3133e48be8e37a8c97551503e0b11`: BS HA/HB/HA+HB
+  per-search progress and cancellation, identical physical load reuse, saved
+  coarse baseline and same-runner CI gate. 251 local tests and Ruff passed.
+  Linux tests and real Windows package workflow passed: runs 36883772558 and
+  36883772568. The default finer BS route still needs a timed convergence audit.
 - `d84d423a758d463b6b5d8fe7c7af2696487ced36`: 0.6 m LM1 near-tie
   physical check and strict identity audit; 248 local tests and Ruff passed.
   The 0.6 m old/new result matched exactly apart from elapsed time on the
@@ -127,18 +132,28 @@ finished in 256.76 s: it correctly rejected 2.4 to 1.2 m at 13.404% and
 accepted 1.2 to 0.6 m at 4.088%, retaining 0.6 m. Local Ruff and 248 tests
 pass, including a real Quick analysis.
 
-The current local BS batch adds progress and cooperative cancellation inside
+The pushed BS batch adds progress and cooperative cancellation inside
 HA, HB and HA+HB searches. Identical HA+HB physical loads within a fixed HB
 position reuse the solved response while retaining each model and case ID.
 On the explicit coarse benchmark, 40/129/1,032 cases took 7.62 s before and
 4.20 s after (1.81x); full JSON outputs excluding elapsed time matched
-exactly. The old/new same-runner CI comparison is prepared but not pushed yet.
+exactly. The same-runner BS comparison and Windows EXE smoke passed in CI at commit `1c2c38e`.
 See [BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md](BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md).
 
-Exact next action: push the verified BS traffic progress/optimization batch,
-then replace the GUI calculation summary with paginated, source-labelled
-calculation sheets whose equations and substituted values come from the
-completed engine result. Rebuild and smoke-test the Windows ZIP. For research,
-retain
-`assumptions_confirmed=false` and obtain action/correlation/project criteria
-before any accepted reliability or RBDO result.
+## 1 October report work interruption
+
+The local workspace disconnected before the calculation-sheet batch could be
+pushed. Local changes in gui/reporting.py, gui/report_diagrams.py,
+gui/main_window.py and tests/test_gui_workflows.py / test_calculation_sheets.py
+rendered a real BS reference to a 13-page A4 PDF with three response plots.
+The BS sheet test (2 passed), actual Quick LM1 PDF smoke (1 passed) and Ruff
+passed before the last unverified equation edits. These report edits are **not**
+in main and the published Windows ZIP still has the old summary report.
+
+Exact next action: reconnect the workspace; inspect the local uncommitted report
+files and finish the BS governing case-ID row, rerun Ruff and the full suite,
+render both routes and visually inspect the A4 pages, extend the packaged-app
+smoke to assert equations/diagrams, then push the report batch and verify the
+new Windows EXE artifact. For research, keep `assumptions_confirmed=false`
+and obtain action/correlation/project criteria before accepting reliability or
+RBDO outcomes.
