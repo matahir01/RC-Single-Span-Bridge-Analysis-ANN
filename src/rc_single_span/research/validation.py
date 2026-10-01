@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 import numpy as np
+from scipy.optimize import differential_evolution
 from scipy.stats import norm
 
 from rc_single_span.research.dependence import GaussianCopula
@@ -42,6 +43,110 @@ class SurrogateValidationResult:
     maximum_absolute_error: tuple[float, ...]
     near_limit_state_sample_count: tuple[int, ...]
     near_limit_state_maximum_absolute_error: tuple[float | None, ...]
+
+
+@dataclass(frozen=True)
+class BoundaryChallenge:
+    target_name: str
+    marginal_quantile_range: tuple[float, float]
+    candidate_minimum: float
+    candidate_maximum: float
+    bracket_found: bool
+    features: tuple[float, ...] | None
+    direct_margin: float | None
+    surrogate_margin: float | None
+    absolute_error: float | None
+
+
+def challenge_surrogate_at_direct_boundaries(
+    evaluator: DirectLimitStateEvaluator,
+    surrogate: SurrogatePredictor,
+    variables: tuple[RandomVariable, ...],
+    *,
+    marginal_tail: float = 0.001,
+    iterations: int = 30,
+    seed: int = 20261001,
+) -> tuple[BoundaryChallenge, ...]:
+    """Find direct g=0 brackets, then test the ANN at independently found roots.
+
+    A bounded marginal-quantile hyperrectangle is searched with a reproducible
+    global heuristic. Its endpoints are candidates, not certified extrema.
+    A joint corner is not a probability sample, and dependence is deliberately
+    not inferred from this diagnostic. Missing brackets remain explicit.
+    """
+
+    _validate_order(evaluator, variables)
+    if surrogate.feature_names != evaluator.feature_names or surrogate.target_names != evaluator.target_names:
+        raise ValueError("Surrogate names do not match the direct evaluator.")
+    if not 0.0 < marginal_tail < 0.5 or iterations <= 0:
+        raise ValueError("Require a positive iteration count and marginal_tail in (0, 0.5).")
+
+    def physical(probabilities: np.ndarray) -> np.ndarray:
+        return np.asarray([
+            float(variable.from_unit_interval(probability))
+            for variable, probability in zip(variables, probabilities, strict=True)
+        ])
+
+    def direct(features: np.ndarray, target_name: str) -> float | None:
+        result = evaluator.evaluate(dict(zip(evaluator.feature_names, map(float, features), strict=True)))
+        if not result.valid:
+            return None
+        value = float(result.values[target_name])
+        return value if np.isfinite(value) else None
+
+    output: list[BoundaryChallenge] = []
+    for index, target_name in enumerate(evaluator.target_names):
+        endpoints: list[tuple[np.ndarray, float]] = []
+        for sign in (1.0, -1.0):
+            def objective(
+                probabilities: np.ndarray,
+                bound_name: str = target_name,
+                bound_sign: float = sign,
+            ) -> float:
+                value = direct(physical(probabilities), bound_name)
+                return bound_sign * value if value is not None else 1.0e30
+
+            search = differential_evolution(
+                objective,
+                [(marginal_tail, 1.0 - marginal_tail)] * len(variables),
+                seed=seed + 2 * index + (0 if sign > 0 else 1),
+                maxiter=iterations,
+                popsize=5,
+                polish=False,
+            )
+            point = physical(search.x)
+            margin = direct(point, target_name)
+            if margin is None:
+                raise ValueError(f"No valid direct candidate found for {target_name}.")
+            endpoints.append((point, margin))
+        (low_point, low), (high_point, high) = endpoints
+        if low > 0.0 or high < 0.0:
+            output.append(BoundaryChallenge(
+                target_name, (marginal_tail, 1.0 - marginal_tail),
+                low, high, False, None, None, None, None,
+            ))
+            continue
+        for _ in range(40):
+            midpoint = 0.5 * (low_point + high_point)
+            margin = direct(midpoint, target_name)
+            if margin is None:
+                raise ValueError(f"Invalid direct evaluation on {target_name} bracket.")
+            if margin <= 0.0:
+                low_point, low = midpoint, margin
+            else:
+                high_point, high = midpoint, margin
+        root = 0.5 * (low_point + high_point)
+        true_margin = direct(root, target_name)
+        assert true_margin is not None
+        prediction = np.asarray(surrogate.predict(root), dtype=float)
+        predicted_margin = float(prediction[index])
+        output.append(BoundaryChallenge(
+            target_name, (marginal_tail, 1.0 - marginal_tail),
+            endpoints[0][1], endpoints[1][1], True,
+            tuple(map(float, root)), true_margin, predicted_margin,
+            abs(predicted_margin - true_margin),
+        ))
+    return tuple(output)
 
 
 def _validate_order(

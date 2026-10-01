@@ -299,6 +299,12 @@ def run_gui_analysis(
         notes = (
             "HA, HB and HA+HB combinations 1-3 are generated from the native vertical grillage.",
             "Combinations 4-5 require explicit secondary-action/bearing-friction structural effects and provenance.",
+            (
+                "BS traffic placement-grid convergence is unverified for this run. On the 15 m "
+                "reference, halving the default HA+HB steps changed girder 5 torsion by 7.412%, "
+                "above the provisional 5% criterion. Refine and check the project grid before "
+                "relying on its traffic envelope."
+            ),
         )
 
     if not rows:

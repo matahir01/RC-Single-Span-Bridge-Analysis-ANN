@@ -52,6 +52,50 @@ rare-event probability accuracy. Stratified/replicated tail studies, near-limit
 validation and physical action/link evidence are still needed before retraining
 the ANN or claiming RBDO reliability.
 
+## Replicated LHS and direct boundary challenge
+
+An additional replicated and direct-boundary diagnostic was run on 1 October
+using the **same unconfirmed** config and the saved 1,500-row ANN model from
+the original Actions artifact. The model archive's exact SHA-256 and the
+training CSV hash are recorded in
+[`2026-10-01_replicated_lhs_boundary.json`](research_runs/2026-10-01_replicated_lhs_boundary.json).
+The new loader restores the old NPZ with explicit feature/target order and
+checks all scaler and layer shapes; no ANN retraining occurred. An independent
+reload and evaluation of the untouched 225-row test CSV reproduces all three
+original R² values exactly and its RMSE values within 6 × 10⁻¹⁴. Reproduce with
+`python examples/audit_research_numerical_gates.py
+examples/provisional_exploratory_config.json --model <ann_model.npz>
+--train <train.csv> --test <test.csv> --output <audit.json>`.
+
+Three independently seeded LHS replications at each count (42,000 direct
+evaluations, seeds 20261001–20261009) show why a single adjacent-size
+comparison is inadequate:
+
+| Samples per replicate | Maximum between-replicate standardized response change | Change in replicate-mean statistics from previous size | 5% screen |
+| ---: | ---: | ---: | --- |
+| 2,000 | 8.079% | — | Fail |
+| 4,000 | 4.726% | 3.150% | Pass at this size only |
+| 8,000 | **7.417%** | 2.748% | **Fail** |
+
+The screen requires both last sizes to be stable between seeds and their
+mean statistics to be stable across sizes. It fails. These are response
+statistics, not a rare-event probability confidence interval. [SciPy's QMC
+documentation](https://docs.scipy.org/doc/scipy/reference/stats.qmc.html)
+describes independent randomized replications as a stability check; this
+implementation uses a fresh randomized Latin hypercube per seed and size.
+
+A fresh **direct evaluator** search over each marginal's 0.1–99.9% quantile
+interval then bracketed the shear limit state and bisected to a direct
+margin of approximately zero. At that point, which lies within every axis
+range of the saved training split, the ANN predicted **+3.805 kN** of shear
+margin (the safe side). Its absolute boundary error is 3.805 kN. The search
+did not find a flexure or deflection sign change; the candidate margins
+remained positive, but the global heuristic cannot prove a boundary is
+absent. Joint corners in this diagnostic do not respect a selected copula
+or carry a failure probability. This is a boundary prediction check, **not**
+a reliability estimate or an accepted surrogate. The shear result alone
+blocks the saved ANN from use as a failure-classifier near `g=0`.
+
 ## Required next research run
 
 Resolve the permanent-action decomposition, joint vehicle/time traffic model

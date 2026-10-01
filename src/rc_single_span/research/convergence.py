@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import combinations
 
 import numpy as np
 
@@ -50,6 +51,35 @@ class SampleSizeConvergenceResult:
         return None
 
 
+@dataclass(frozen=True)
+class ReplicatedSampleSizePoint:
+    sample_count: int
+    seeds: tuple[int, ...]
+    statistics: tuple[tuple[TargetSampleStatistics, ...], ...]
+    mean_statistics: tuple[TargetSampleStatistics, ...]
+    maximum_within_size_change: float
+    mean_change_from_previous: float | None
+
+
+@dataclass(frozen=True)
+class ReplicatedSampleSizeResult:
+    points: tuple[ReplicatedSampleSizePoint, ...]
+    tolerance: float
+
+    @property
+    def stability_screen_passed(self) -> bool:
+        """A response-statistics screen only; this does not certify rare-event tails."""
+
+        if len(self.points) < 2:
+            return False
+        return (
+            self.points[-1].maximum_within_size_change <= self.tolerance
+            and self.points[-2].maximum_within_size_change <= self.tolerance
+            and self.points[-1].mean_change_from_previous is not None
+            and self.points[-1].mean_change_from_previous <= self.tolerance
+        )
+
+
 def _statistics(dataset: ReliabilityDataset) -> tuple[TargetSampleStatistics, ...]:
     results: list[TargetSampleStatistics] = []
     for column, target in enumerate(dataset.target_names):
@@ -92,6 +122,70 @@ def _standardized_change(
             changes.append(abs(new_value - old_value) / scale)
         changes.append(abs(new.failure_fraction - old.failure_fraction))
     return max(changes, default=0.0)
+
+
+def _mean_statistics(
+    replications: tuple[tuple[TargetSampleStatistics, ...], ...],
+) -> tuple[TargetSampleStatistics, ...]:
+    return tuple(
+        TargetSampleStatistics(
+            target_name=first.target_name,
+            **{
+                field: float(np.mean([getattr(replication[index], field) for replication in replications]))
+                for field in (
+                    "mean", "standard_deviation", "q05", "median", "q95", "failure_fraction"
+                )
+            },
+        )
+        for index, first in enumerate(replications[0])
+    )
+
+
+def replicated_sample_size_convergence(
+    evaluator: DatasetEvaluator,
+    variables: tuple[RandomVariable, ...],
+    sample_counts: tuple[int, ...],
+    *,
+    replications: int = 4,
+    base_seed: int = 20261001,
+    tolerance: float = 0.05,
+    dependence: GaussianCopula | None = None,
+) -> ReplicatedSampleSizeResult:
+    """Repeat independent randomized LHS at every size to expose seed sensitivity.
+
+    All samples are independently generated, including across sample sizes.
+    The screen concerns response statistics only. An observed zero failure
+    fraction, especially for a rare target event, cannot establish Pf or β.
+    """
+
+    if len(sample_counts) < 2 or tuple(sorted(set(sample_counts))) != sample_counts:
+        raise ValueError("At least two strictly increasing sample counts are required.")
+    if any(count <= 1 for count in sample_counts):
+        raise ValueError("Each sample count must exceed one.")
+    if replications < 2:
+        raise ValueError("At least two independent replications are required.")
+    if tolerance <= 0.0:
+        raise ValueError("tolerance must be positive.")
+
+    points: list[ReplicatedSampleSizePoint] = []
+    previous: tuple[TargetSampleStatistics, ...] | None = None
+    for index, count in enumerate(sample_counts):
+        seeds = tuple(base_seed + index * replications + offset for offset in range(replications))
+        statistics = tuple(
+            _statistics(
+                generate_dataset(
+                    evaluator, variables, count, seed=seed,
+                    invalid_policy="raise", dependence=dependence,
+                )
+            )
+            for seed in seeds
+        )
+        mean = _mean_statistics(statistics)
+        within = max(_standardized_change(a, b) for a, b in combinations(statistics, 2))
+        adjacent = None if previous is None else _standardized_change(previous, mean)
+        points.append(ReplicatedSampleSizePoint(count, seeds, statistics, mean, within, adjacent))
+        previous = mean
+    return ReplicatedSampleSizeResult(tuple(points), tolerance)
 
 
 def sample_size_convergence(

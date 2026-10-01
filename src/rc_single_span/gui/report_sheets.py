@@ -96,6 +96,16 @@ def analysis_sheets(result, summary) -> str:
                 f"{n(getattr(c.persistent_uls.effects, field))} {unit}"))
     else:
         suite = result.bs_traffic
+        rows.append(row("BS traffic grid",
+            f"HA longitudinal = {n(suite.ha.longitudinal_step_m)} m; "
+            f"HB longitudinal/transverse = {n(suite.hb.longitudinal_step_m)} / "
+            f"{n(suite.hb.transverse_step_m)} m; HA+HB HB longitudinal/transverse "
+            f"= {n(suite.ha_hb.hb_longitudinal_step_m)} / "
+            f"{n(suite.ha_hb.hb_transverse_step_m)} m, KEL step = "
+            f"{n(suite.ha_hb.ha_kel_step_m)} m. "
+            "A project-specific grid convergence check is required. The default 15 m "
+            "reference HA+HB torsion changed 7.412% under half-step refinement, "
+            "above the provisional 5% criterion.", "Unverified grid"))
         for label, search in (("HA", suite.ha), ("HB", suite.hb), ("HA+HB", suite.ha_hb)):
             rows.append(row("BD 37/01", f"{label}: {search.evaluated_case_count:,} "
                             f"nominal placements, {len(search.cases)} retained cases. "

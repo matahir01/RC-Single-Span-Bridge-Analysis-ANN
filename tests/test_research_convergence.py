@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
-from rc_single_span.research.convergence import sample_size_convergence
+from rc_single_span.research.convergence import (
+    replicated_sample_size_convergence,
+    sample_size_convergence,
+)
 from rc_single_span.research.evaluator import LimitStateEvaluation
 from rc_single_span.research.sampling import RandomVariable
 
@@ -53,3 +56,20 @@ def test_sample_size_convergence_rejects_unordered_sizes() -> None:
         assert "strictly increasing" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("Expected unordered sample sizes to be rejected")
+
+
+def test_replicated_lhs_reports_separate_seeds_and_within_size_spread() -> None:
+    variables = (
+        RandomVariable("x", "uniform", lower=-1.0, upper=1.0),
+        RandomVariable("y", "uniform", lower=-2.0, upper=2.0),
+    )
+    result = replicated_sample_size_convergence(
+        _SmoothEvaluator(), variables, (100, 200), replications=3, base_seed=71,
+        tolerance=0.2,
+    )
+    assert result.points[0].seeds == (71, 72, 73)
+    assert result.points[1].seeds == (74, 75, 76)
+    assert result.points[0].mean_change_from_previous is None
+    assert result.points[1].maximum_within_size_change >= 0
+    assert result.points[1].mean_change_from_previous is not None
+    assert result.stability_screen_passed

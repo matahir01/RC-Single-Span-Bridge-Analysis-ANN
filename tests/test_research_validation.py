@@ -5,6 +5,7 @@ import numpy as np
 from rc_single_span.research.evaluator import LimitStateEvaluation
 from rc_single_span.research.sampling import RandomVariable
 from rc_single_span.research.validation import (
+    challenge_surrogate_at_direct_boundaries,
     direct_monte_carlo_reliability,
     validate_surrogate_against_direct,
 )
@@ -80,3 +81,29 @@ def test_direct_monte_carlo_zero_failures_reports_finite_upper_bound() -> None:
     assert result.failure_count == 0
     assert result.confidence_low < 1.0e-12
     assert 0.0 < result.confidence_high < 0.005
+
+
+def test_direct_boundary_challenge_hits_independent_limit_state() -> None:
+    challenge = challenge_surrogate_at_direct_boundaries(
+        _LinearEvaluator(), _ExactSurrogate(), _variables(),
+        iterations=8, seed=2,
+    )[0]
+    assert challenge.bracket_found
+    assert challenge.direct_margin is not None
+    assert abs(challenge.direct_margin) < 1.0e-7
+    assert challenge.absolute_error is not None
+    assert challenge.absolute_error < 1.0e-10
+
+
+def test_direct_boundary_challenge_reports_unbracketed_target() -> None:
+    variables = (
+        RandomVariable("resistance", "uniform", lower=100.0, upper=101.0),
+        RandomVariable("load", "uniform", lower=1.0, upper=2.0),
+    )
+    challenge = challenge_surrogate_at_direct_boundaries(
+        _LinearEvaluator(), _ExactSurrogate(), variables,
+        iterations=3, seed=2,
+    )[0]
+    assert not challenge.bracket_found
+    assert challenge.features is None
+    assert challenge.absolute_error is None

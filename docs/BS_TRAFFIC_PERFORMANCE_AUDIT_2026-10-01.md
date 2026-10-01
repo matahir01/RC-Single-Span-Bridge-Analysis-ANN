@@ -60,6 +60,8 @@ and `171e89479458066a440055e1690a0b81b3c227fc2d379933d3e510f867b0487e`,
 respectively. The CI gate still compares the faster coarse grid on one runner;
 this default fine comparison is a preserved local audit, not a CI job.
 
-All-cases retention remains unbenchmarked. No BS traffic-grid convergence
-study has yet justified these default search increments. The improvement does
-not resolve project loading, code-scope or independent bridge-review questions.
+All-cases retention remains unbenchmarked. The subsequent
+[half-step refinement](BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md) found that the
+default HA+HB grid fails the provisional 5% response criterion: girder 5
+torsion changes by 7.412%. The speed improvement does not resolve project
+loading, code scope or independent bridge-review questions.

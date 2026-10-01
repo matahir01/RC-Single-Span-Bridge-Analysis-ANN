@@ -329,6 +329,8 @@ class NumpyMLPRegressor:
         destination = Path(path)
         destination.parent.mkdir(parents=True, exist_ok=True)
         payload: dict[str, np.ndarray] = {
+            "feature_names": np.asarray(self.feature_names),
+            "target_names": np.asarray(self.target_names),
             "x_mean": self.x_scaler.mean,
             "x_scale": self.x_scaler.scale,
             "y_mean": self.y_scaler.mean,
@@ -340,6 +342,64 @@ class NumpyMLPRegressor:
             payload[f"bias_{index}"] = bias
         np.savez_compressed(destination, **payload)
         return destination
+
+    @classmethod
+    def load_npz(
+        cls,
+        path: str | Path,
+        *,
+        feature_names: tuple[str, ...] | None = None,
+        target_names: tuple[str, ...] | None = None,
+    ) -> NumpyMLPRegressor:
+        """Restore an inference model, including older archives without name metadata.
+
+        Older archives require the caller to supply the exact feature/target
+        order. No pickle objects are loaded from the archive.
+        """
+
+        with np.load(path, allow_pickle=False) as data:
+            if "feature_names" in data:
+                saved_features = tuple(map(str, data["feature_names"].tolist()))
+                saved_targets = tuple(map(str, data["target_names"].tolist()))
+                if feature_names is not None and feature_names != saved_features:
+                    raise ValueError("Feature names do not match the saved ANN.")
+                if target_names is not None and target_names != saved_targets:
+                    raise ValueError("Target names do not match the saved ANN.")
+                feature_names, target_names = saved_features, saved_targets
+            if feature_names is None or target_names is None:
+                raise ValueError("Legacy ANN archives require explicit feature and target names.")
+            layers = tuple(map(int, np.asarray(data["hidden_layers"]).tolist()))
+            model = cls(feature_names, target_names, config=MLPConfig(hidden_layers=layers))
+            x_mean = np.asarray(data["x_mean"], dtype=float)
+            x_scale = np.asarray(data["x_scale"], dtype=float)
+            y_mean = np.asarray(data["y_mean"], dtype=float)
+            y_scale = np.asarray(data["y_scale"], dtype=float)
+            if (x_mean.shape != (len(feature_names),)
+                or x_scale.shape != x_mean.shape
+                or y_mean.shape != (len(target_names),)
+                or y_scale.shape != y_mean.shape):
+                raise ValueError("Saved ANN scaler dimensions do not match its names.")
+            if not all(np.all(np.isfinite(a)) for a in (x_mean, x_scale, y_mean, y_scale)):
+                raise ValueError("Saved ANN scalers contain non-finite values.")
+            if np.any(x_scale <= 0.0) or np.any(y_scale <= 0.0):
+                raise ValueError("Saved ANN scales must be positive.")
+            widths = (len(feature_names), *layers, len(target_names))
+            weights: list[np.ndarray] = []
+            biases: list[np.ndarray] = []
+            for index, (left, right) in enumerate(pairwise(widths)):
+                weight = np.asarray(data[f"weight_{index}"], dtype=float)
+                bias = np.asarray(data[f"bias_{index}"], dtype=float)
+                if weight.shape != (left, right) or bias.shape != (1, right):
+                    raise ValueError(f"Saved ANN layer {index} has an invalid shape.")
+                if not np.all(np.isfinite(weight)) or not np.all(np.isfinite(bias)):
+                    raise ValueError(f"Saved ANN layer {index} contains non-finite values.")
+                weights.append(weight)
+                biases.append(bias)
+            model.x_scaler = Standardizer(x_mean, x_scale)
+            model.y_scaler = Standardizer(y_mean, y_scale)
+            model.weights = weights
+            model.biases = biases
+            return model
 
 
 def train_numpy_ann(

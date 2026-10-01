@@ -1,0 +1,485 @@
+{
+  "status": "exploratory numerical diagnostics; action/dependence/criteria unconfirmed",
+  "config_sha256": "e0e311f2da52e2f07e6330eac4fbebde2292dabab398497498f69046e889445d",
+  "model_sha256": "dacf758170ba3849886d2af6cac54a9904dfd8be6290f4fe0ef42d93e5637357",
+  "train_sha256": "ad8e0e83593dee91a8a7de9a5c40b67bcda46d46d61b605a1a850d29e0875da2",
+  "test_sha256": "726ee34948c2c7c3472a5737214c76a4c0102d79699543be7328c11a4c7239d4",
+  "held_out_test_metrics": {
+    "target_names": [
+      "g_flexure_knm",
+      "g_shear_kn",
+      "g_deflection_mm"
+    ],
+    "rmse": [
+      169.62238214496764,
+      10.508825300842563,
+      0.17632906277622368
+    ],
+    "mae": [
+      132.53776340953664,
+      8.453466251232099,
+      0.1456704526577165
+    ],
+    "r2": [
+      0.9843823780701928,
+      0.9874962405532776,
+      0.9872410225782972
+    ]
+  },
+  "reference_step_m": 3.0,
+  "replicated_lhs": {
+    "result": {
+      "points": [
+        {
+          "sample_count": 2000,
+          "seeds": [
+            20261001,
+            20261002,
+            20261003
+          ],
+          "statistics": [
+            [
+              {
+                "target_name": "g_flexure_knm",
+                "mean": 7404.793919136986,
+                "standard_deviation": 1500.6025742245567,
+                "q05": 5143.424837170759,
+                "median": 7247.746976963026,
+                "q95": 10068.764778422246,
+                "failure_fraction": 0.0
+              },
+              {
+                "target_name": "g_shear_kn",
+                "mean": 20.519889242069247,
+                "standard_deviation": 94.08553711337206,
+                "q05": -141.3620442565058,
+                "median": 21.546848012199916,
+                "q95": 171.1096679676117,
+                "failure_fraction": 0.402
+              },
+              {
+                "target_name": "g_deflection_mm",
+                "mean": 28.5587925563776,
+                "standard_deviation": 1.8074684217314245,
+                "q05": 25.587261788202472,
+                "median": 28.619813805870386,
+                "q95": 31.437937695021898,
+                "failure_fraction": 0.0
+              }
+            ],
+            [
+              {
+                "target_name": "g_flexure_knm",
+                "mean": 7402.156958103555,
+                "standard_deviation": 1480.285344056299,
+                "q05": 5207.217084488112,
+                "median": 7257.748182176621,
+                "q95": 10013.470458284706,
+                "failure_fraction": 0.0
+              },
+              {
+                "target_name": "g_shear_kn",
+                "mean": 20.551025834244918,
+                "standard_deviation": 97.53707113423832,
+                "q05": -142.0823686829968,
+                "median": 23.077187253843874,
+                "q95": 170.34220369137086,
+                "failure_fraction": 0.3995
+              },
+              {
+                "target_name": "g_deflection_mm",
+                "mean": 28.558909811625043,
+                "standard_deviation": 1.8207327893441876,
+                "q05": 25.49949733796635,
+                "median": 28.6099948205124,
+                "q95": 31.50074944202764,
+                "failure_fraction": 0.0
+              }
+            ],
+            [
+              {
+                "target_name": "g_flexure_knm",
+                "mean": 7407.731261468482,
+                "standard_deviation": 1513.6185373810783,
+                "q05": 5084.930588871662,
+                "median": 7292.451714533721,
+                "q95": 10078.369821110511,
+                "failure_fraction": 0.0
+              },
+              {
+                "target_name": "g_shear_kn",
+                "mean": 20.594706816751277,
+                "standard_deviation": 93.42766850595243,
+                "q05": -134.21357486524224,
+                "median": 23.939348719680765,
+                "q95": 166.95320016043448,
+                "failure_fraction": 0.397
+              },
+              {
+                "target_name": "g_deflection_mm",
+                "mean": 28.558610346390168,
+                "standard_deviation": 1.823448896151608,
+                "q05": 25.544570019977932,
+                "median": 28.534149917851195,
+                "q95": 31.4957382690222,
+                "failure_fraction": 0.0
+              }
+            ]
+          ],
+          "mean_statistics": [
+            {
+              "target_name": "g_flexure_knm",
+              "mean": 7404.894046236342,
+              "standard_deviation": 1498.168818553978,
+              "q05": 5145.190836843511,
+              "median": 7265.982291224456,
+              "q95": 10053.535019272489,
+              "failure_fraction": 0.0
+            },
+            {
+              "target_name": "g_shear_kn",
+              "mean": 20.55520729768848,
+              "standard_deviation": 95.01675891785426,
+              "q05": -139.2193292682483,
+              "median": 22.854461328574853,
+              "q95": 169.468357273139,
+              "failure_fraction": 0.3995
+            },
+            {
+              "target_name": "g_deflection_mm",
+              "mean": 28.5587709047976,
+              "standard_deviation": 1.8172167024090733,
+              "q05": 25.543776382048918,
+              "median": 28.587986181411328,
+              "q95": 31.478141802023913,
+              "failure_fraction": 0.0
+            }
+          ],
+          "maximum_within_size_change": 0.08079082846595892,
+          "mean_change_from_previous": null
+        },
+        {
+          "sample_count": 4000,
+          "seeds": [
+            20261004,
+            20261005,
+            20261006
+          ],
+          "statistics": [
+            [
+              {
+                "target_name": "g_flexure_knm",
+                "mean": 7406.38146681517,
+                "standard_deviation": 1504.6199231127837,
+                "q05": 5155.209518286415,
+                "median": 7300.015299527493,
+                "q95": 9975.957240580095,
+                "failure_fraction": 0.0
+              },
+              {
+                "target_name": "g_shear_kn",
+                "mean": 20.68624419685127,
+                "standard_deviation": 94.8140858987111,
+                "q05": -139.55949067182587,
+                "median": 21.77520785753228,
+                "q95": 174.0003381996569,
+                "failure_fraction": 0.4105
+              },
+              {
+                "target_name": "g_deflection_mm",
+                "mean": 28.55903516638507,
+                "standard_deviation": 1.798904048554355,
+                "q05": 25.541040560692775,
+                "median": 28.591003413039594,
+                "q95": 31.488267127133156,
+                "failure_fraction": 0.0
+              }
+            ],
+            [
+              {
+                "target_name": "g_flexure_knm",
+                "mean": 7405.461327283019,
+                "standard_deviation": 1493.5128794924217,
+                "q05": 5161.068033134346,
+                "median": 7278.069876902646,
+                "q95": 10029.21991634934,
+                "failure_fraction": 0.0
+              },
+              {
+                "target_name": "g_shear_kn",
+                "mean": 20.598801444374878,
+                "standard_deviation": 94.80128882347643,
+                "q05": -137.74381413805645,
+                "median": 22.70712717279332,
+                "q95": 173.00135623625155,
+                "failure_fraction": 0.39475
+              },
+              {
+                "target_name": "g_deflection_mm",
+                "mean": 28.559029743989797,
+                "standard_deviation": 1.792095363374077,
+                "q05": 25.568873555715754,
+                "median": 28.615192987424557,
+                "q95": 31.439458985237977,
+                "failure_fraction": 0.0
+              }
+            ],
+            [
+              {
+                "target_name": "g_flexure_knm",
+                "mean": 7407.073371875109,
+                "standard_deviation": 1507.1276750844713,
+                "q05": 5164.9422535336125,
+                "median": 7293.925999304491,
+                "q95": 10047.190677739854,
+                "failure_fraction": 0.0
+              },
+              {
+                "target_name": "g_shear_kn",
+                "mean": 20.555616042112117,
+                "standard_deviation": 93.78360508604459,
+                "q05": -137.2876231940706,
+                "median": 22.20754660665213,
+                "q95": 170.38265111454888,
+                "failure_fraction": 0.4045
+              },
+              {
+                "target_name": "g_deflection_mm",
+                "mean": 28.559415227924518,
+                "standard_deviation": 1.8029828306915627,
+                "q05": 25.51913827927309,
+                "median": 28.603314739494618,
+                "q95": 31.47177777629831,
+                "failure_fraction": 0.0
+              }
+            ]
+          ],
+          "mean_statistics": [
+            {
+              "target_name": "g_flexure_knm",
+              "mean": 7406.305388657766,
+              "standard_deviation": 1501.7534925632256,
+              "q05": 5160.406601651458,
+              "median": 7290.670391911543,
+              "q95": 10017.455944889763,
+              "failure_fraction": 0.0
+            },
+            {
+              "target_name": "g_shear_kn",
+              "mean": 20.61355389444609,
+              "standard_deviation": 94.46632660274405,
+              "q05": -138.19697600131764,
+              "median": 22.229960545659242,
+              "q95": 172.4614485168191,
+              "failure_fraction": 0.40325000000000005
+            },
+            {
+              "target_name": "g_deflection_mm",
+              "mean": 28.559160046099795,
+              "standard_deviation": 1.7979940808733315,
+              "q05": 25.54301746522721,
+              "median": 28.603170379986256,
+              "q95": 31.466501296223147,
+              "failure_fraction": 0.0
+            }
+          ],
+          "maximum_within_size_change": 0.04726436806740112,
+          "mean_change_from_previous": 0.031500666595750314
+        },
+        {
+          "sample_count": 8000,
+          "seeds": [
+            20261007,
+            20261008,
+            20261009
+          ],
+          "statistics": [
+            [
+              {
+                "target_name": "g_flexure_knm",
+                "mean": 7407.289689215582,
+                "standard_deviation": 1513.1975435991312,
+                "q05": 5113.799353792924,
+                "median": 7295.133588543413,
+                "q95": 10072.307666927856,
+                "failure_fraction": 0.0
+              },
+              {
+                "target_name": "g_shear_kn",
+                "mean": 20.56083163411434,
+                "standard_deviation": 94.60372702282797,
+                "q05": -139.79320164634515,
+                "median": 22.596572421901755,
+                "q95": 171.5183892047951,
+                "failure_fraction": 0.407875
+              },
+              {
+                "target_name": "g_deflection_mm",
+                "mean": 28.559063252845007,
+                "standard_deviation": 1.8022907176029432,
+                "q05": 25.56973526999233,
+                "median": 28.605900151086985,
+                "q95": 31.50981838026817,
+                "failure_fraction": 0.0
+              }
+            ],
+            [
+              {
+                "target_name": "g_flexure_knm",
+                "mean": 7407.150979967998,
+                "standard_deviation": 1514.8247108867013,
+                "q05": 5108.4447378979685,
+                "median": 7290.5182968739755,
+                "q95": 10069.970983293,
+                "failure_fraction": 0.0
+              },
+              {
+                "target_name": "g_shear_kn",
+                "mean": 20.500913560558946,
+                "standard_deviation": 95.27432957431118,
+                "q05": -142.55635629522865,
+                "median": 24.00939243448778,
+                "q95": 172.69421101590376,
+                "failure_fraction": 0.400625
+              },
+              {
+                "target_name": "g_deflection_mm",
+                "mean": 28.559090981107815,
+                "standard_deviation": 1.785970413903987,
+                "q05": 25.598064351481334,
+                "median": 28.58932875331299,
+                "q95": 31.42177235705494,
+                "failure_fraction": 0.0
+              }
+            ],
+            [
+              {
+                "target_name": "g_flexure_knm",
+                "mean": 7406.3092575789115,
+                "standard_deviation": 1505.717879790286,
+                "q05": 5134.399100609839,
+                "median": 7308.597786768354,
+                "q95": 10013.852705620331,
+                "failure_fraction": 0.0
+              },
+              {
+                "target_name": "g_shear_kn",
+                "mean": 20.528487469483775,
+                "standard_deviation": 93.76145834632712,
+                "q05": -135.48955645407483,
+                "median": 22.668646927395685,
+                "q95": 168.91346813111252,
+                "failure_fraction": 0.4035
+              },
+              {
+                "target_name": "g_deflection_mm",
+                "mean": 28.559222781076073,
+                "standard_deviation": 1.8028232686230525,
+                "q05": 25.556564614003886,
+                "median": 28.584714204929497,
+                "q95": 31.464258970843265,
+                "failure_fraction": 0.0
+              }
+            ]
+          ],
+          "mean_statistics": [
+            {
+              "target_name": "g_flexure_knm",
+              "mean": 7406.916642254164,
+              "standard_deviation": 1511.246711425373,
+              "q05": 5118.881064100244,
+              "median": 7298.083224061914,
+              "q95": 10052.043785280395,
+              "failure_fraction": 0.0
+            },
+            {
+              "target_name": "g_shear_kn",
+              "mean": 20.530077554719018,
+              "standard_deviation": 94.54650498115542,
+              "q05": -139.27970479854955,
+              "median": 23.091537261261738,
+              "q95": 171.0420227839371,
+              "failure_fraction": 0.40399999999999997
+            },
+            {
+              "target_name": "g_deflection_mm",
+              "mean": 28.5591256716763,
+              "standard_deviation": 1.797028133376661,
+              "q05": 25.574788078492517,
+              "median": 28.593314369776493,
+              "q95": 31.46528323605546,
+              "failure_fraction": 0.0
+            }
+          ],
+          "maximum_within_size_change": 0.07417317836534265,
+          "mean_change_from_previous": 0.02747766942172422
+        }
+      ],
+      "tolerance": 0.05
+    },
+    "response_statistics_screen_passed": false,
+    "rare_event_reliability_accepted": false
+  },
+  "direct_boundary_challenges": [
+    {
+      "target_name": "g_flexure_knm",
+      "marginal_quantile_range": [
+        0.001,
+        0.999
+      ],
+      "candidate_minimum": 2488.9616680405416,
+      "candidate_maximum": 15262.331594544463,
+      "bracket_found": false,
+      "features": null,
+      "direct_margin": null,
+      "surrogate_margin": null,
+      "absolute_error": null,
+      "within_training_axis_ranges": null,
+      "outside_training_axes": []
+    },
+    {
+      "target_name": "g_shear_kn",
+      "marginal_quantile_range": [
+        0.001,
+        0.999
+      ],
+      "candidate_minimum": -544.1639452586454,
+      "candidate_maximum": 462.0609497084741,
+      "bracket_found": true,
+      "features": [
+        50.31101723583809,
+        515.2832713848082,
+        1.1112378902188207,
+        0.4043083075441053,
+        12584.765354492441,
+        1.0118266445290904,
+        1.1074932438946221,
+        0.9987430143247003,
+        0.992082756700017,
+        1.3589106605316978,
+        1.0287297546634466
+      ],
+      "direct_margin": -4.3075942812720314e-10,
+      "surrogate_margin": 3.8047055274194133,
+      "absolute_error": 3.8047055278501727,
+      "within_training_axis_ranges": true,
+      "outside_training_axes": []
+    },
+    {
+      "target_name": "g_deflection_mm",
+      "marginal_quantile_range": [
+        0.001,
+        0.999
+      ],
+      "candidate_minimum": 19.788685088127266,
+      "candidate_maximum": 35.89339814159056,
+      "bracket_found": false,
+      "features": null,
+      "direct_margin": null,
+      "surrogate_margin": null,
+      "absolute_error": null,
+      "within_training_axis_ranges": null,
+      "outside_training_axes": []
+    }
+  ]
+}

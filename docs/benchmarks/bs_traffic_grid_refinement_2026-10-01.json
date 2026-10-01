@@ -1,0 +1,104 @@
+{
+  "project": "GUI default 15 m seven-girder rectangular bridge, BS 5400 / BD 37, 45 HB units",
+  "default_snapshot_sha256": "171e89479458066a440055e1690a0b81b3c227fc2d379933d3e510f867b0487e",
+  "half_step_snapshot_sha256": "7c307e9c5191125f366d9abc8b3e9ca09b17a2d5df01a5b92aa8dbe8c5537016",
+  "criterion": "maximum girder M/V/T/deflection envelope change / fine value",
+  "relative_tolerance": 0.05,
+  "searches": {
+    "ha": {
+      "coarse_placements": 612,
+      "fine_placements": 2112,
+      "fine_settings": {
+        "longitudinal_step_m": 0.5
+      },
+      "fine_search_exhaustive": true,
+      "component_changes": {
+        "moment_knm": {
+          "maximum_relative_change": 0.008681018320475624,
+          "girder_index": 1
+        },
+        "shear_kn": {
+          "maximum_relative_change": 0.009742670174818814,
+          "girder_index": 1
+        },
+        "torsion_knm": {
+          "maximum_relative_change": 0.013831449563376043,
+          "girder_index": 7
+        },
+        "deflection_mm": {
+          "maximum_relative_change": 0.009569293399315736,
+          "girder_index": 1
+        }
+      },
+      "maximum_relative_change": 0.013831449563376043,
+      "girder_envelope_criterion_met": true
+    },
+    "hb": {
+      "coarse_placements": 1845,
+      "fine_placements": 5700,
+      "fine_settings": {
+        "longitudinal_step_m": 0.5,
+        "transverse_step_m": 0.25,
+        "units": 45
+      },
+      "fine_search_exhaustive": true,
+      "component_changes": {
+        "moment_knm": {
+          "maximum_relative_change": 0.015245454406083093,
+          "girder_index": 1
+        },
+        "shear_kn": {
+          "maximum_relative_change": 0.01894196175202929,
+          "girder_index": 7
+        },
+        "torsion_knm": {
+          "maximum_relative_change": 0.01850452956909664,
+          "girder_index": 6
+        },
+        "deflection_mm": {
+          "maximum_relative_change": 0.018474528410678964,
+          "girder_index": 1
+        }
+      },
+      "maximum_relative_change": 0.01894196175202929,
+      "girder_envelope_criterion_met": true
+    },
+    "ha_hb": {
+      "coarse_placements": 9672,
+      "fine_placements": 27060,
+      "fine_settings": {
+        "ha_kel_step_m": 1.0,
+        "hb_longitudinal_step_m": 1.0,
+        "hb_transverse_step_m": 0.5,
+        "units": 45
+      },
+      "fine_search_exhaustive": true,
+      "component_changes": {
+        "moment_knm": {
+          "maximum_relative_change": 0.014343397938725187,
+          "girder_index": 1
+        },
+        "shear_kn": {
+          "maximum_relative_change": 0.03234721620819065,
+          "girder_index": 7
+        },
+        "torsion_knm": {
+          "maximum_relative_change": 0.07412151012473253,
+          "girder_index": 5
+        },
+        "deflection_mm": {
+          "maximum_relative_change": 0.01614976915062666,
+          "girder_index": 1
+        }
+      },
+      "maximum_relative_change": 0.07412151012473253,
+      "girder_envelope_criterion_met": false
+    }
+  },
+  "default_grid_criterion_met": false,
+  "limitations": [
+    "A passing two-grid response check is not independent bridge approval.",
+    "Station moment shapes and all-cases retention were not compared in this audit.",
+    "Grid response convergence is independent of code, model and project input validity."
+  ]
+}

@@ -5,7 +5,7 @@ import numpy as np
 from rc_single_span.research.dataset import generate_dataset, split_dataset
 from rc_single_span.research.evaluator import LimitStateEvaluation
 from rc_single_span.research.sampling import RandomVariable
-from rc_single_span.research.surrogate import MLPConfig, train_numpy_ann
+from rc_single_span.research.surrogate import MLPConfig, NumpyMLPRegressor, train_numpy_ann
 
 
 @dataclass
@@ -51,3 +51,35 @@ def test_dataset_split_and_numpy_ann_learn_multioutput_limit_states() -> None:
     prediction = model.predict(np.asarray([0.3, 1.2]))
     expected = np.asarray([2.0 * 0.3 - 0.5 * 1.2 + 1.0, -1.5 * 0.3 + 3.0 * 1.2 - 2.0])
     assert np.allclose(prediction, expected, atol=0.15)
+
+
+def test_saved_ann_inference_is_identical_and_checks_feature_order(tmp_path) -> None:
+    variables = (
+        RandomVariable("x1", "uniform", lower=-2.0, upper=2.0),
+        RandomVariable("x2", "uniform", lower=-1.0, upper=3.0),
+    )
+    split = split_dataset(generate_dataset(_SyntheticEvaluator(), variables, 120, seed=2))
+    model, _, _ = train_numpy_ann(
+        split,
+        config=MLPConfig(hidden_layers=(8,), epochs=15, patience=5, seed=3),
+    )
+    path = model.save_npz(tmp_path / "model.npz")
+    restored = NumpyMLPRegressor.load_npz(path)
+    assert np.array_equal(model.predict(split.test.features), restored.predict(split.test.features))
+    try:
+        NumpyMLPRegressor.load_npz(path, feature_names=("x2", "x1"))
+    except ValueError as exc:
+        assert "Feature names" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("Expected mismatched feature order to be rejected")
+
+    with np.load(path, allow_pickle=False) as data:
+        legacy_path = tmp_path / "legacy.npz"
+        np.savez_compressed(
+            legacy_path,
+            **{key: data[key] for key in data.files if key not in {"feature_names", "target_names"}},
+        )
+    legacy = NumpyMLPRegressor.load_npz(
+        legacy_path, feature_names=model.feature_names, target_names=model.target_names,
+    )
+    assert np.array_equal(model.predict(split.test.features), legacy.predict(split.test.features))

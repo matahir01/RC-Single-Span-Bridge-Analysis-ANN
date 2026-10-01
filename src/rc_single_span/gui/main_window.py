@@ -452,6 +452,8 @@ class BridgeMainWindow(QMainWindow):
         form.addRow("BS EN quasi-permanent ψ2", self.psi2_traffic)
         form.addRow("LM1 longitudinal step", self.lm1_step)
         mode_note = QLabel(
+            "BS EN LM1 accuracy modes only. The BS 5400 / BD 37 route uses fixed "
+            "traffic search steps and requires a separate project-specific convergence audit. "
             "Quick: 3 m exploratory grid. Standard: 2.4 → 1.2 m, refining to "
             "0.6 m if the 5% girder-envelope test fails. Final Verification: "
             "audits 1.2 → 0.6 m. Editing the grid selects Custom, without "
@@ -676,7 +678,10 @@ class BridgeMainWindow(QMainWindow):
         text.setPlainText(
             "Deterministic verification status\n\n"
             "• BS EN deterministic V1: GO within the documented software scope.\n"
-            "• BS 5400 / BD 37 deterministic V1: GO within the documented software scope.\n"
+            "• BS 5400 / BD 37 deterministic source tests pass within the documented "
+            "software scope. The default reference HA+HB grid fails the provisional "
+            "5% refinement criterion for torsion (7.412%); no traffic grid "
+            "convergence claim is made.\n"
             "• External STAAD evidence verifies the documented structural-response campaign; "
             "it is not approval of an individual bridge.\n\n"
             "Next GUI increments include STAAD comparison views, calculation-report browsing, "
