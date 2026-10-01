@@ -40,6 +40,10 @@ the two routes.
 BS 5400-4:1990 is a withdrawn legacy standard. Software acceptance of this path
 is therefore not a recommendation to select it for a new project: the adopted
 project/authority basis must explicitly require the legacy route.
+The desktop reference's default HA+HB placement grid is not yet numerically
+converged: an exhaustive half-step search changed one torsion envelope by
+**7.412%**, above the provisional 5% criterion. The GUI and calculation report
+flag this; see [the BS grid audit](docs/BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md).
 
 ## Focused V1 scope
 
@@ -63,6 +67,11 @@ V1 covers:
 - discrete reinforcement selection and bridge-specific detailing infrastructure;
 - traceable calculation records carrying code basis, formula, substitution,
   result, reference and status.
+
+The desktop design table's **Web limit** status checks the maximum web
+resistance only. Required stirrup/link steel is calculated, but the desktop
+workflow has no supplied-link schedule and does not claim a complete shear
+reinforcement pass.
 
 Continuous spans, prestressing, curved bridges, general substructure/foundation
 design, general local-deck design, staged continuity, changing supports,

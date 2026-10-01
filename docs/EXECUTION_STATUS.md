@@ -103,14 +103,20 @@ Updated: 1 October 2026 (UTC)
   `8371a9118b642239b0b5b422283319fe02ddc6dfaf5bcba8148e3d9d37ca97bd`.
   [Research 36927717493](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36927717493)
   **passed**; the correction changed only a Linux test import.
+- `431adf00dee1b6c6fe556a228a25ac7549bf0e9d`: GUI results and report
+  identify the maximum web resistance check, state that installed shear
+  links are not assessed, and no longer label it as a complete shear pass.
+  The paired slower load-indexing solver trial was reverted. Local 257 tests,
+  Ruff and the focused BS worked-sheet PDF test passed. [GUI smoke
+  36930169645](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930169645)
+  **passed**; [tests 36930169650](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930169650)
+  and [Windows EXE 36930169662](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930169662)
+  are running.
 
-The next GUI clarification is staged for commit: the former “Shear PASS” field
-is explicitly the **maximum web resistance** check. The worked sheets state
-that required link steel is calculated but installed links were not provided;
-therefore a complete shear reinforcement pass is not asserted. Nine focused
-GUI/calculation-sheet tests and Ruff passed locally. A Windows packaged-app
-smoke for this clarification is required before updating the download link.
-A separate trial indexed per-member loads in the prepared grillage solver.
+The former “Shear PASS” field is explicitly the **maximum web resistance**
+check. The worked sheets state that required link steel is calculated but
+installed links were not provided; a complete shear reinforcement pass is not
+asserted. A separate trial indexed per-member loads in the prepared solver.
 Default BS outputs were identical, but a paired same-machine benchmark took
 150.92 s for the prior engine and 176.32 s for the trial; it was rejected and
 reverted. See `docs/BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md`.
@@ -240,8 +246,8 @@ design at 1.2 m saved/reopened the reference project and exported a 12-page,
 package smoke now requires equations, diagrams and a substantive PDF. The
 built Windows EXE passed that packaged smoke and the ZIP was uploaded.
 
-Exact next action: commit/push and verify the maximum-web-resistance wording
-in the real Windows EXE workflow; record its downloadable ZIP. Then refine
+Exact next action: verify the current maximum-web-resistance wording in the
+real Windows EXE workflow and record its downloadable ZIP. Then refine
 the **combined BS** placement search beyond 1.0/0.5/1.0 m or
 otherwise establish a convergence bound, and benchmark any new speedup against
 the preserved exact-output legacy gate. Obtain defensible DL/LL and dependence

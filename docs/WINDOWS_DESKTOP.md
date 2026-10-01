@@ -38,3 +38,11 @@ directory. Normal launches show the interactive GUI.
 No code-signing certificate is configured; the ZIP is unsigned. The build
 workflow records its SHA-256. Keep Qt plugins and DLLs in the unzipped folder.
 Software verification is distinct from approval of a real bridge.
+
+The legacy BS 5400 / BD 37 reference defaults are not a converged placement
+grid: the exhaustive half-step HA+HB check changed girder 5 torsion by 7.412%,
+above the provisional 5% response criterion. See
+[`BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md`](BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md).
+The GUI and worked sheets flag this. Their shear PASS/CHECK label is the
+maximum web resistance limit only; required link steel is reported but no
+provided-link schedule is checked.

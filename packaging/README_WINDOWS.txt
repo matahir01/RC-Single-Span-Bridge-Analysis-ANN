@@ -15,6 +15,13 @@ RC Single-Span Bridge Analysis — Windows x64
    IDs and bending/shear diagrams from the completed result. The nominal
    traffic moment plot is an envelope, not a signed single-case diagram.
    Save/Open use JSON project files; reopening requires a fresh analysis run.
+7. The BS 5400 / BD 37 legacy route has separate fixed HA/HB search grids.
+   Its 15 m reference default HA+HB grid changed 7.412% in one torsion response
+   when halved, exceeding the provisional 5% check. The app flags this in the
+   results and report; refine and verify the grid before relying on it.
+8. "Web limit" PASS checks maximum web resistance only. The report calculates
+   required shear links, but no provided-link schedule is entered or checked;
+   it does not assert complete shear reinforcement adequacy.
 
 The reference starts at a 15 m span and seven rectangular girders. BS EN is
 the initial route; BS 5400 / BD 37 is selected separately in Traffic.
