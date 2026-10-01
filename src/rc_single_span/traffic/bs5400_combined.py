@@ -30,6 +30,7 @@ from rc_single_span.codes.bs5400.traffic import (
     notional_lane_layout_bd37_01,
 )
 from rc_single_span.core.models import BridgeProject
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.traffic.bs5400 import (
     BS5400ConvergenceResult,
     BS5400ConvergenceStep,
@@ -495,6 +496,21 @@ def _grid_for_combined_placements(
     return _merge_coordinates(tuple(x_values)), _merge_coordinates(tuple(y_values))
 
 
+def _physical_load_signature(
+    points: tuple[PlanPointLoad, ...],
+    areas: tuple[PlanAreaLoad, ...],
+    lines: tuple[PlanTransverseLineLoad, ...],
+) -> tuple[object, ...]:
+    """Identify identical load geometry and magnitude, ignoring descriptive labels."""
+    return (
+        tuple((p.x_m, p.y_m, p.magnitude_kn) for p in points),
+        tuple((a.x_start_m, a.x_end_m, a.y_start_m, a.y_end_m, a.pressure_kn_m2)
+              for a in areas),
+        tuple((line.x_m, line.y_start_m, line.y_end_m, line.total_load_kn)
+              for line in lines),
+    )
+
+
 def run_ha_hb_combined_grillage_search(
     project: BridgeProject,
     *,
@@ -506,6 +522,7 @@ def run_ha_hb_combined_grillage_search(
     max_exhaustive_ha_assignments: int = 500,
     retain_all_cases: bool = False,
     design_stations_m: tuple[float, ...] = (),
+    control: AnalysisControl | None = None,
 ) -> HAHBCombinedSearchResult:
     """Search nominal HA+HB coexistence under BD 37/01 6.4.2.
 
@@ -525,7 +542,14 @@ def run_ha_hb_combined_grillage_search(
     assignment_exhaustive_all = True
     kel_exhaustive_all = True
 
-    for spacing in HB_INNER_AXLE_SPACINGS_M:
+    if control is not None:
+        control.report("BS HA+HB: preparing placements")
+    for spacing_index, spacing in enumerate(HB_INNER_AXLE_SPACINGS_M, start=1):
+        if control is not None:
+            control.report(
+                "BS HA+HB: preparing spacing grids", spacing_index - 1,
+                len(HB_INNER_AXLE_SPACINGS_M),
+            )
         vehicle = hb_vehicle_definition(
             units=units,
             inner_axle_spacing_m=spacing,
@@ -537,7 +561,12 @@ def run_ha_hb_combined_grillage_search(
         )
 
         spacing_placements: list[HAHBCombinedPlacement] = []
-        for lead_x, centre_y in product(leads, centres):
+        for lead_index, (lead_x, centre_y) in enumerate(product(leads, centres), start=1):
+            if control is not None and lead_index % 16 == 1:
+                control.report(
+                    f"BS HA+HB: generating spacing {spacing:g} m",
+                    lead_index - 1, len(leads) * len(centres),
+                )
             hb = HBSearchPlacement(
                 case_id=0,
                 units=units,
@@ -579,11 +608,24 @@ def run_ha_hb_combined_grillage_search(
         )
         prepared = prepare_vertical_grillage(build.model)
 
-        for placement in placements_tuple:
+        phase = f"BS HA+HB: spacing {spacing:g} m"
+        if control is not None:
+            control.report(phase, 0, len(placements_tuple))
+        cached_hb: HBSearchPlacement | None = None
+        cached_responses: dict[tuple[object, ...], tuple[GrillageAnalysisResult,
+                                                      tuple[GirderCaseEnvelope, ...],
+                                                      tuple[tuple[object, ...], ...]]] = {}
+        for index, placement in enumerate(placements_tuple, start=1):
+            if control is not None and index % 16 == 1:
+                control.report(phase, index - 1, len(placements_tuple))
             points, areas, lines = build_ha_hb_combined_plan_loads(
                 project,
                 placement,
             )
+            if placement.hb != cached_hb:
+                cached_responses.clear()
+                cached_hb = placement.hb
+            signature = _physical_load_signature(points, areas, lines)
             case = build_plan_load_case(
                 build.model,
                 load_case_id=placement.case_id,
@@ -597,18 +639,23 @@ def run_ha_hb_combined_grillage_search(
                 name=f"{project.name} HA+HB case {placement.case_id}",
                 load_cases=(case,),
             )
-            analysis = solve_prepared_vertical_grillage(prepared, model)
-            _require_vertical_equilibrium(
-                analysis,
-                traffic_model="HA+HB",
-            )
-            girders = native_traffic_girder_envelope(model, analysis)
+            cached = cached_responses.get(signature)
+            if cached is None:
+                analysis = solve_prepared_vertical_grillage(prepared, model)
+                _require_vertical_equilibrium(analysis, traffic_model="HA+HB")
+                girders = native_traffic_girder_envelope(model, analysis)
+                station_moments = native_traffic_girder_station_moments(model, analysis)
+                cached_responses[signature] = (analysis, girders, station_moments)
+            else:
+                previous, girders, station_moments = cached
+                analysis = replace(
+                    previous, load_case_id=case.load_case_id, load_case_name=case.name,
+                )
             _update_governing(
                 governing,
                 placement.case_id,
                 girders,
             )
-            station_moments = native_traffic_girder_station_moments(model, analysis)
             _update_station_moment_governing(
                 station_governing,
                 case_id=placement.case_id,
@@ -650,6 +697,9 @@ def run_ha_hb_combined_grillage_search(
                 for retained_id in tuple(retained):
                     if retained_id not in active_ids:
                         del retained[retained_id]
+
+        if control is not None:
+            control.report(phase, len(placements_tuple), len(placements_tuple))
 
     if not governing:
         raise RuntimeError("HA+HB combined search generated no solved traffic cases.")

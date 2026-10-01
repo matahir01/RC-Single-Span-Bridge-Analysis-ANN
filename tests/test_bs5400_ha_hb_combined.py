@@ -1,3 +1,4 @@
+from threading import Event
 from types import SimpleNamespace
 
 import pytest
@@ -12,6 +13,7 @@ from rc_single_span.core.models import (
     RectangularGirderProfile,
     SingleSpanBridgeGeometry,
 )
+from rc_single_span.core.progress import AnalysisCancelled, AnalysisControl
 from rc_single_span.traffic.bs5400 import (
     HBSearchPlacement,
     _require_vertical_equilibrium,
@@ -164,7 +166,18 @@ def test_unoccupied_lane_retains_normal_ha_udl_and_kel() -> None:
     assert lines[0].x_m == pytest.approx(7.5)
 
 
-def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium() -> None:
+def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium(monkeypatch) -> None:
+    import rc_single_span.traffic.bs5400_combined as combined
+
+    solves = 0
+    original = combined.solve_prepared_vertical_grillage
+
+    def counted(prepared, model):
+        nonlocal solves
+        solves += 1
+        return original(prepared, model)
+
+    monkeypatch.setattr(combined, "solve_prepared_vertical_grillage", counted)
     project = _project()
     design_stations = common_bs5400_design_stations(project, step_m=5.0)
     result = run_ha_hb_combined_grillage_search(
@@ -178,6 +191,7 @@ def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium() -> 
         design_stations_m=design_stations,
     )
     assert result.evaluated_case_count > 0
+    assert solves < result.evaluated_case_count / 2
     assert result.ha_assignment_search_exhaustive
     assert result.kel_combinations_exhaustive
     assert len(result.girders) == 7
@@ -189,9 +203,29 @@ def test_combined_search_runs_on_common_grillage_and_preserves_equilibrium() -> 
     assert result.cases
     assert result.checked_inner_axle_spacings_m == pytest.approx((6.0, 11.0, 16.0, 21.0, 26.0))
     for case in result.cases:
+        assert case.analysis.load_case_id == case.placement.case_id
         assert abs(case.analysis.vertical_equilibrium_residual_kn) <= (
             traffic_equilibrium_tolerance_kn(case.analysis)
         )
+
+
+def test_combined_search_reports_real_progress_and_cancels_without_result() -> None:
+    cancelled = Event()
+    events: list[tuple[str, int, int]] = []
+
+    def progress(phase: str, completed: int, total: int) -> None:
+        events.append((phase, completed, total))
+        if phase.startswith("BS HA+HB: spacing") and completed >= 16:
+            cancelled.set()
+
+    with pytest.raises(AnalysisCancelled):
+        run_ha_hb_combined_grillage_search(
+            _project(), units=30.0, hb_longitudinal_step_m=15.0,
+            hb_transverse_step_m=3.5, ha_kel_step_m=15.0,
+            control=AnalysisControl(progress, cancelled.is_set),
+        )
+    assert any(phase.startswith("BS HA+HB: spacing") and completed == 16
+               and total > 16 for phase, completed, total in events)
 
 
 def test_equilibrium_guard_allows_only_machine_scale_sparse_roundoff() -> None:

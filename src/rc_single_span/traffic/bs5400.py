@@ -30,6 +30,7 @@ from rc_single_span.codes.bs5400.traffic import (
     notional_lane_layout_bd37_01,
 )
 from rc_single_span.core.models import BridgeProject
+from rc_single_span.core.progress import AnalysisControl
 
 if TYPE_CHECKING:
     from rc_single_span.traffic.bs5400_combined import HAHBCombinedSearchResult
@@ -501,7 +502,10 @@ def run_ha_grillage_search(
     max_exhaustive_kel_combinations: int = 5000,
     retain_all_cases: bool = False,
     design_stations_m: tuple[float, ...] = (),
+    control: AnalysisControl | None = None,
 ) -> HASearchResult:
+    if control is not None:
+        control.report("BS HA: preparing placements")
     placements, exhaustive = generate_ha_search_placements(
         project,
         longitudinal_step_m=longitudinal_step_m,
@@ -538,7 +542,11 @@ def run_ha_grillage_search(
     all_cases: list[BS5400CaseResult] = []
     retained: dict[int, BS5400CaseResult] = {}
 
-    for placement in placements:
+    if control is not None:
+        control.report("BS HA: solving cases", 0, len(placements))
+    for index, placement in enumerate(placements, start=1):
+        if control is not None and index % 16 == 1:
+            control.report("BS HA: solving cases", index - 1, len(placements))
         areas, lines = build_ha_plan_loads(project, placement)
         case = build_plan_load_case(
             build.model,
@@ -586,6 +594,8 @@ def run_ha_grillage_search(
                 if case_id not in active_ids:
                     del retained[case_id]
 
+    if control is not None:
+        control.report("BS HA: solving cases", len(placements), len(placements))
     return HASearchResult(
         girders=_final_envelopes(governing),
         station_moments=_final_station_moments(station_governing),
@@ -682,7 +692,10 @@ def run_hb_grillage_search(
     transverse_step_m: float = 0.5,
     retain_all_cases: bool = False,
     design_stations_m: tuple[float, ...] = (),
+    control: AnalysisControl | None = None,
 ) -> HBSearchResult:
+    if control is not None:
+        control.report("BS HB: preparing placements")
     centres = _hb_centres(project, transverse_step_m)
     common_design_stations = _validated_design_stations(project, design_stations_m)
     governing: list[dict[str, object]] = []
@@ -692,7 +705,12 @@ def run_hb_grillage_search(
     case_id = 1
     evaluated = 0
 
-    for spacing in HB_INNER_AXLE_SPACINGS_M:
+    for spacing_index, spacing in enumerate(HB_INNER_AXLE_SPACINGS_M, start=1):
+        if control is not None:
+            control.report(
+                "BS HB: preparing spacing grids", spacing_index - 1,
+                len(HB_INNER_AXLE_SPACINGS_M),
+            )
         vehicle = hb_vehicle_definition(
             units=units,
             inner_axle_spacing_m=spacing,
@@ -712,7 +730,12 @@ def run_hb_grillage_search(
         span = float(project.geometry.span_m)
         x_grid_values = [0.0, span]
         y_grid_values: list[float] = []
-        for placement in placements:
+        phase = f"BS HB: spacing {spacing:g} m"
+        if control is not None:
+            control.report(phase, 0, len(placements))
+        for index, placement in enumerate(placements, start=1):
+            if control is not None and index % 16 == 1:
+                control.report(phase, index - 1, len(placements))
             for offset in vehicle.axle_offsets_m:
                 x_m = placement.lead_x_m + offset
                 if -1.0e-9 <= x_m <= span + 1.0e-9:
@@ -781,6 +804,8 @@ def run_hb_grillage_search(
                     if retained_id not in active_ids:
                         del retained[retained_id]
 
+        if control is not None:
+            control.report(phase, len(placements), len(placements))
         case_id += len(placements)
 
     return HBSearchResult(

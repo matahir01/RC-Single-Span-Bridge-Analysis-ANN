@@ -27,3 +27,8 @@ jobs:
           python scripts/benchmark_lm1.py --root "$RUNNER_TEMP/bridge-legacy" --output "$RUNNER_TEMP/lm1-old.json" --step 3.0
           python scripts/benchmark_lm1.py --root . --output "$RUNNER_TEMP/lm1-new.json" --step 3.0
           python scripts/compare_lm1_results.py "$RUNNER_TEMP/lm1-old.json" "$RUNNER_TEMP/lm1-new.json"
+      - name: Same-runner pre-optimization BS traffic comparison
+        run: |
+          python scripts/benchmark_bs_traffic.py --root "$RUNNER_TEMP/bridge-legacy" --output "$RUNNER_TEMP/bs-old.json"
+          python scripts/benchmark_bs_traffic.py --root . --output "$RUNNER_TEMP/bs-new.json"
+          python scripts/compare_bs_traffic.py "$RUNNER_TEMP/bs-old.json" "$RUNNER_TEMP/bs-new.json"

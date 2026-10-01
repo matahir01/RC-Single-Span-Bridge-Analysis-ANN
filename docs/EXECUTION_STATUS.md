@@ -54,6 +54,10 @@ Updated: 1 October 2026 (UTC)
   Custom accuracy modes; full-history LM1 comparison and 0.6 m baseline. Linux
   tests, same-runner legacy comparison, GUI smoke and Windows packaged EXE
   smoke all passed. Windows artifact 11079853650 includes the working EXE ZIP.
+- `d84d423a758d463b6b5d8fe7c7af2696487ced36`: 0.6 m LM1 near-tie
+  physical check and strict identity audit; 248 local tests and Ruff passed.
+  The 0.6 m old/new result matched exactly apart from elapsed time on the
+  local runner (3,051.38 s to 234.69 s); CI still gates same-runner 3.0 m.
 
 ## Windows package check
 
@@ -123,9 +127,16 @@ finished in 256.76 s: it correctly rejected 2.4 to 1.2 m at 13.404% and
 accepted 1.2 to 0.6 m at 4.088%, retaining 0.6 m. Local Ruff and 248 tests
 pass, including a real Quick analysis.
 
-Exact next action: push the near-tie identity fix and performance audit, then
-optimize and instrument the BS 5400 HA/HB/HA+HB route with numerical regression
-checks. Replace the GUI calculation summary with paginated, source-labelled
+The current local BS batch adds progress and cooperative cancellation inside
+HA, HB and HA+HB searches. Identical HA+HB physical loads within a fixed HB
+position reuse the solved response while retaining each model and case ID.
+On the explicit coarse benchmark, 40/129/1,032 cases took 7.62 s before and
+4.20 s after (1.81x); full JSON outputs excluding elapsed time matched
+exactly. The old/new same-runner CI comparison is prepared but not pushed yet.
+See [BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md](BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md).
+
+Exact next action: push the verified BS traffic progress/optimization batch,
+then replace the GUI calculation summary with paginated, source-labelled
 calculation sheets whose equations and substituted values come from the
 completed engine result. Rebuild and smoke-test the Windows ZIP. For research,
 retain

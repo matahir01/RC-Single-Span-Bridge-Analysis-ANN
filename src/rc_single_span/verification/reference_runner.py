@@ -138,12 +138,14 @@ def _with_elastic_modulus(
 def _bs_suite(
     project: BridgeProject,
     config: ReferenceRunConfig,
+    control: AnalysisControl | None = None,
 ) -> BS5400NominalTrafficSuite:
     ha: HASearchResult = run_ha_grillage_search(
         project,
         longitudinal_step_m=config.bs_ha_longitudinal_step_m,
         max_exhaustive_kel_combinations=config.max_exhaustive_kel_combinations,
         retain_all_cases=config.retain_all_cases,
+        control=control,
     )
     hb: HBSearchResult = run_hb_grillage_search(
         project,
@@ -151,6 +153,7 @@ def _bs_suite(
         longitudinal_step_m=config.bs_hb_longitudinal_step_m,
         transverse_step_m=config.bs_hb_transverse_step_m,
         retain_all_cases=config.retain_all_cases,
+        control=control,
     )
     ha_hb: HAHBCombinedSearchResult = run_ha_hb_combined_grillage_search(
         project,
@@ -161,6 +164,7 @@ def _bs_suite(
         max_exhaustive_kel_combinations=config.max_exhaustive_kel_combinations,
         max_exhaustive_ha_assignments=config.max_exhaustive_ha_assignments,
         retain_all_cases=config.retain_all_cases,
+        control=control,
     )
     return BS5400NominalTrafficSuite(
         ha=ha,
@@ -347,7 +351,7 @@ def run_reference_project(
     )
     if control is not None:
         control.report("Legacy traffic" if code_route == "bs5400" else "Combinations")
-    bs_traffic = _bs_suite(resolved, config) if code_route != "bs_en" else None
+    bs_traffic = _bs_suite(resolved, config, control) if code_route != "bs_en" else None
     if control is not None:
         control.report("Combinations")
     ec_combinations = (
