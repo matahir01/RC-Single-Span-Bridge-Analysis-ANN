@@ -75,6 +75,11 @@ Updated: 1 October 2026 (UTC)
   `08DA8FB4340D324C370BD93DAE6F66ED9CBEF277C62F0469401DD38000E57702`;
   Actions artifact SHA-256:
   `4de8194f54c30b8bd2508da99261390c292ca2dcfdcf5626df9cb06ae0005e08`.
+- `0ed9e7d18d95f1483c4cb084d0303ca82b90a709`: reproducible default
+  fine BS old/new capture and compressed outputs. Identical results excluding
+  time; 263.73 to 150.33 s (1.75x). Ruff and direct comparison passed;
+  [tests run 36918836325](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36918836325)
+  passed.
 
 ## Windows package check
 
@@ -106,6 +111,11 @@ under the provisional no-designed-link model; continuous-As RBDO failed and
 its candidate is outside the training domain. The source/action/dependence
 issues and numerical blockers remain open. Neither software verification nor
 this exploratory study approves a real bridge.
+An additional independent-LHS audit with 2,000, 3,000, 4,000, 6,000 and
+8,000 points (seeds 20261001–20261005) failed the same 5% adjacent response
+criterion at every step; the shear-margin lower 5% quantile dominates.
+The result and runnable script are in `docs/research_runs/2026-10-01_lhs_extension.json`
+and `examples/audit_provisional_lhs.py`. No larger count is accepted yet.
 
 ## LM1 performance verification
 
@@ -177,10 +187,10 @@ design at 1.2 m saved/reopened the reference project and exported a 12-page,
 package smoke now requires equations, diagrams and a substantive PDF. The
 built Windows EXE passed that packaged smoke and the ZIP was uploaded.
 
-Exact next action: continue the source-based ANN/RBDO work: resolve the DL/LL and dependence
-model, physical shear links and deflection criterion, expand direct sampling
-past the failed 2,000-point convergence check, validate near-limit and design-
-domain ANN behavior, and rerun reliability and RBDO without extrapolating an
-unconverged result. Keep
+Exact next action: verify DL/LL and dependence inputs, physical shear links
+and a project deflection criterion; then design replicated/tail-focused
+sampling and near-limit ANN validation using the recorded 2,000–8,000 failures.
+Rerun reliability and RBDO only within a validated design domain and without
+extrapolating unconverged FORM results. Keep
 `assumptions_confirmed=false` until action/correlation/project criteria are
 verified; exploratory reliability results do not approve a bridge.

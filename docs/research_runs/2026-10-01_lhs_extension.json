@@ -1,0 +1,186 @@
+{
+  "status": "exploratory; unconfirmed action/dependence/project criteria",
+  "config_sha256": "e0e311f2da52e2f07e6330eac4fbebde2292dabab398497498f69046e889445d",
+  "reference_step_m": 3.0,
+  "result": {
+    "points": [
+      {
+        "sample_count": 2000,
+        "seed": 20261001,
+        "statistics": [
+          {
+            "target_name": "g_flexure_knm",
+            "mean": 7404.793919136986,
+            "standard_deviation": 1500.6025742245567,
+            "q05": 5143.424837170759,
+            "median": 7247.746976963026,
+            "q95": 10068.764778422246,
+            "failure_fraction": 0.0
+          },
+          {
+            "target_name": "g_shear_kn",
+            "mean": 20.519889242069247,
+            "standard_deviation": 94.08553711337206,
+            "q05": -141.3620442565058,
+            "median": 21.546848012199916,
+            "q95": 171.1096679676117,
+            "failure_fraction": 0.402
+          },
+          {
+            "target_name": "g_deflection_mm",
+            "mean": 28.5587925563776,
+            "standard_deviation": 1.8074684217314245,
+            "q05": 25.587261788202472,
+            "median": 28.619813805870386,
+            "q95": 31.437937695021898,
+            "failure_fraction": 0.0
+          }
+        ],
+        "maximum_standardized_change": null,
+        "converged_from_previous": null
+      },
+      {
+        "sample_count": 3000,
+        "seed": 20261002,
+        "statistics": [
+          {
+            "target_name": "g_flexure_knm",
+            "mean": 7408.158142892506,
+            "standard_deviation": 1511.291982852382,
+            "q05": 5116.709145650772,
+            "median": 7284.562614630222,
+            "q95": 10097.302294486391,
+            "failure_fraction": 0.0
+          },
+          {
+            "target_name": "g_shear_kn",
+            "mean": 20.552001893270546,
+            "standard_deviation": 93.80169241581247,
+            "q05": -131.35267316839798,
+            "median": 21.347006461467117,
+            "q95": 171.65098457161955,
+            "failure_fraction": 0.39766666666666667
+          },
+          {
+            "target_name": "g_deflection_mm",
+            "mean": 28.55892414353268,
+            "standard_deviation": 1.7744674567326724,
+            "q05": 25.59721936489407,
+            "median": 28.56084885629529,
+            "q95": 31.38928625001492,
+            "failure_fraction": 0.0
+          }
+        ],
+        "maximum_standardized_change": 0.10638586328148016,
+        "converged_from_previous": false
+      },
+      {
+        "sample_count": 4000,
+        "seed": 20261003,
+        "statistics": [
+          {
+            "target_name": "g_flexure_knm",
+            "mean": 7404.434713033454,
+            "standard_deviation": 1486.5876208070501,
+            "q05": 5140.2377129845145,
+            "median": 7286.045602472404,
+            "q95": 10025.783270022566,
+            "failure_fraction": 0.0
+          },
+          {
+            "target_name": "g_shear_kn",
+            "mean": 20.556907205467034,
+            "standard_deviation": 94.32322770478727,
+            "q05": -136.97090128080353,
+            "median": 23.604121428426595,
+            "q95": 171.2326850783415,
+            "failure_fraction": 0.39675
+          },
+          {
+            "target_name": "g_deflection_mm",
+            "mean": 28.559285129877694,
+            "standard_deviation": 1.7838942357659735,
+            "q05": 25.543642756477997,
+            "median": 28.61541963897433,
+            "q95": 31.346159903830046,
+            "failure_fraction": 0.0
+          }
+        ],
+        "maximum_standardized_change": 0.05956356932556921,
+        "converged_from_previous": false
+      },
+      {
+        "sample_count": 6000,
+        "seed": 20261004,
+        "statistics": [
+          {
+            "target_name": "g_flexure_knm",
+            "mean": 7407.504789106265,
+            "standard_deviation": 1513.1537010566858,
+            "q05": 5109.234271476541,
+            "median": 7300.927237833508,
+            "q95": 10057.279084630098,
+            "failure_fraction": 0.0
+          },
+          {
+            "target_name": "g_shear_kn",
+            "mean": 20.493745943742656,
+            "standard_deviation": 96.13245115458088,
+            "q05": -146.20000194996942,
+            "median": 23.83403366521142,
+            "q95": 172.66316094900614,
+            "failure_fraction": 0.40066666666666667
+          },
+          {
+            "target_name": "g_deflection_mm",
+            "mean": 28.55882654776146,
+            "standard_deviation": 1.7994942145839992,
+            "q05": 25.55122735935307,
+            "median": 28.607599950627893,
+            "q95": 31.416229297718132,
+            "failure_fraction": 0.0
+          }
+        ],
+        "maximum_standardized_change": 0.09600400861854134,
+        "converged_from_previous": false
+      },
+      {
+        "sample_count": 8000,
+        "seed": 20261005,
+        "statistics": [
+          {
+            "target_name": "g_flexure_knm",
+            "mean": 7406.34428926238,
+            "standard_deviation": 1502.9416813953244,
+            "q05": 5091.75309115613,
+            "median": 7291.119726399218,
+            "q95": 10078.043630983932,
+            "failure_fraction": 0.0
+          },
+          {
+            "target_name": "g_shear_kn",
+            "mean": 20.482057450258143,
+            "standard_deviation": 96.13749130620376,
+            "q05": -138.19646091224988,
+            "median": 21.549325131740716,
+            "q95": 176.01666609360709,
+            "failure_fraction": 0.404375
+          },
+          {
+            "target_name": "g_deflection_mm",
+            "mean": 28.5586804417838,
+            "standard_deviation": 1.8301933217067636,
+            "q05": 25.523748677100745,
+            "median": 28.581941390040694,
+            "q95": 31.474628029731395,
+            "failure_fraction": 0.0
+          }
+        ],
+        "maximum_standardized_change": 0.08325098698724911,
+        "converged_from_previous": false
+      }
+    ],
+    "tolerance": 0.05
+  },
+  "recommended_minimum_sample_count": null
+}

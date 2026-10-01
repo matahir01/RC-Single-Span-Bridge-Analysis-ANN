@@ -27,6 +27,31 @@ multipliers, independence, no-link shear treatment, deflection limit and the
 software's separate V1 verification and the working Windows desktop package do
 not turn these exploratory probability results into a bridge design.
 
+## Independent LHS extension (1 October 2026)
+
+The same unconfirmed configuration and 3.0 m deterministic baseline were
+re-evaluated with independent LHS samples at 2,000, 3,000, 4,000, 6,000 and
+8,000 points, seeds 20261001–20261005. The exact configuration SHA-256,
+response statistics and seeds are in
+[`2026-10-01_lhs_extension.json`](research_runs/2026-10-01_lhs_extension.json);
+reproduce with `python examples/audit_provisional_lhs.py
+examples/provisional_exploratory_config.json --output <file.json>`.
+
+| Adjacent sizes | Maximum standardized response change | Governing statistic | 5% gate |
+| --- | ---: | --- | --- |
+| 2,000 → 3,000 | 10.639% | Shear-margin 5% quantile | Fail |
+| 3,000 → 4,000 | 5.956% | Shear-margin 5% quantile | Fail |
+| 4,000 → 6,000 | 9.600% | Shear-margin 5% quantile | Fail |
+| 6,000 → 8,000 | 8.325% | Shear-margin 5% quantile | Fail |
+
+The fresh run exactly reproduced the independently executed numerical record.
+No sample size through 8,000 passes this particular adjacent independent-LHS
+rule; increasing the count alone is not an adopted stopping decision. The
+lower shear tail remains unstable, and this mean/quantile check does not prove
+rare-event probability accuracy. Stratified/replicated tail studies, near-limit
+validation and physical action/link evidence are still needed before retraining
+the ANN or claiming RBDO reliability.
+
 ## Required next research run
 
 Resolve the permanent-action decomposition, joint vehicle/time traffic model
