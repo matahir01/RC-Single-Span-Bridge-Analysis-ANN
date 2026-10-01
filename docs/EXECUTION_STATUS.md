@@ -80,6 +80,12 @@ Updated: 1 October 2026 (UTC)
   time; 263.73 to 150.33 s (1.75x). Ruff and direct comparison passed;
   [tests run 36918836325](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36918836325)
   passed.
+- `9e214e1b2ef07d90f5afba43d8ff17cf7dcf61cc`: exploratory independent
+  LHS extension to 8,000 samples, with reproducible script, exact input hash
+  and source register update. Every new adjacent-size step failed the adopted
+  5% response rule; no sample size is accepted. Local research tests (7) and
+  Ruff passed. GitHub [tests run 36920444192](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36920444192)
+  passed.
 
 ## Windows package check
 
