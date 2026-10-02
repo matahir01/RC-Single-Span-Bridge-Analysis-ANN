@@ -1,0 +1,20 @@
+{
+  "status": "strict vertical-equilibrium gate failed",
+  "case_id": 3,
+  "checked_cases": 3,
+  "grid_nodes": 4625,
+  "grid_members": 5368,
+  "minimum_x_spacing_m": 0.004999999999999893,
+  "minimum_y_spacing_m": 0.04999999999999982,
+  "applied_kn": -1352.6116199634346,
+  "reaction_kn": 1352.6097912287105,
+  "residual_kn": -0.0018287347240857343,
+  "tolerance_kn": 0.0013526116199634344,
+  "general_solver_residual_kn": -0.0018287347240857343,
+  "general_and_sparse_results_identical": true,
+  "settings": {
+    "hb_longitudinal_step_m": 0.5,
+    "hb_transverse_step_m": 0.25,
+    "ha_kel_step_m": 0.5
+  }
+}

@@ -33,3 +33,35 @@ continuous placement study is needed. Station moment shape convergence and
 all-cases retention were not checked. The GUI and calculation sheets now flag
 BS traffic grid status explicitly; design ratios derived from an unverified
 traffic envelope remain conditional on its load search.
+
+## Attempted second refinement (2 October 2026)
+
+The next exhaustive combined search was prepared at HB longitudinal 0.5 m,
+transverse 0.25 m and HA KEL 0.5 m. The placement generator counts **93,480**
+cases over the five HB axle spacings, compared with 27,060 in the saved
+half-step search. The reproducible comparison and capture script is
+[`audit_bs_combined_second_refinement.py`](../examples/audit_bs_combined_second_refinement.py).
+
+The solver stopped at **case 3**, before a snapshot or envelope could be
+produced. Applied vertical load was -1352.611619963 kN, summed reaction
+1352.609791229 kN, and the residual -0.001828735 kN exceeded the strict
+scale-aware tolerance 0.001352612 kN. The grid had 4,625 nodes, 5,368 members,
+and minimum longitudinal/transverse segments 0.005/0.05 m. The HA KEL search
+places an edge location at `step/100`, which shrinks to 0.005 m at this
+refinement and creates very short elements in a large grillage.
+
+The [reproducible equilibrium probe](../examples/probe_bs_dense_grid_equilibrium.py)
+and [its JSON record](benchmarks/bs_dense_equilibrium_probe_2026-10-02.json)
+compare the optimized sparse-load assembly to the general prepared solver
+using an exactly zero member UDL. The **entire first failing analysis result
+is identical** in both paths, including the residual; the new speed branch
+did not cause this failure. No tolerance was relaxed, no unconverged result
+was exported, and the 93,480-case search has **no accepted outcome**.
+
+A fixed 0.01 m KEL edge position cleared the first 32 placements in a
+diagnostic run, but that changes the placement family and is only a lead for
+investigation. It is not an accepted second-grid analysis. A numerically
+conditioned, consistently nested KEL grid and a repeatable equilibrium audit
+are needed before running the next full search. Compare all seven girder
+responses and station shapes after that; keep the default BS route labelled
+unverified until the required engineering and numerical gates pass.
