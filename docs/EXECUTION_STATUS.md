@@ -15,8 +15,9 @@ default. An explicit exhaustive run now reports total case progress and
 checks Cancel between cases. Its runtime has **not** been benchmarked or
 claimed fast. No design or traffic formula changed.
 
-Pushed source commit: `5fa9be0bec10ede8d062207ae0bbd896dc9c3954`.
-Local full suite: 261 passed, Ruff clean; paired coarse BS runs with case retention
+Pushed application commit: `5fa9be0bec10ede8d062207ae0bbd896dc9c3954`;
+strict legacy comparator fix: `85a25a57c29985908865c1d47e03737f77e90f3a`.
+Local full suite: 262 passed, Ruff clean; paired coarse BS runs with case retention
 on/off matched all girder/station traffic effects, BS combinations and GUI
 effect rows. Source package smoke completed BS EN and BS analysis,
 save/reopen, seven design rows per route and two PDFs; the BS case count was
@@ -45,15 +46,24 @@ option absent in the historical baseline. The follow-on comparison-gate fix
 normalizes this one missing field to its old default `true`; it still rejects
 changed traffic values or a changed option. Actual same-runner old/new coarse
 outputs then compared **exactly equal**, 4.34 s old versus 2.07 s new on
-this machine. The follow-on CI run must still pass before closing that gate.
+this machine. The follow-on [Linux CI run
+37071660005](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37071660005)
+**passed** Ruff, all tests, and both same-runner LM1 and BS legacy comparisons.
 
-Exact next action for this batch: push the comparator fix after local tests,
-confirm the new Linux CI old/new BS comparison passes, and preserve the
-Windows artifact link. Next engineering work: resolve the conditioned
-BS KEL grid before any fine-grid convergence claim, then address the research
-source and validation blockers at the end of this file.
+Exact next action: find a numerically conditioned and consistently nested
+BS KEL edge/grid construction that passes the strict equilibrium check,
+then rerun the 93,480-placement HA+HB search, compare every girder/station
+effect with the saved 27,060-placement grid, and retain the unverified-grid
+warning until a defensible convergence audit passes. The research source,
+action, dependence and validation blockers remain as described below.
 
 ## Latest pushed code
+
+- `5fa9be0bec10ede8d062207ae0bbd896dc9c3954`: separate BS case retention
+  from optional exhaustive deflection; real Windows x64 package verified at
+  artifact 11253799153.
+- `85a25a57c29985908865c1d47e03737f77e90f3a`: strict legacy comparator
+  handles the historical missing config field; Linux CI 37071660005 passed.
 
 - `c3c3fd571ba028a46e62a1d7d046badb78e8a191`: selected BS EN or
   separate BS 5400/BD 37 route; 237 tests and Ruff passed.

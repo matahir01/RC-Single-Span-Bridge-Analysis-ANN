@@ -144,3 +144,5 @@ traffic, case, combination and configuration equality. A same-machine
 old/new coarse run passed, 4.34 s versus 2.07 s (2.10x on that run). This
 speed ratio is for `retain_all_cases=false` in the coarse regression case,
 not for the default fine-grid study or for exhaustive deflection.
+The follow-on [Linux CI run](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37071660005)
+passed the same-runner LM1 and BS old/new gates after this metadata fix.
