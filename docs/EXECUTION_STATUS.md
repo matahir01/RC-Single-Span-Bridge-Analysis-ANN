@@ -131,6 +131,17 @@ Updated: 2 October 2026 (UTC)
   **passed**. [Download Windows artifact 11232036651](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37018348130/artifacts/11232036651)
   before 31 December 2026; Actions artifact SHA-256:
   `08a7d2cb79ed3a449a0f01736f2172926face6547f94c30042e73a8504b70495`.
+- `2ec4f99795df68d494578b4e1959db931f29dce0`: sparse nodal/member-point
+  traffic assembly with the old general member-UDL path preserved, and a
+  second Windows packaged smoke route for coarse BS 5400 analysis, save/open
+  and a BS PDF. Paired default fine BS outputs match exactly excluding time,
+  122.29 to 100.05 s (1.22x). Local 258 tests, Ruff, exact full capture
+  comparison, and source two-code package smoke passed. [Linux tests
+  37020255989](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37020255989)
+  and [GUI smoke 37020256023](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37020256023)
+  **passed**, including the legacy-engine CI comparison. [Windows EXE
+  37020255807](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37020255807)
+  is still running and must pass the extended two-code packaged workflow.
 
 The former “Shear PASS” field is explicitly the **maximum web resistance**
 check. The worked sheets state that required link steel is calculated but
@@ -272,7 +283,7 @@ engine. Local 257 tests, Ruff and focused 13-page PDF visual inspection passed;
 Windows packaged-app verification passed on its pushed commit. The next
 package gate additionally exercises the **BS** route inside the executable.
 
-The pending sparse-load solver batch leaves general member-UDL assembly
+The pushed sparse-load solver batch leaves general member-UDL assembly
 unchanged and assembles only loaded members for the nodal/member-point traffic
 cases. The paired full default BS route took 122.29 s before versus 100.05 s
 after (1.22x) on one machine. Captured HA/HB/HA+HB physical cases, case/member
@@ -280,17 +291,23 @@ IDs, girder and station responses, combinations, seven design results and GUI
 rows were exactly identical after excluding elapsed time. The two compressed
 captures and SHA-256 values are in
 `docs/BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md`. Local 258 tests and Ruff
-passed. A source package smoke ran the BS EN reference and a coarse BS route,
+passed. Linux CI passed the same-runner legacy-engine comparison. A source
+package smoke ran the BS EN reference and a coarse BS route,
 saved/reopened both projects and produced both calculation PDFs. The new
-Windows packaged smoke and coarse legacy-engine CI comparison have not yet run
-on this pending commit.
+Windows packaged smoke has not yet completed.
 
-Exact next action: push the verified sparse-load batch, verify the extended
-two-code packaged smoke and coarse legacy-engine comparison in Windows/Linux
-CI, record its ZIP; then refine the **combined BS**
-placement search beyond 1.0/0.5/1.0 m or
-otherwise establish a convergence bound, and benchmark any new speedup against
-the preserved exact-output legacy gate. Obtain defensible DL/LL and dependence
+The follow-on exhaustive combined BS placement search at HB longitudinal /
+transverse and HA KEL steps of **0.5 / 0.25 / 0.5 m** has begun. Its generator
+counts **93,480** cases versus **27,060** at 1.0 / 0.5 / 1.0 m. The audited
+script is `examples/audit_bs_combined_second_refinement.py`; no result or
+convergence claim exists until that run finishes and its snapshot is saved.
+
+Exact next action: record the Windows two-code packaged-app result and ZIP,
+finish the running 93,480-placement combined BS refinement and compare its
+seven-girder envelopes with the saved 27,060-placement record. If it fails
+the provisional 5% criterion, retain the unverified-grid warning and plan a
+further refinement or bounded continuous search. Benchmark any further speedup
+against the preserved exact-output legacy gate. Obtain defensible DL/LL and dependence
 inputs, physical shear-link data and a project deflection criterion; build
 tail-focused training and independent direct boundary validation before
 retrying FORM/RBDO within a validated design domain. Keep
