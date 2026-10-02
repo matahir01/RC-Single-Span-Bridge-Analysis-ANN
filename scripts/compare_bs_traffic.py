@@ -19,6 +19,11 @@ def main() -> None:
 
     old, new = (read_record(path) for path in (args.old, args.new))
     old_time, new_time = old.pop("elapsed_s"), new.pop("elapsed_s")
+    # The legacy source predates this runner-only option. Its default was to
+    # evaluate all-case deflection when all cases were retained; restoring that
+    # documented default keeps the numeric traffic/design equality gate strict.
+    old["config"].setdefault("evaluate_all_case_combined_deflection", True)
+    new["config"].setdefault("evaluate_all_case_combined_deflection", True)
     assert old == new, "BS 5400 traffic envelopes, cases or combinations changed."
     print(f"BS traffic outputs identical; {old_time:.2f} s -> {new_time:.2f} s "
           f"({old_time / new_time:.2f}x).")

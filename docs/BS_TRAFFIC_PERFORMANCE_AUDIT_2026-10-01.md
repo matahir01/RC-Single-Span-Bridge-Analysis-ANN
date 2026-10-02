@@ -134,3 +134,13 @@ was switched on, and a real source package smoke produced both route PDFs
 with 1,032/1,032 combined BS cases retained. This evidence does not measure
 the exhaustive combined-deflection runtime; it remains an optional expensive
 verification and is not silently represented as having run in the report.
+The [Windows x64 packaged workflow](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37070920678)
+passed the same coarse retained-case scenario in the real EXE. The first
+Linux legacy BS gate for this batch compared the new config record with an
+older record lacking the optional deflection field and failed on metadata;
+it did not report a physical effect difference. The comparator now restores
+the historical default `true` for an absent field, then still requires exact
+traffic, case, combination and configuration equality. A same-machine
+old/new coarse run passed, 4.34 s versus 2.07 s (2.10x on that run). This
+speed ratio is for `retain_all_cases=false` in the coarse regression case,
+not for the default fine-grid study or for exhaustive deflection.

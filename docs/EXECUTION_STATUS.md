@@ -2,7 +2,7 @@
 
 Updated: 2 October 2026 (UTC)
 
-## Latest interactive BS stall fix (Windows verification pending)
+## Latest interactive BS stall fix (Windows package verified)
 
 The user observed “Finalizing results 0%” for over 237 s with “Retain all
 traffic cases” selected. The runner was actually reoptimizing combined
@@ -15,7 +15,8 @@ default. An explicit exhaustive run now reports total case progress and
 checks Cancel between cases. Its runtime has **not** been benchmarked or
 claimed fast. No design or traffic formula changed.
 
-Local focused tests: 21 passed; paired coarse BS runs with case retention
+Pushed source commit: `5fa9be0bec10ede8d062207ae0bbd896dc9c3954`.
+Local full suite: 261 passed, Ruff clean; paired coarse BS runs with case retention
 on/off matched all girder/station traffic effects, BS combinations and GUI
 effect rows. Source package smoke completed BS EN and BS analysis,
 save/reopen, seven design rows per route and two PDFs; the BS case count was
@@ -25,9 +26,30 @@ Finalizing results reached 100%, with seven GUI rows returned. This grid is
 **not converged** and the existing BS warning remains. The 93,480-case finer
 audit remains blocked by the strict equilibrium failure documented below.
 
-Exact next action for this batch: finish full tests and Ruff, push the source,
-wait for the real Windows x64 package smoke with retained BS cases, and post
-the verified artifact link. Next engineering work: resolve the conditioned
+[Windows x64 workflow 37070920678](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37070920678)
+**passed** source GUI tests, PyInstaller onedir, `qwindows.dll`, packaged EXE
+BS EN and BS analysis/design, project save/open, both PDFs, and the new
+1,032/1,032 retained-case BS smoke. [Download artifact
+11253799153](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37070920678/artifacts/11253799153)
+before 31 December 2026. Its outer Actions ZIP SHA-256 is
+`cd48ec2f7ca14f11ea0df02ffe8e38051b38383e32dc31ae518bc6b1ecd2a466`.
+Extract the outer ZIP and inner `RCBridgeAnalyzer-Windows-x64.zip`; keep the
+full folder together and launch `RCBridgeAnalyzer.exe`. This package is the
+verified `5fa9be0` app; the follow-on comparison-gate metadata fix changes
+only a developer script and test.
+
+The same push's [Linux tests 37070920683](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37070920683)
+passed Ruff, pytest and the old/new LM1 comparison, then failed the old/new
+BS JSON comparison because `ReferenceRunConfig` has a new verification
+option absent in the historical baseline. The follow-on comparison-gate fix
+normalizes this one missing field to its old default `true`; it still rejects
+changed traffic values or a changed option. Actual same-runner old/new coarse
+outputs then compared **exactly equal**, 4.34 s old versus 2.07 s new on
+this machine. The follow-on CI run must still pass before closing that gate.
+
+Exact next action for this batch: push the comparator fix after local tests,
+confirm the new Linux CI old/new BS comparison passes, and preserve the
+Windows artifact link. Next engineering work: resolve the conditioned
 BS KEL grid before any fine-grid convergence claim, then address the research
 source and validation blockers at the end of this file.
 
