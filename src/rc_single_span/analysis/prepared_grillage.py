@@ -35,6 +35,7 @@ class PreparedVerticalGrillage:
     structure_signature: tuple[object, ...]
     node_index_by_id: dict[int, int]
     elements: tuple[_PreparedElement, ...]
+    element_index_by_member_id: dict[int, int]
     stiffness: csc_matrix
     constrained_dofs: frozenset[int]
     free_dofs: tuple[int, ...]
@@ -116,6 +117,9 @@ def prepare_vertical_grillage(model: StructuralModel) -> PreparedVerticalGrillag
         structure_signature=vertical_grillage_structure_signature(model),
         node_index_by_id=node_index,
         elements=tuple(elements),
+        element_index_by_member_id={
+            element.beam.member_id: index for index, element in enumerate(elements)
+        },
         stiffness=stiffness_csc,
         constrained_dofs=frozenset(constrained),
         free_dofs=free,
@@ -136,29 +140,47 @@ def solve_prepared_vertical_grillage(
     loads = np.zeros(prepared.stiffness.shape[0], dtype=float)
     local_loads: list[np.ndarray] = []
 
-    for element in prepared.elements:
-        local = np.zeros(6)
-        for load in case.uniform_loads:
-            if load.member_id != element.beam.member_id:
-                continue
-            start = 0.0 if load.start_m is None else load.start_m
-            end = element.length_m if load.end_m is None else load.end_m
-            local += _udl(
-                element.length_m,
-                start,
-                end,
-                load.magnitude_kn_m,
-            )
+    if not case.uniform_loads:
+        # Traffic plan loads are predominantly nodal; only HB wheels that fall
+        # between transverse grid lines create member loads. Preserve the
+        # original member order when accumulating the few nonzero vectors.
+        local_loads = [np.zeros(6) for _ in prepared.elements]
+        loaded_indices: set[int] = set()
         for load in case.point_loads:
-            if load.member_id == element.beam.member_id:
-                local += _point_load(
+            index = prepared.element_index_by_member_id[load.member_id]
+            element = prepared.elements[index]
+            local_loads[index] += _point_load(
+                element.length_m, load.distance_from_i_m, load.magnitude_kn,
+            )
+            loaded_indices.add(index)
+        for index in sorted(loaded_indices):
+            element = prepared.elements[index]
+            dofs = np.array(element.dofs, dtype=int)
+            loads[dofs] += element.transformation.T @ local_loads[index]
+    else:
+        for element in prepared.elements:
+            local = np.zeros(6)
+            for load in case.uniform_loads:
+                if load.member_id != element.beam.member_id:
+                    continue
+                start = 0.0 if load.start_m is None else load.start_m
+                end = element.length_m if load.end_m is None else load.end_m
+                local += _udl(
                     element.length_m,
-                    load.distance_from_i_m,
-                    load.magnitude_kn,
+                    start,
+                    end,
+                    load.magnitude_kn_m,
                 )
-        local_loads.append(local)
-        dofs = np.array(element.dofs, dtype=int)
-        loads[dofs] += element.transformation.T @ local
+            for load in case.point_loads:
+                if load.member_id == element.beam.member_id:
+                    local += _point_load(
+                        element.length_m,
+                        load.distance_from_i_m,
+                        load.magnitude_kn,
+                    )
+            local_loads.append(local)
+            dofs = np.array(element.dofs, dtype=int)
+            loads[dofs] += element.transformation.T @ local
 
     for load in case.nodal_loads:
         w, rx, ry = _node_dofs(prepared.node_index_by_id[load.node_id])

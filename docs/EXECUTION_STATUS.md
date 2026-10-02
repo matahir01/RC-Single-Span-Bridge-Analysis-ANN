@@ -121,6 +121,16 @@ Updated: 2 October 2026 (UTC)
   creation and upload. [Download artifact 11194984935](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930527695/artifacts/11194984935)
   before its 30 December 2026 expiry; GitHub Actions artifact SHA-256:
   `c7a40ba8cdb89eca9c6442fabd88521e34245a684a70b07cc7915c98fc235a20`.
+- `88d296a9f1d55c8f8346bf9337ae413c47751b13`: six editable BS traffic
+  steps in GUI/project JSON/report, construction-stage equilibrium, bending
+  and stiffness substitutions checked against the engine result, and Windows
+  usage instructions. Local 257 tests, Ruff and rendered 13-page BS PDF
+  passed. [Linux tests 37018347964](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37018347964),
+  [GUI smoke 37018347853](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37018347853),
+  and [Windows EXE 37018348130](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37018348130)
+  **passed**. [Download Windows artifact 11232036651](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37018348130/artifacts/11232036651)
+  before 31 December 2026; Actions artifact SHA-256:
+  `08a7d2cb79ed3a449a0f01736f2172926face6547f94c30042e73a8504b70495`.
 
 The former “Shear PASS” field is explicitly the **maximum web resistance**
 check. The worked sheets state that required link steel is calculated but
@@ -145,10 +155,10 @@ Windows CI built the actual EXE, found `qwindows.dll`, ran the packaged
 reference workflow and uploaded the ZIP on 1 October. The distribution is
 unsigned; the Actions artifact expires on 30 December 2026.
 The subsequent updated GUI/report build also passed the Windows packaged
-smoke. [Download its artifact](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930527695/artifacts/11194984935),
+smoke. [Download its artifact](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37018348130/artifacts/11232036651),
 extract the outer Actions ZIP, then extract `RCBridgeAnalyzer-Windows-x64.zip`
 and run `RCBridgeAnalyzer.exe` from the full folder. This build includes the
-BS grid warning in the GUI and calculation sheets.
+BS grid warning and editable placement steps in the GUI and calculation sheets.
 
 ## Research
 
@@ -255,16 +265,30 @@ design at 1.2 m saved/reopened the reference project and exported a 12-page,
 package smoke now requires equations, diagrams and a substantive PDF. The
 built Windows EXE passed that packaged smoke and the ZIP was uploaded.
 
-The current source batch exposes the six BS HA/HB/HA+HB placement steps in the GUI,
+The pushed source batch exposes the six BS HA/HB/HA+HB placement steps in the GUI,
 persists them in project JSON and the report, and expands construction-stage
 worked sheets with equilibrium and bending substitutions checked against the
 engine. Local 257 tests, Ruff and focused 13-page PDF visual inspection passed;
-Windows packaged-app verification must run on its pushed commit before calling
-that build complete.
+Windows packaged-app verification passed on its pushed commit. The next
+package gate additionally exercises the **BS** route inside the executable.
 
-Exact next action: run the new source batch through Linux tests, GUI smoke
-and Windows packaged reference workflow, record the resulting downloadable ZIP,
-then refine the **combined BS** placement search beyond 1.0/0.5/1.0 m or
+The pending sparse-load solver batch leaves general member-UDL assembly
+unchanged and assembles only loaded members for the nodal/member-point traffic
+cases. The paired full default BS route took 122.29 s before versus 100.05 s
+after (1.22x) on one machine. Captured HA/HB/HA+HB physical cases, case/member
+IDs, girder and station responses, combinations, seven design results and GUI
+rows were exactly identical after excluding elapsed time. The two compressed
+captures and SHA-256 values are in
+`docs/BS_TRAFFIC_PERFORMANCE_AUDIT_2026-10-01.md`. Local 258 tests and Ruff
+passed. A source package smoke ran the BS EN reference and a coarse BS route,
+saved/reopened both projects and produced both calculation PDFs. The new
+Windows packaged smoke and coarse legacy-engine CI comparison have not yet run
+on this pending commit.
+
+Exact next action: push the verified sparse-load batch, verify the extended
+two-code packaged smoke and coarse legacy-engine comparison in Windows/Linux
+CI, record its ZIP; then refine the **combined BS**
+placement search beyond 1.0/0.5/1.0 m or
 otherwise establish a convergence bound, and benchmark any new speedup against
 the preserved exact-output legacy gate. Obtain defensible DL/LL and dependence
 inputs, physical shear-link data and a project deflection criterion; build

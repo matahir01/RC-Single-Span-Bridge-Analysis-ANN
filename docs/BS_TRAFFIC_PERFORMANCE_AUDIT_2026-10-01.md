@@ -76,3 +76,38 @@ comparison, however, the previous source took **150.92 s** and the trial took
 The next performance batch should profile physical case assembly and solves,
 then test a response-basis or batched-solve approach against exact physical
 case and design outputs. Speed must be measured on paired runs before adoption.
+
+## 2 October 2026 sparse traffic-load assembly
+
+A subsequent profile of the coarse reference attributed about 2.04 s of its
+4.37 s measured analysis to 556 prepared-grillage solves. The plan-load
+builder produces mostly nodal loads and a few HB member point loads, with no
+member UDL. The new solver branch assembles only loaded members for this
+specific load-case shape, still in the prepared element order. Cases with a
+member UDL continue through the existing general assembly. This differs from
+the rejected experiment above, which indexed loads but still visited and
+multiplied every unloaded member for each case.
+
+The default GUI 15 m BS analysis, all three traffic searches, code-specific
+design and GUI summary were captured on the same machine in sequence from
+the prior source tree and the candidate source. See the exact JSON records:
+[prior](benchmarks/bs_traffic_sparse_prior_2026-10-02.json.gz)
+(SHA-256 `c0496ac6df86520a25f2deb1fae05d9b3d32af9017a2441754c5a9d717e5889c`)
+and [candidate](benchmarks/bs_traffic_sparse_candidate_2026-10-02.json.gz)
+(SHA-256 `19028ae45f5545feb5284837db26ef89512e49f428ef44a9f6eee66be68a987a`).
+Use `python scripts/compare_bs_traffic.py <prior.json.gz> <candidate.json.gz>`.
+
+| Same-machine run | Prior | Candidate | Ratio |
+| --- | ---: | ---: | ---: |
+| Default GUI BS analysis and design | 122.29 s | 100.05 s | 1.22x |
+| HA / HB / HA+HB placements | 612 / 1,845 / 9,672 | 612 / 1,845 / 9,672 | Unchanged |
+
+The comparison requires **exact JSON equality excluding elapsed time** and
+passed: physical retained load cases, all case and member IDs, station and
+girder effects, combinations, seven design rows and GUI summary rows. The
+candidate also matched the older preserved optimized fine-grid snapshot.
+A focused test forces the general solver with a zero-valued member UDL and
+compares its entire response to both nodal-only and mixed nodal/member-point
+fast-path cases. This speed ratio is local and does not certify convergence of
+the BS placement grid. The coarse old/new same-runner CI gate continues to
+check exact engine output on the runner used for that job.
