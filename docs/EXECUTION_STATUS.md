@@ -1,6 +1,6 @@
 # Execution status
 
-Updated: 1 October 2026 (UTC)
+Updated: 2 October 2026 (UTC)
 
 ## Latest pushed code
 
@@ -111,7 +111,16 @@ Updated: 1 October 2026 (UTC)
   36930169645](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930169645)
   **passed**; [tests 36930169650](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930169650)
   and [Windows EXE 36930169662](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930169662)
-  are running.
+  **passed**.
+- `7ddf82900b22d0dcdb8e1eceef86ee64ff1803ba`: README, packaged-app
+  usage instructions and checkpoint aligned with the BS grid and shear scope.
+  [Linux tests 36930527724](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930527724)
+  **passed**. [Windows build 36930527695](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930527695)
+  **passed** source GUI workflow tests, actual Windows x64 PyInstaller build,
+  Qt plugin check, packaged reference analysis/design, save/open, PDF, ZIP
+  creation and upload. [Download artifact 11194984935](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930527695/artifacts/11194984935)
+  before its 30 December 2026 expiry; GitHub Actions artifact SHA-256:
+  `c7a40ba8cdb89eca9c6442fabd88521e34245a684a70b07cc7915c98fc235a20`.
 
 The former “Shear PASS” field is explicitly the **maximum web resistance**
 check. The worked sheets state that required link steel is calculated but
@@ -136,7 +145,7 @@ Windows CI built the actual EXE, found `qwindows.dll`, ran the packaged
 reference workflow and uploaded the ZIP on 1 October. The distribution is
 unsigned; the Actions artifact expires on 30 December 2026.
 The subsequent updated GUI/report build also passed the Windows packaged
-smoke. [Download its artifact](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36927717385/artifacts/11195350209),
+smoke. [Download its artifact](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/36930527695/artifacts/11194984935),
 extract the outer Actions ZIP, then extract `RCBridgeAnalyzer-Windows-x64.zip`
 and run `RCBridgeAnalyzer.exe` from the full folder. This build includes the
 BS grid warning in the GUI and calculation sheets.
@@ -246,9 +255,16 @@ design at 1.2 m saved/reopened the reference project and exported a 12-page,
 package smoke now requires equations, diagrams and a substantive PDF. The
 built Windows EXE passed that packaged smoke and the ZIP was uploaded.
 
-Exact next action: verify the current maximum-web-resistance wording in the
-real Windows EXE workflow and record its downloadable ZIP. Then refine
-the **combined BS** placement search beyond 1.0/0.5/1.0 m or
+The current source batch exposes the six BS HA/HB/HA+HB placement steps in the GUI,
+persists them in project JSON and the report, and expands construction-stage
+worked sheets with equilibrium and bending substitutions checked against the
+engine. Local 257 tests, Ruff and focused 13-page PDF visual inspection passed;
+Windows packaged-app verification must run on its pushed commit before calling
+that build complete.
+
+Exact next action: run the new source batch through Linux tests, GUI smoke
+and Windows packaged reference workflow, record the resulting downloadable ZIP,
+then refine the **combined BS** placement search beyond 1.0/0.5/1.0 m or
 otherwise establish a convergence bound, and benchmark any new speedup against
 the preserved exact-output legacy gate. Obtain defensible DL/LL and dependence
 inputs, physical shear-link data and a project deflection criterion; build

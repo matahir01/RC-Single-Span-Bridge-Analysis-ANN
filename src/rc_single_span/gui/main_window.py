@@ -267,7 +267,8 @@ class BridgeMainWindow(QMainWindow):
             "rebar_layers bars_per_layer bar_diameter",
             "loads": "surfacing_thickness surfacing_density barrier_load services_load",
             "traffic": "code_profile analysis_mode psi1_tandem psi1_udl psi2_traffic lm1_step "
-            "hb_units retain_cases",
+            "hb_units bs_ha_step bs_hb_long_step bs_hb_trans_step "
+            "bs_combined_long_step bs_combined_trans_step bs_combined_kel_step retain_cases",
             "design": "design_enabled effective_depth design_bar_diameter design_bar_spacing "
             "ec_cover ec_fct_eff ec_crack_limit ec_na_ratio ec_sls_basis ec_alpha_cc "
             "bs_cover bs_crack_point_depth bs_crack_limit bs_ec_modified bs_fyv "
@@ -452,8 +453,8 @@ class BridgeMainWindow(QMainWindow):
         form.addRow("BS EN quasi-permanent ψ2", self.psi2_traffic)
         form.addRow("LM1 longitudinal step", self.lm1_step)
         mode_note = QLabel(
-            "BS EN LM1 accuracy modes only. The BS 5400 / BD 37 route uses fixed "
-            "traffic search steps and requires a separate project-specific convergence audit. "
+            "BS EN LM1 accuracy modes only. The BS 5400 / BD 37 route has editable "
+            "traffic search steps and requires a project-specific convergence audit. "
             "Quick: 3 m exploratory grid. Standard: 2.4 → 1.2 m, refining to "
             "0.6 m if the 5% girder-envelope test fails. Final Verification: "
             "audits 1.2 → 0.6 m. Editing the grid selects Custom, without "
@@ -462,6 +463,34 @@ class BridgeMainWindow(QMainWindow):
         mode_note.setWordWrap(True)
         form.addRow(mode_note)
         form.addRow("HB units", self.hb_units)
+        self.bs_grid_group = QGroupBox("BS 5400 / BD 37 placement search (metres)")
+        bs_grid = QFormLayout(self.bs_grid_group)
+        self.bs_ha_step = double_spin(1.0, minimum=0.05, maximum=15.0, suffix=" m")
+        self.bs_hb_long_step = double_spin(1.0, minimum=0.05, maximum=15.0, suffix=" m")
+        self.bs_hb_trans_step = double_spin(0.5, minimum=0.05, maximum=5.0, suffix=" m")
+        self.bs_combined_long_step = double_spin(
+            2.0, minimum=0.05, maximum=15.0, suffix=" m")
+        self.bs_combined_trans_step = double_spin(
+            1.0, minimum=0.05, maximum=5.0, suffix=" m")
+        self.bs_combined_kel_step = double_spin(
+            2.0, minimum=0.05, maximum=15.0, suffix=" m")
+        for label, widget in (
+            ("HA KEL longitudinal", self.bs_ha_step),
+            ("HB longitudinal", self.bs_hb_long_step),
+            ("HB transverse", self.bs_hb_trans_step),
+            ("HA+HB HB longitudinal", self.bs_combined_long_step),
+            ("HA+HB HB transverse", self.bs_combined_trans_step),
+            ("HA+HB HA KEL longitudinal", self.bs_combined_kel_step),
+        ):
+            bs_grid.addRow(label, widget)
+        bs_grid_note = QLabel(
+            "The default combined grid failed the reference 5% response test. "
+            "A finer single run is a sensitivity check, not a convergence certificate. "
+            "Half-step reference: 0.5 / 0.5 / 0.25 / 1 / 0.5 / 1 m in row order."
+        )
+        bs_grid_note.setWordWrap(True)
+        bs_grid.addRow(bs_grid_note)
+        layout.addWidget(self.bs_grid_group)
         form.addRow("", self.retain_cases)
         layout.addWidget(box)
         self.run_button = QPushButton("Run deterministic analysis")
@@ -737,6 +766,7 @@ class BridgeMainWindow(QMainWindow):
         self.analysis_mode.setEnabled(is_bs_en)
         self.lm1_step.setEnabled(is_bs_en)
         self.hb_units.setEnabled(not is_bs_en)
+        self.bs_grid_group.setVisible(not is_bs_en)
 
     def _read_state(self) -> GuiProjectState:
         section_value = ("rectangular", "t", "i")[self.section_type.currentIndex()]
@@ -793,6 +823,12 @@ class BridgeMainWindow(QMainWindow):
             accuracy_mode=GuiAccuracyMode(self.analysis_mode.currentText()),
             retain_all_cases=self.retain_cases.isChecked(),
             hb_units=self.hb_units.value(),
+            bs_ha_longitudinal_step_m=self.bs_ha_step.value(),
+            bs_hb_longitudinal_step_m=self.bs_hb_long_step.value(),
+            bs_hb_transverse_step_m=self.bs_hb_trans_step.value(),
+            bs_combined_hb_longitudinal_step_m=self.bs_combined_long_step.value(),
+            bs_combined_hb_transverse_step_m=self.bs_combined_trans_step.value(),
+            bs_combined_ha_kel_step_m=self.bs_combined_kel_step.value(),
         )
 
     def _read_design_inputs(self) -> GuiDesignInputs:
@@ -875,6 +911,12 @@ class BridgeMainWindow(QMainWindow):
             ("psi2_traffic", self.psi2_traffic),
             ("lm1_step_m", self.lm1_step),
             ("hb_units", self.hb_units),
+            ("bs_ha_longitudinal_step_m", self.bs_ha_step),
+            ("bs_hb_longitudinal_step_m", self.bs_hb_long_step),
+            ("bs_hb_transverse_step_m", self.bs_hb_trans_step),
+            ("bs_combined_hb_longitudinal_step_m", self.bs_combined_long_step),
+            ("bs_combined_hb_transverse_step_m", self.bs_combined_trans_step),
+            ("bs_combined_ha_kel_step_m", self.bs_combined_kel_step),
         )
         for key, widget in numeric:
             value = analysis.get(key)
@@ -943,6 +985,12 @@ class BridgeMainWindow(QMainWindow):
             "lm1_step_m": settings.lm1_step_m,
             "accuracy_mode": settings.accuracy_mode.value,
             "hb_units": settings.hb_units,
+            "bs_ha_longitudinal_step_m": settings.bs_ha_longitudinal_step_m,
+            "bs_hb_longitudinal_step_m": settings.bs_hb_longitudinal_step_m,
+            "bs_hb_transverse_step_m": settings.bs_hb_transverse_step_m,
+            "bs_combined_hb_longitudinal_step_m": settings.bs_combined_hb_longitudinal_step_m,
+            "bs_combined_hb_transverse_step_m": settings.bs_combined_hb_transverse_step_m,
+            "bs_combined_ha_kel_step_m": settings.bs_combined_ha_kel_step_m,
             "retain_all_cases": settings.retain_all_cases,
         }
 

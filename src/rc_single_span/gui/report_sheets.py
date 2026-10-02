@@ -1,6 +1,7 @@
 """Worked calculation sheets from a completed engine result, never UI estimates."""
 
 from html import escape
+from math import isclose
 
 from rc_single_span.analysis.simple_span import (
     DistributedLoadSegment,
@@ -29,15 +30,17 @@ def row(reference: str, calculation: str, output: str, *, diagram: bool = False)
 
 def sheet(number: int, title: str, project: str, rows: list[str]) -> str:
     return (
-        f"<div class='sheet'><table class='sheet-head'><tr><td>"
+        f"<div class='sheet'><table class='sheet-head' cellspacing='0' cellpadding='5'>"
+        "<tr><td width='60%'>"
         f"<b>Contract:</b> {escape(project)}<br>"
         f"<b>Part of structure:</b> RC single-span bridge<br>"
-        f"<b>Calculation sheet:</b> {number}<br>{escape(title)}</td><td>"
+        f"<b>Calculation sheet:</b> {number}<br>{escape(title)}</td><td width='40%'>"
         "<b>Calculated by:</b> RC Bridge Analyzer<br>"
         "<b>Checked by:</b> __________________<br>"
         "<b>Independent review:</b> pending</td></tr></table>"
         f"<h2>{number}. {escape(title)}</h2>"
-        "<table class='calculations'><thead><tr><th>References</th>"
+        "<table class='calculations' cellspacing='0' cellpadding='5'>"
+        "<thead><tr><th>References</th>"
         "<th>Calculations</th><th>Output</th></tr></thead><tbody>"
         + "".join(rows) + "</tbody></table></div>"
     )
@@ -45,6 +48,7 @@ def sheet(number: int, title: str, project: str, rows: list[str]) -> str:
 
 def analysis_sheets(result, summary) -> str:
     rows = []
+    span = float(result.project.geometry.span_m)
     for stage in (s for s in result.construction.stages if s.girder_index == 1):
         loads = "; ".join(
             f"{n(load.magnitude_kn_m)} kN/m, x = {n(load.x_start_m)} to "
@@ -62,6 +66,72 @@ def analysis_sheets(result, summary) -> str:
             f"|V|max = {n(r.max_abs_shear_kn)} kN; "
             f"deflection = {n(stage.max_downward_deflection_mm)} mm.",
             "Stage analysed",
+        ))
+        contributions = [
+            (load.magnitude_kn_m * (load.x_end_m - load.x_start_m),
+             (load.x_start_m + load.x_end_m) / 2)
+            for load in stage.loads
+        ] + [(load.magnitude_kn, load.x_m) for load in stage.point_loads]
+        total = sum(force for force, _ in contributions)
+        moment_about_left = sum(force * centroid for force, centroid in contributions)
+        right = moment_about_left / span
+        left = total - right
+        if not (isclose(left, r.reaction_left_kn, abs_tol=1e-6) and
+                isclose(right, r.reaction_right_kn, abs_tol=1e-6)):
+            raise ValueError("Construction-stage reaction substitution differs from engine result.")
+        weight_terms = " + ".join(
+            f"{n(load.magnitude_kn_m)} x ({n(load.x_end_m)} - {n(load.x_start_m)})"
+            for load in stage.loads
+        )
+        if stage.point_loads:
+            weight_terms += (" + " if weight_terms else "") + " + ".join(
+                n(load.magnitude_kn) for load in stage.point_loads)
+        rows.append(row(
+            "Equilibrium",
+            f"Girder 1, {escape(stage.stage.value)}: L = {n(span)} m. "
+            f"W = Σ w(b-a) + Σ P = {weight_terms or '0'} = {n(total)} kN.<br>"
+            f"Rright = Σ(Wi xbar_i) / L = {n(moment_about_left)} / {n(span)} "
+            f"= {n(r.reaction_right_kn)} kN; "
+            f"Rleft = W - Rright = {n(total)} - {n(r.reaction_right_kn)} "
+            f"= {n(r.reaction_left_kn)} kN.",
+            f"ΣV = {n(total - left - right)} kN",
+        ))
+        x_m = r.max_moment_position_m
+        distributed_terms = []
+        applied_moment = 0.0
+        for load in stage.loads:
+            loaded = min(max(x_m - load.x_start_m, 0.0),
+                         load.x_end_m - load.x_start_m)
+            if loaded > 0:
+                centroid = load.x_start_m + loaded / 2
+                applied_moment += load.magnitude_kn_m * loaded * (x_m - centroid)
+                distributed_terms.append(f"{n(load.magnitude_kn_m)} x {n(loaded)} x "
+                                         f"({n(x_m)} - {n(centroid)})")
+        point_terms = [
+            f"{n(load.magnitude_kn)} x ({n(x_m)} - {n(load.x_m)})"
+            for load in stage.point_loads if load.x_m <= x_m
+        ]
+        applied_moment += sum(load.magnitude_kn * (x_m - load.x_m)
+                              for load in stage.point_loads if load.x_m <= x_m)
+        if not isclose(left * x_m - applied_moment, r.max_moment_knm, abs_tol=1e-6):
+            raise ValueError("Construction-stage moment substitution differs from engine result.")
+        substituted = " - ".join((f"{n(left)} x {n(x_m)}",
+                                    *distributed_terms, *point_terms))
+        rows.append(row(
+            "Stage M, EI, δ",
+            f"Girder 1, {escape(stage.stage.value)}: "
+            "M(x) = Rleft x - Σw ℓ(x - xcentroid) - ΣP(x - xp). "
+            f"At x = {n(x_m)} m: M = {substituted} = "
+            f"{n(r.max_moment_knm)} kNm. "
+            f"|V|max = {n(r.max_abs_shear_kn)} kN at "
+            f"x = {n(r.max_abs_shear_position_m)} m.<br>"
+            "δ(x) = ∫M(s)m_x(s) ds / EI using the stage section: "
+            f"EI = {n(stage.elastic_modulus_mpa)} x 1000 x "
+            f"{n(stage.section.iy_m4)} = "
+            f"{n(stage.elastic_modulus_mpa * 1000 * stage.section.iy_m4)} "
+            f"kNm²; δmax = {n(stage.max_downward_deflection_mm)} mm at "
+            f"x = {n(stage.max_deflection_position_m)} m.",
+            "Checked stage",
         ))
     if result.lm1 is not None:
         traffic = result.lm1

@@ -42,6 +42,12 @@ class GuiAnalysisSettings:
     retain_all_cases: bool = False
     hb_units: float = 45.0
     accuracy_mode: GuiAccuracyMode = GuiAccuracyMode.FINAL
+    bs_ha_longitudinal_step_m: float = 1.0
+    bs_hb_longitudinal_step_m: float = 1.0
+    bs_hb_transverse_step_m: float = 0.5
+    bs_combined_hb_longitudinal_step_m: float = 2.0
+    bs_combined_hb_transverse_step_m: float = 1.0
+    bs_combined_ha_kel_step_m: float = 2.0
 
 
 @dataclass(frozen=True)
@@ -93,6 +99,12 @@ def _reference_config(settings: GuiAnalysisSettings) -> ReferenceRunConfig:
         ),
         lm1_longitudinal_step_m=settings.lm1_step_m,
         hb_units=settings.hb_units,
+        bs_ha_longitudinal_step_m=settings.bs_ha_longitudinal_step_m,
+        bs_hb_longitudinal_step_m=settings.bs_hb_longitudinal_step_m,
+        bs_hb_transverse_step_m=settings.bs_hb_transverse_step_m,
+        bs_combined_hb_longitudinal_step_m=settings.bs_combined_hb_longitudinal_step_m,
+        bs_combined_hb_transverse_step_m=settings.bs_combined_hb_transverse_step_m,
+        bs_combined_ha_kel_step_m=settings.bs_combined_ha_kel_step_m,
         retain_all_cases=settings.retain_all_cases,
         lm1_udl_influence_surface=True,
     )
@@ -194,6 +206,8 @@ def run_gui_analysis(
     """Run the verified deterministic bridge engine and build a GUI summary."""
 
     route = "bs_en" if settings.code_profile is GuiCodeProfile.BS_EN else "bs5400"
+    # Validate even direct API callers before starting the expensive traffic search.
+    config = _reference_config(settings)
     audit_notes = []
     coarse = None
     if route == "bs_en" and settings.accuracy_mode in {
@@ -219,7 +233,7 @@ def run_gui_analysis(
     while True:
         result = run_reference_project(
             project,
-            config=replace(_reference_config(settings), lm1_longitudinal_step_m=step_m),
+            config=replace(config, lm1_longitudinal_step_m=step_m),
             code_route=route,
             control=control,
             **_design_kwargs(settings, design_inputs),
@@ -312,6 +326,15 @@ def run_gui_analysis(
                 "reference, halving the default HA+HB steps changed girder 5 torsion by 7.412%, "
                 "above the provisional 5% criterion. Refine and check the project grid before "
                 "relying on its traffic envelope."
+            ),
+            (
+                "This run's BS steps (m): HA longitudinal "
+                f"{config.bs_ha_longitudinal_step_m:g}; HB longitudinal/transverse "
+                f"{config.bs_hb_longitudinal_step_m:g}/{config.bs_hb_transverse_step_m:g}; "
+                "HA+HB HB longitudinal/transverse/KEL "
+                f"{config.bs_combined_hb_longitudinal_step_m:g}/"
+                f"{config.bs_combined_hb_transverse_step_m:g}/"
+                f"{config.bs_combined_ha_kel_step_m:g}."
             ),
         )
 

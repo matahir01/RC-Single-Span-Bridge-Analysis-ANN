@@ -67,6 +67,12 @@ def test_project_round_trip_keeps_code_route_and_clears_old_outputs(window, tmp_
     window.section_type.setCurrentText("I")
     window.code_profile.setCurrentIndex(1)
     window.hb_units.setValue(37.0)
+    window.bs_ha_step.setValue(0.5)
+    window.bs_hb_long_step.setValue(0.5)
+    window.bs_hb_trans_step.setValue(0.25)
+    window.bs_combined_long_step.setValue(1.0)
+    window.bs_combined_trans_step.setValue(0.5)
+    window.bs_combined_kel_step.setValue(1.0)
     window.deflection_enabled.setChecked(True)
     window.deflection_limit.setValue(42.0)
     window.deflection_basis.setText("Project brief section 4")
@@ -75,6 +81,7 @@ def test_project_round_trip_keeps_code_route_and_clears_old_outputs(window, tmp_
     window.save_project(target)
     payload = json.loads(target.read_text(encoding="utf-8"))
     assert payload["analysis"]["code_profile"].startswith("BS 5400")
+    assert payload["analysis"]["bs_combined_hb_transverse_step_m"] == 0.5
     assert payload["design"]["deflection_limit_basis"] == "Project brief section 4"
     window._report_html = "previous run"
     window._export_action.setEnabled(True)
@@ -82,6 +89,8 @@ def test_project_round_trip_keeps_code_route_and_clears_old_outputs(window, tmp_
     window.open_project(target)
     assert window._read_state() == expected
     assert window._read_settings().hb_units == 37.0
+    assert window._read_settings().bs_hb_transverse_step_m == 0.25
+    assert window._read_settings().bs_combined_ha_kel_step_m == 1.0
     assert window._read_design_inputs().deflection_limit_mm == 42.0
     assert window._report_html is None
     assert not window._export_action.isEnabled()

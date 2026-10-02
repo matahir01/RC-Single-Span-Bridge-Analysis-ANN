@@ -44,6 +44,10 @@ The desktop reference's default HA+HB placement grid is not yet numerically
 converged: an exhaustive half-step search changed one torsion envelope by
 **7.412%**, above the provisional 5% criterion. The GUI and calculation report
 flag this; see [the BS grid audit](docs/BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md).
+The desktop Analysis tab exposes separate HA, HB and HA+HB placement steps;
+the saved project and calculation sheets record the chosen values. The
+documented half-step settings are available for an explicit sensitivity run,
+but a single finer result is not a convergence certificate.
 
 ## Focused V1 scope
 
