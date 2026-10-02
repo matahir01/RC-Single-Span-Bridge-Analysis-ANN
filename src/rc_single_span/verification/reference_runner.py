@@ -90,6 +90,10 @@ class ReferenceRunConfig:
     max_exhaustive_ha_assignments: int = 500
     retain_all_cases: bool = True
     lm1_udl_influence_surface: bool = True
+    # Preserve the standalone verification runner's historical exhaustive check.
+    # Interactive clients may retain cases without requesting this much slower,
+    # separate permanent+traffic displacement re-search.
+    evaluate_all_case_combined_deflection: bool = True
 
     def __post_init__(self) -> None:
         positive = (
@@ -180,6 +184,7 @@ def _bs_suite(
 def _ec_characteristic_deflection(
     project: BridgeProject,
     lm1: LM1SearchResult,
+    control: AnalysisControl | None = None,
 ) -> tuple[CombinedDeflectionEnvelope, ...] | None:
     if not lm1.cases or len(lm1.cases) != lm1.evaluated_case_count:
         return None
@@ -193,11 +198,16 @@ def _ec_characteristic_deflection(
         )
         for case in lm1.cases
     )
+    count = len(cases)
     return tuple(
         combined_deflection_envelope(
             cases=cases,
             girder_index=index,
             traffic_factor=1.0,
+            control=control,
+            phase="Combined deflection (BS EN)",
+            completed_offset=(index - 1) * count,
+            total_cases=int(project.geometry.girder_count) * count,
             permanent_deflection_mm=lambda x, girder=index: (
                 factored_permanent_deflection_at_x_mm(
                     project,
@@ -213,6 +223,7 @@ def _ec_characteristic_deflection(
 def _bs_characteristic_deflection(
     project: BridgeProject,
     suite: BS5400NominalTrafficSuite,
+    control: AnalysisControl | None = None,
 ) -> dict[str, tuple[CombinedDeflectionEnvelope, ...]]:
     gamma = BS5400PermanentGammaFL()
     named = gamma.as_named_factors(BS5400LimitState.SLS)
@@ -222,6 +233,12 @@ def _bs_characteristic_deflection(
         PermanentLoadCategory.OTHER_SUPERIMPOSED: named["other_superimposed"],
     }
     results: dict[str, tuple[CombinedDeflectionEnvelope, ...]] = {}
+    searches = (suite.ha, suite.hb, suite.ha_hb)
+    total = int(project.geometry.girder_count) * sum(
+        len(search.cases) for search in searches
+        if search.cases and len(search.cases) == search.evaluated_case_count
+    )
+    completed = 0
 
     for label, search in (
         ("ha", suite.ha),
@@ -247,11 +264,17 @@ def _bs_characteristic_deflection(
             )
             for case in search.cases
         )
+        count = len(case_rows)
+        offset = completed
         results[label] = tuple(
             combined_deflection_envelope(
                 cases=case_rows,
                 girder_index=index,
                 traffic_factor=1.0,
+                control=control,
+                phase="Combined deflection (BS 5400)",
+                completed_offset=offset + (index - 1) * count,
+                total_cases=total,
                 permanent_deflection_mm=lambda x, girder=index: (
                     factored_permanent_deflection_at_x_mm(
                         project,
@@ -263,6 +286,7 @@ def _bs_characteristic_deflection(
             )
             for index in range(1, int(project.geometry.girder_count) + 1)
         )
+        completed += int(project.geometry.girder_count) * count
     return results
 
 
@@ -449,8 +473,16 @@ def run_reference_project(
         )
     )
 
+    ec_deflection = (
+        _ec_characteristic_deflection(resolved, lm1, control)
+        if lm1 is not None and config.evaluate_all_case_combined_deflection else None
+    )
+    bs_deflection = (
+        _bs_characteristic_deflection(resolved, bs_traffic, control)
+        if bs_traffic is not None and config.evaluate_all_case_combined_deflection else {}
+    )
     if control is not None:
-        control.report("Finalizing results")
+        control.report("Finalizing results", 1, 1)
     return ReferenceRunResult(
         project=resolved,
         construction=construction,
@@ -464,11 +496,6 @@ def run_reference_project(
         bs5400_detailing=bs_detailing,
         eurocode_advanced_detailing=ec_advanced,
         bs5400_advanced_detailing=bs_advanced,
-        eurocode_characteristic_deflection=(
-            _ec_characteristic_deflection(resolved, lm1) if lm1 is not None else None
-        ),
-        bs5400_characteristic_deflection=(
-            _bs_characteristic_deflection(resolved, bs_traffic)
-            if bs_traffic is not None else {}
-        ),
+        eurocode_characteristic_deflection=ec_deflection,
+        bs5400_characteristic_deflection=bs_deflection,
     )

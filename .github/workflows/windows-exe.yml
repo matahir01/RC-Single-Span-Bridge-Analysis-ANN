@@ -53,7 +53,7 @@ jobs:
             throw 'Reference analysis or design checks did not complete'
           }
           if (-not (Test-Path 'package-smoke/reference_bridge.json')) { throw 'Project save/open missing' }
-          if ($result.bs_girders -ne 7 -or $result.bs_design_rows -ne 7 -or $result.bs_combined_placements -ne 1032) {
+          if ($result.bs_girders -ne 7 -or $result.bs_design_rows -ne 7 -or $result.bs_combined_placements -ne 1032 -or $result.bs_retained_placements -ne 1032) {
             throw 'Packaged BS 5400 reference analysis/design did not complete'
           }
           if (-not (Test-Path 'package-smoke/reference_bs_bridge.json')) { throw 'BS project save/open missing' }

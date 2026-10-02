@@ -105,6 +105,7 @@ def render_calculation_report(
                 "bs_combined_hb_transverse_step_m": settings.bs_combined_hb_transverse_step_m,
                 "bs_combined_ha_kel_step_m": settings.bs_combined_ha_kel_step_m,
                 "retain_all_cases": settings.retain_all_cases,
+                "all_case_combined_deflection": settings.all_case_combined_deflection,
             }),
             ("Design", design.__dict__),
         )

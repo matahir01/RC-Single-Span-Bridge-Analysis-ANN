@@ -1,4 +1,5 @@
 from dataclasses import replace
+from threading import Event
 
 import pytest
 
@@ -15,6 +16,7 @@ from rc_single_span.core.models import (
     RectangularGirderProfile,
     SingleSpanBridgeGeometry,
 )
+from rc_single_span.core.progress import AnalysisCancelled, AnalysisControl
 from rc_single_span.verification.acceptance import (
     VerificationDomain,
     current_v1_acceptance_matrix,
@@ -213,6 +215,30 @@ def test_all_case_combined_deflection_search_finds_stronger_traffic_case() -> No
     assert 0.0 < envelope.governing.x_m < 15.0
     assert envelope.governing.total_mm > envelope.governing.permanent_mm
     assert envelope.governing.traffic_mm > 0.0
+
+
+def test_all_case_combined_deflection_reports_progress_and_cancels_between_cases() -> None:
+    model, analysis = _solved_case(100.0, 1)
+    cancel = Event()
+    seen = []
+
+    def progress(phase: str, completed: int, total: int) -> None:
+        seen.append((phase, completed, total))
+        if completed == 1:
+            cancel.set()
+
+    with pytest.raises(AnalysisCancelled):
+        combined_deflection_envelope(
+            cases=((1, "first", model, analysis), (2, "second", model, analysis)),
+            girder_index=2,
+            traffic_factor=1.0,
+            permanent_deflection_mm=lambda x: 0.02 * x * (15.0 - x),
+            control=AnalysisControl(progress, cancel.is_set),
+            phase="Combined deflection (BS 5400)",
+            total_cases=2,
+        )
+    assert seen == [("Combined deflection (BS 5400)", 0, 2),
+                    ("Combined deflection (BS 5400)", 1, 2)]
 
 
 def test_reference_runner_requires_explicit_positive_analysis_modulus() -> None:

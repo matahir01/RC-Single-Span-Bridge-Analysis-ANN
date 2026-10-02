@@ -2,6 +2,35 @@
 
 Updated: 2 October 2026 (UTC)
 
+## Latest interactive BS stall fix (Windows verification pending)
+
+The user observed “Finalizing results 0%” for over 237 s with “Retain all
+traffic cases” selected. The runner was actually reoptimizing combined
+permanent+traffic displacement over every retained placement, seven girders
+and every longitudinal interval without progress/cancellation. A separate,
+explicit BS 5400 combined-deflection checkbox now controls this expensive
+check. Retaining cases alone leaves it off; saved JSON, GUI and report show
+the choice. The standalone reference runner retains the historical all-case
+default. An explicit exhaustive run now reports total case progress and
+checks Cancel between cases. Its runtime has **not** been benchmarked or
+claimed fast. No design or traffic formula changed.
+
+Local focused tests: 21 passed; paired coarse BS runs with case retention
+on/off matched all girder/station traffic effects, BS combinations and GUI
+effect rows. Source package smoke completed BS EN and BS analysis,
+save/reopen, seven design rows per route and two PDFs; the BS case count was
+1,032/1,032 retained. A normal seven-girder default BS grid with 612 HA,
+1,845 HB and 9,672 HA+HB cases retained completed in 97.04 s on this runner;
+Finalizing results reached 100%, with seven GUI rows returned. This grid is
+**not converged** and the existing BS warning remains. The 93,480-case finer
+audit remains blocked by the strict equilibrium failure documented below.
+
+Exact next action for this batch: finish full tests and Ruff, push the source,
+wait for the real Windows x64 package smoke with retained BS cases, and post
+the verified artifact link. Next engineering work: resolve the conditioned
+BS KEL grid before any fine-grid convergence claim, then address the research
+source and validation blockers at the end of this file.
+
 ## Latest pushed code
 
 - `c3c3fd571ba028a46e62a1d7d046badb78e8a191`: selected BS EN or

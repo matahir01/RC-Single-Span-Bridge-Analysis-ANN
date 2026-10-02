@@ -60,7 +60,7 @@ and `171e89479458066a440055e1690a0b81b3c227fc2d379933d3e510f867b0487e`,
 respectively. The CI gate still compares the faster coarse grid on one runner;
 this default fine comparison is a preserved local audit, not a CI job.
 
-All-cases retention remains unbenchmarked. The subsequent
+The subsequent
 [half-step refinement](BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md) found that the
 default HA+HB grid fails the provisional 5% response criterion: girder 5
 torsion changes by 7.412%. The speed improvement does not resolve project
@@ -111,3 +111,26 @@ compares its entire response to both nodal-only and mixed nodal/member-point
 fast-path cases. This speed ratio is local and does not certify convergence of
 the BS placement grid. The coarse old/new same-runner CI gate continues to
 check exact engine output on the runner used for that job.
+
+## 2 October 2026 retained-case completion
+
+An interactive BS run with `retain_all_cases=true` previously entered a
+separate, extremely expensive combined permanent+traffic deflection search
+after traffic and design. It swept each retained physical placement on every
+girder, optimizing displacement within every longitudinal interval. The UI
+called this work “Finalizing results 0%” and could not cancel it until a later
+phase. Case retention and that optional all-placement verification are now
+independent controls. The GUI keeps the former when requested and leaves the
+separate exhaustive check off unless explicitly selected; the standalone
+reference runner retains its original default behavior. When selected, the
+check reports case progress and supports cancellation between cases.
+
+On the same Linux source runner the default seven-girder BS grid completed
+with all cases retained in **97.04 s**: HA 612/612, HB 1,845/1,845 and HA+HB
+9,672/9,672 evaluated/retained. The phase advanced through “Finalizing
+results 100%” to seven GUI rows. A paired coarse-grid test found identical
+girder/station envelopes, BS combinations and GUI effect rows when retention
+was switched on, and a real source package smoke produced both route PDFs
+with 1,032/1,032 combined BS cases retained. This evidence does not measure
+the exhaustive combined-deflection runtime; it remains an optional expensive
+verification and is not silently represented as having run in the report.

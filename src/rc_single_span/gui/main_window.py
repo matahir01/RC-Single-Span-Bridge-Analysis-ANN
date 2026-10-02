@@ -268,7 +268,8 @@ class BridgeMainWindow(QMainWindow):
             "loads": "surfacing_thickness surfacing_density barrier_load services_load",
             "traffic": "code_profile analysis_mode psi1_tandem psi1_udl psi2_traffic lm1_step "
             "hb_units bs_ha_step bs_hb_long_step bs_hb_trans_step "
-            "bs_combined_long_step bs_combined_trans_step bs_combined_kel_step retain_cases",
+            "bs_combined_long_step bs_combined_trans_step bs_combined_kel_step "
+            "retain_cases all_case_deflection",
             "design": "design_enabled effective_depth design_bar_diameter design_bar_spacing "
             "ec_cover ec_fct_eff ec_crack_limit ec_na_ratio ec_sls_basis ec_alpha_cc "
             "bs_cover bs_crack_point_depth bs_crack_limit bs_ec_modified bs_fyv "
@@ -446,6 +447,11 @@ class BridgeMainWindow(QMainWindow):
         self.lm1_step.valueChanged.connect(self._customize_grid)
         self.hb_units = double_spin(45.0, minimum=1.0, maximum=100.0, decimals=1)
         self.retain_cases = QCheckBox("Retain all traffic cases for detailed review")
+        self.all_case_deflection = QCheckBox(
+            "BS 5400: search combined deflection for every retained case (slow)"
+        )
+        self.all_case_deflection.setEnabled(False)
+        self.retain_cases.toggled.connect(self._sync_all_case_deflection)
         form.addRow("Code profile", self.code_profile)
         form.addRow("Accuracy mode", self.analysis_mode)
         form.addRow("BS EN frequent TS factor ψ1", self.psi1_tandem)
@@ -492,6 +498,14 @@ class BridgeMainWindow(QMainWindow):
         bs_grid.addRow(bs_grid_note)
         layout.addWidget(self.bs_grid_group)
         form.addRow("", self.retain_cases)
+        form.addRow("", self.all_case_deflection)
+        deflection_note = QLabel(
+            "Keeping cases does not run a separate all-case deflection search. "
+            "Enable that check explicitly if needed; it can take a long time. "
+            "Its own progress and Cancel remain available."
+        )
+        deflection_note.setWordWrap(True)
+        form.addRow(deflection_note)
         layout.addWidget(box)
         self.run_button = QPushButton("Run deterministic analysis")
         self.run_button.clicked.connect(self._run_analysis)
@@ -767,6 +781,18 @@ class BridgeMainWindow(QMainWindow):
         self.lm1_step.setEnabled(is_bs_en)
         self.hb_units.setEnabled(not is_bs_en)
         self.bs_grid_group.setVisible(not is_bs_en)
+        self.all_case_deflection.setEnabled(
+            not is_bs_en and self.retain_cases.isChecked()
+        )
+        if is_bs_en:
+            self.all_case_deflection.setChecked(False)
+
+    def _sync_all_case_deflection(self, retained: bool) -> None:
+        self.all_case_deflection.setEnabled(
+            retained and self.code_profile.currentIndex() == 1
+        )
+        if not retained:
+            self.all_case_deflection.setChecked(False)
 
     def _read_state(self) -> GuiProjectState:
         section_value = ("rectangular", "t", "i")[self.section_type.currentIndex()]
@@ -822,6 +848,7 @@ class BridgeMainWindow(QMainWindow):
             lm1_step_m=self.lm1_step.value(),
             accuracy_mode=GuiAccuracyMode(self.analysis_mode.currentText()),
             retain_all_cases=self.retain_cases.isChecked(),
+            all_case_combined_deflection=self.all_case_deflection.isChecked(),
             hb_units=self.hb_units.value(),
             bs_ha_longitudinal_step_m=self.bs_ha_step.value(),
             bs_hb_longitudinal_step_m=self.bs_hb_long_step.value(),
@@ -925,6 +952,11 @@ class BridgeMainWindow(QMainWindow):
         retained = analysis.get("retain_all_cases")
         if isinstance(retained, bool):
             self.retain_cases.setChecked(retained)
+        self.all_case_deflection.setChecked(
+            analysis.get("all_case_combined_deflection") is True
+        )
+        if not self.retain_cases.isChecked():
+            self.all_case_deflection.setChecked(False)
         self._sync_code_panels()
 
     def _apply_design_payload(self, payload: dict[str, object]) -> None:
@@ -992,6 +1024,7 @@ class BridgeMainWindow(QMainWindow):
             "bs_combined_hb_transverse_step_m": settings.bs_combined_hb_transverse_step_m,
             "bs_combined_ha_kel_step_m": settings.bs_combined_ha_kel_step_m,
             "retain_all_cases": settings.retain_all_cases,
+            "all_case_combined_deflection": settings.all_case_combined_deflection,
         }
 
     def open_project(self, target: Path) -> None:

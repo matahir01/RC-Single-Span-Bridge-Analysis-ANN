@@ -77,6 +77,8 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
         window.bs_combined_long_step.setValue(15.0)
         window.bs_combined_trans_step.setValue(3.5)
         window.bs_combined_kel_step.setValue(15.0)
+        window.retain_cases.setChecked(True)
+        assert not window.all_case_deflection.isChecked()
         bs_project_path = target / "reference_bs_bridge.json"
         window.save_project(bs_project_path)
         window.project_name.setText("Temporary changed name")
@@ -85,6 +87,7 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
         assert bs_settings.code_profile is GuiCodeProfile.BS_5400
         assert bs_settings.bs_hb_transverse_step_m == 3.5
         assert bs_settings.bs_combined_ha_kel_step_m == 15.0
+        assert bs_settings.retain_all_cases and not bs_settings.all_case_combined_deflection
         assert window._last_summary is None
         bs_state = window._read_state()
         bs_design = window._read_design_inputs()
@@ -98,6 +101,9 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
         assert len(bs_summary.rows) == len(bs_summary.design_rows) == 7
         assert bs_result.bs_traffic is not None
         assert bs_result.bs_traffic.ha_hb.evaluated_case_count == 1032
+        assert len(bs_result.bs_traffic.ha_hb.cases) == 1032
+        assert bs_result.bs5400_characteristic_deflection == {}
+        assert any("was not evaluated" in note for note in bs_summary.notes)
         assert window._report_html is not None
         assert "Equilibrium</td>" in window._report_html
         assert "Unverified grid" in window._report_html
@@ -118,6 +124,7 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
                     "bs_girders": len(bs_summary.rows),
                     "bs_design_rows": len(bs_summary.design_rows),
                     "bs_combined_placements": bs_result.bs_traffic.ha_hb.evaluated_case_count,
+                    "bs_retained_placements": len(bs_result.bs_traffic.ha_hb.cases),
                     "bs_pdf_bytes": bs_pdf_path.stat().st_size,
                 },
                 indent=2,

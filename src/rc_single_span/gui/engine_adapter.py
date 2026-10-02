@@ -40,6 +40,7 @@ class GuiAnalysisSettings:
     psi2_traffic: float = 0.0
     lm1_step_m: float = 0.6
     retain_all_cases: bool = False
+    all_case_combined_deflection: bool = False
     hb_units: float = 45.0
     accuracy_mode: GuiAccuracyMode = GuiAccuracyMode.FINAL
     bs_ha_longitudinal_step_m: float = 1.0
@@ -106,6 +107,7 @@ def _reference_config(settings: GuiAnalysisSettings) -> ReferenceRunConfig:
         bs_combined_hb_transverse_step_m=settings.bs_combined_hb_transverse_step_m,
         bs_combined_ha_kel_step_m=settings.bs_combined_ha_kel_step_m,
         retain_all_cases=settings.retain_all_cases,
+        evaluate_all_case_combined_deflection=settings.all_case_combined_deflection,
         lm1_udl_influence_surface=True,
     )
 
@@ -208,6 +210,10 @@ def run_gui_analysis(
     route = "bs_en" if settings.code_profile is GuiCodeProfile.BS_EN else "bs5400"
     # Validate even direct API callers before starting the expensive traffic search.
     config = _reference_config(settings)
+    if settings.all_case_combined_deflection and not settings.retain_all_cases:
+        raise ValueError("All-case combined deflection requires retained traffic cases.")
+    if settings.all_case_combined_deflection and route == "bs_en":
+        raise ValueError("GUI all-case combined deflection is available only on the BS 5400 route.")
     audit_notes = []
     coarse = None
     if route == "bs_en" and settings.accuracy_mode in {
@@ -335,6 +341,19 @@ def run_gui_analysis(
                 f"{config.bs_combined_hb_longitudinal_step_m:g}/"
                 f"{config.bs_combined_hb_transverse_step_m:g}/"
                 f"{config.bs_combined_ha_kel_step_m:g}."
+            ),
+            (
+                "All traffic cases were retained for review."
+                if settings.retain_all_cases else
+                "Only governing physical traffic cases were retained."
+            ),
+            (
+                "Exhaustive combined permanent+traffic deflection was evaluated "
+                "across every retained case."
+                if settings.all_case_combined_deflection else
+                "Exhaustive combined permanent+traffic deflection was not evaluated; "
+                "the design deflection uses the engine's separate traffic envelope "
+                "and permanent response."
             ),
         )
 

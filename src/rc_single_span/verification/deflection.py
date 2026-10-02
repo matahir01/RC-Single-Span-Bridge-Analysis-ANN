@@ -8,6 +8,7 @@ from scipy.optimize import minimize_scalar
 from rc_single_span.analysis.grillage_solver import GrillageAnalysisResult
 from rc_single_span.analysis.structural_model import StructuralModel
 from rc_single_span.analysis.traffic_envelope import girder_vertical_displacement_mm
+from rc_single_span.core.progress import AnalysisControl
 
 
 @dataclass(frozen=True)
@@ -111,11 +112,20 @@ def combined_deflection_envelope(
     girder_index: int,
     traffic_factor: float,
     permanent_deflection_mm: Callable[[float], float],
+    control: AnalysisControl | None = None,
+    phase: str = "Combined deflection",
+    completed_offset: int = 0,
+    total_cases: int | None = None,
 ) -> CombinedDeflectionEnvelope:
     """Envelope total displacement across every supplied traffic case."""
 
+    if control is not None and total_cases is None:
+        cases = tuple(cases)
+        total_cases = completed_offset + len(cases)
     evaluated: list[CombinedDeflectionCase] = []
     for case_id, label, model, analysis in cases:
+        if control is not None:
+            control.report(phase, completed_offset + len(evaluated), total_cases)
         evaluated.append(
             combined_deflection_for_case(
                 model=model,
@@ -127,6 +137,8 @@ def combined_deflection_envelope(
                 permanent_deflection_mm=permanent_deflection_mm,
             )
         )
+    if control is not None:
+        control.report(phase, completed_offset + len(evaluated), total_cases)
     if not evaluated:
         raise ValueError("Combined deflection envelope requires at least one traffic case.")
     return CombinedDeflectionEnvelope(

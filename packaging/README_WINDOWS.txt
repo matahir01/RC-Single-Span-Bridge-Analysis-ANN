@@ -24,6 +24,10 @@ RC Single-Span Bridge Analysis — Windows x64
 8. "Web limit" PASS checks maximum web resistance only. The report calculates
    required shear links, but no provided-link schedule is entered or checked;
    it does not assert complete shear reinforcement adequacy.
+9. "Retain all traffic cases" keeps the physical solutions for review. It does
+   not run the much more expensive combined permanent+traffic deflection search.
+   Choose the separate BS 5400 combined-deflection box only when that
+   all-case check is required. Its progress and Cancel are shown in Analysis.
 
 The reference starts at a 15 m span and seven rectangular girders. BS EN is
 the initial route; BS 5400 / BD 37 is selected separately in Traffic.
