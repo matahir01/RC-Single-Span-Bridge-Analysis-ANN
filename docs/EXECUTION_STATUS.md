@@ -1,6 +1,6 @@
 # Execution status
 
-Updated: 2 October 2026 (UTC)
+Updated: 4 October 2026 (UTC)
 
 ## Latest interactive BS stall fix (Windows package verified)
 
@@ -399,5 +399,12 @@ sampling, direct boundary validation, FORM/Monte-Carlo review and a feasible
 directly checked RBDO candidate.
 
 Local validation for this continuation: **268 tests passed**, Ruff passed, and
-the wheel build included the packaged exploratory study configuration. A Windows
-executable rebuild and packaged-app smoke for this commit have not yet run.
+the wheel build included the packaged exploratory study configuration. Windows
+Actions run 37200152181 passed on 4 October 2026: source GUI tests, PyInstaller
+build, Qt plugin check, packaged BS EN and BS 5400 analyses/designs, project
+save/open and both PDFs. The [downloadable Windows artifact
+11302768039](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37200152181/artifacts/11302768039)
+expires 2 January 2027. Outer ZIP SHA-256:
+`c1ec7369cb9873f5c820abbf17bd94cc36280227805e663c747e6030681d0f4c`; inner
+distribution ZIP SHA-256:
+`5F5A5865912EB0E7C9DCCA1FCFE3F0D5104AF1C0BFF9C1672E441035FCC89A12`.
