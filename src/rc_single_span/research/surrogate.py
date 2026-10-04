@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.research.dataset import DatasetSplit, ReliabilityDataset
 
 
@@ -171,6 +172,8 @@ class NumpyMLPRegressor:
         train_y: np.ndarray,
         validation_x: np.ndarray,
         validation_y: np.ndarray,
+        *,
+        control: AnalysisControl | None = None,
     ) -> TrainingHistory:
         x = np.asarray(train_x, dtype=float)
         y = np.asarray(train_y, dtype=float)
@@ -213,6 +216,8 @@ class NumpyMLPRegressor:
         validation_losses: list[float] = []
 
         for epoch in range(1, self.config.epochs + 1):
+            if control is not None:
+                control.report("ANN training", epoch, self.config.epochs)
             permutation = rng.permutation(xs.shape[0])
             for start in range(0, xs.shape[0], self.config.batch_size):
                 batch = permutation[start : start + self.config.batch_size]
@@ -279,7 +284,12 @@ class NumpyMLPRegressor:
         )
         return self.history
 
-    def fit_split(self, split: DatasetSplit) -> TrainingHistory:
+    def fit_split(
+        self,
+        split: DatasetSplit,
+        *,
+        control: AnalysisControl | None = None,
+    ) -> TrainingHistory:
         if (
             split.train.feature_names != self.feature_names
             or split.train.target_names != self.target_names
@@ -290,6 +300,7 @@ class NumpyMLPRegressor:
             split.train.targets,
             split.validation.features,
             split.validation.targets,
+            control=control,
         )
 
     @property
@@ -406,12 +417,13 @@ def train_numpy_ann(
     split: DatasetSplit,
     *,
     config: MLPConfig | None = None,
+    control: AnalysisControl | None = None,
 ) -> tuple[NumpyMLPRegressor, TrainingHistory, RegressionMetrics]:
     model = NumpyMLPRegressor(
         split.train.feature_names,
         split.train.target_names,
         config=config,
     )
-    history = model.fit_split(split)
+    history = model.fit_split(split, control=control)
     test_metrics = model.evaluate(split.test)
     return model, history, test_metrics

@@ -7,6 +7,13 @@ The deterministic analysis/design engine is the primary product. ANN surrogate
 modelling, reliability analysis and RBDO are downstream capabilities built on
 that deterministic engine.
 
+The desktop app's **ANN / Reliability** tab now runs the study workflow in the
+background, exposes editable stochastic inputs, progress/cancel controls,
+evidence gates and study-sheet PDF export. Its packaged priors are explicitly
+exploratory until the project probability model is sourced and confirmed. See
+the [desktop GUI guide](docs/GUI_IMPLEMENTATION.md) and
+[research pipeline status](docs/ANN_RELIABILITY_RBDO_PIPELINE.md).
+
 ## Design basis
 
 One physical bridge model is shared by all code profiles:
@@ -40,10 +47,12 @@ the two routes.
 BS 5400-4:1990 is a withdrawn legacy standard. Software acceptance of this path
 is therefore not a recommendation to select it for a new project: the adopted
 project/authority basis must explicitly require the legacy route.
-The desktop reference's default HA+HB placement grid is not yet numerically
-converged: an exhaustive half-step search changed one torsion envelope by
-**7.412%**, above the provisional 5% criterion. The GUI and calculation report
-flag this; see [the BS grid audit](docs/BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md).
+The support-anchored desktop HA+HB search now completes its full fine grid
+without equilibrium failures, but the reference grid is still unverified. The
+default-to-half comparison changes girder 5 torsion by **6.809%** and the
+station-moment shape by **26.510%**; half-to-fine envelopes change by **1.894%**,
+but station shape changes by **26.938%**. The GUI and calculation report flag
+this; see [the updated BS grid audit](docs/BS_TRAFFIC_GRID_REFINEMENT_2026-10-03.md).
 The desktop Analysis tab exposes separate HA, HB and HA+HB placement steps;
 the saved project and calculation sheets record the chosen values. The
 documented half-step settings are available for an explicit sensitivity run,

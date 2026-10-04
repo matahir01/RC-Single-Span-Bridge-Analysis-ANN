@@ -1,0 +1,304 @@
+{
+  "project": "GUI default 15 m seven-girder rectangular bridge, BS 5400 / BD 37, 45 HB units",
+  "relative_tolerance": 0.05,
+  "default_grid_criterion_met": false,
+  "second_refinement_criterion_met": false,
+  "comparisons": {
+    "default_to_half": {
+      "coarse_snapshot_sha256": "9e2de5faaf4386b1ebd90816b2b1eef876aeafbf32c188a878133580ebed28fe",
+      "fine_snapshot_sha256": "568aa094bf3d7ad99c3c166e7fa4f305eee8825c9a9037ad3352b3d5e72d6e58",
+      "coarse_settings": {
+        "ha_kel_step_m": 2.0,
+        "hb_longitudinal_step_m": 2.0,
+        "hb_transverse_step_m": 1.0,
+        "units": 45
+      },
+      "fine_settings": {
+        "ha_kel_step_m": 1.0,
+        "hb_longitudinal_step_m": 1.0,
+        "hb_transverse_step_m": 0.5,
+        "units": 45
+      },
+      "coarse_placements": 9672,
+      "fine_placements": 27060,
+      "fine_elapsed_s": 262.27955603400005,
+      "exhaustive_lane_and_kel_search": true,
+      "matched_halving": true,
+      "ha_kel_grid_nested": true,
+      "component_changes": {
+        "moment_knm": {
+          "maximum_relative_change": 0.01230651231501219,
+          "girder_index": 1,
+          "per_girder_relative_change": [
+            0.01230651231501219,
+            0.0014554835337080253,
+            0.004053009461143611,
+            0.0037920540330958134,
+            0.0031315535141338067,
+            0.0006580208674696029,
+            0.012306511817606723
+          ]
+        },
+        "shear_kn": {
+          "maximum_relative_change": 0.03101228736106508,
+          "girder_index": 7,
+          "per_girder_relative_change": [
+            0.03101228688298844,
+            0.0021838093525732138,
+            0.0020372229019367263,
+            0.0018357882515297563,
+            0.0031256498697691524,
+            0.002584446329291921,
+            0.03101228736106508
+          ]
+        },
+        "torsion_knm": {
+          "maximum_relative_change": 0.06808500008644579,
+          "girder_index": 5,
+          "per_girder_relative_change": [
+            0.010383551296915816,
+            0.05204344117739336,
+            0.022116758567969307,
+            0.021749155560125348,
+            0.06808500008644579,
+            0.02495992150672019,
+            0.009474415488266975
+          ]
+        },
+        "deflection_mm": {
+          "maximum_relative_change": 0.013925044545316023,
+          "girder_index": 1,
+          "per_girder_relative_change": [
+            0.013925044545316023,
+            0.0010094157507242302,
+            0.004069598432032874,
+            0.004323278729026981,
+            0.0030792786011596142,
+            0.00021079331236774555,
+            0.013925044077801018
+          ]
+        }
+      },
+      "maximum_relative_change": 0.06808500008644579,
+      "station_shape": {
+        "normalization": "per-girder peak fine-grid absolute moment envelope",
+        "interpolation": "piecewise linear coarse envelope evaluated at every fine station",
+        "maximum_normalized_change": 0.2651032053046796,
+        "girder_index": 7,
+        "x_m": 7.199999999999999,
+        "per_girder": [
+          {
+            "girder_index": 1,
+            "maximum_normalized_change": 0.26510320497759476,
+            "x_m": 7.199999999999999,
+            "coarse_station_count": 62,
+            "fine_station_count": 69
+          },
+          {
+            "girder_index": 2,
+            "maximum_normalized_change": 0.19136059342722606,
+            "x_m": 5.199999999999999,
+            "coarse_station_count": 62,
+            "fine_station_count": 69
+          },
+          {
+            "girder_index": 3,
+            "maximum_normalized_change": 0.16275589255856218,
+            "x_m": 5.199999999999999,
+            "coarse_station_count": 62,
+            "fine_station_count": 69
+          },
+          {
+            "girder_index": 4,
+            "maximum_normalized_change": 0.1407456866981733,
+            "x_m": 5.199999999999999,
+            "coarse_station_count": 62,
+            "fine_station_count": 69
+          },
+          {
+            "girder_index": 5,
+            "maximum_normalized_change": 0.16187062414811432,
+            "x_m": 5.199999999999999,
+            "coarse_station_count": 62,
+            "fine_station_count": 69
+          },
+          {
+            "girder_index": 6,
+            "maximum_normalized_change": 0.19062760242894394,
+            "x_m": 5.199999999999999,
+            "coarse_station_count": 62,
+            "fine_station_count": 69
+          },
+          {
+            "girder_index": 7,
+            "maximum_normalized_change": 0.2651032053046796,
+            "x_m": 7.199999999999999,
+            "coarse_station_count": 62,
+            "fine_station_count": 69
+          }
+        ]
+      },
+      "station_shape_criterion_met": false,
+      "relative_tolerance": 0.05,
+      "girder_envelope_criterion_met": false,
+      "grid_criterion_met": false,
+      "limitations": [
+        "Two-grid girder response sensitivity is not an independent proof of global convergence.",
+        "Station-shape checks linearly interpolate the coarse envelope between stations.",
+        "All-cases retention is not checked in this audit.",
+        "Design validity also requires project actions, code scope, details and independent review."
+      ]
+    },
+    "half_to_fine": {
+      "coarse_snapshot_sha256": "568aa094bf3d7ad99c3c166e7fa4f305eee8825c9a9037ad3352b3d5e72d6e58",
+      "fine_snapshot_sha256": "407f997b420dc00cc31c91ff6818a7d9fc4f4235a738a9244b85a0963edc2e11",
+      "coarse_settings": {
+        "ha_kel_step_m": 1.0,
+        "hb_longitudinal_step_m": 1.0,
+        "hb_transverse_step_m": 0.5,
+        "units": 45
+      },
+      "fine_settings": {
+        "ha_kel_step_m": 0.5,
+        "hb_longitudinal_step_m": 0.5,
+        "hb_transverse_step_m": 0.25,
+        "units": 45
+      },
+      "coarse_placements": 27060,
+      "fine_placements": 91200,
+      "fine_elapsed_s": 2127.7442828179996,
+      "exhaustive_lane_and_kel_search": true,
+      "matched_halving": true,
+      "ha_kel_grid_nested": true,
+      "component_changes": {
+        "moment_knm": {
+          "maximum_relative_change": 0.0154946842517579,
+          "girder_index": 7,
+          "per_girder_relative_change": [
+            0.015494681191256368,
+            0.0007939612409024542,
+            0.004686600418368567,
+            0.005900899830280408,
+            0.004686600490786346,
+            0.0007939607109128407,
+            0.0154946842517579
+          ]
+        },
+        "shear_kn": {
+          "maximum_relative_change": 0.01894389275669321,
+          "girder_index": 1,
+          "per_girder_relative_change": [
+            0.01894389275669321,
+            0.0012341411218317493,
+            0.0008931095954502043,
+            0.0012526706321322853,
+            0.0008931090629052345,
+            0.0012341413626060463,
+            0.01894388968008599
+          ]
+        },
+        "torsion_knm": {
+          "maximum_relative_change": 0.017870834938218318,
+          "girder_index": 6,
+          "per_girder_relative_change": [
+            0.01429455233331426,
+            0.017870833954998406,
+            0.012860643835734573,
+            0.011884433041569505,
+            0.01286064385701933,
+            0.017870834938218318,
+            0.014294553702881749
+          ]
+        },
+        "deflection_mm": {
+          "maximum_relative_change": 0.018490008727316872,
+          "girder_index": 7,
+          "per_girder_relative_change": [
+            0.018490005288952997,
+            0.0019238939762381791,
+            0.006103572777117491,
+            0.006072489147323089,
+            0.00610357309343852,
+            0.0019238936110512466,
+            0.018490008727316872
+          ]
+        }
+      },
+      "maximum_relative_change": 0.01894389275669321,
+      "station_shape": {
+        "normalization": "per-girder peak fine-grid absolute moment envelope",
+        "interpolation": "piecewise linear coarse envelope evaluated at every fine station",
+        "maximum_normalized_change": 0.2693776722170641,
+        "girder_index": 7,
+        "x_m": 7.699999999999999,
+        "per_girder": [
+          {
+            "girder_index": 1,
+            "maximum_normalized_change": 0.2693776691253678,
+            "x_m": 7.699999999999999,
+            "coarse_station_count": 69,
+            "fine_station_count": 128
+          },
+          {
+            "girder_index": 2,
+            "maximum_normalized_change": 0.15266886160192306,
+            "x_m": 10.700000000000001,
+            "coarse_station_count": 69,
+            "fine_station_count": 128
+          },
+          {
+            "girder_index": 3,
+            "maximum_normalized_change": 0.11791027092154896,
+            "x_m": 4.7,
+            "coarse_station_count": 69,
+            "fine_station_count": 128
+          },
+          {
+            "girder_index": 4,
+            "maximum_normalized_change": 0.10933781492076354,
+            "x_m": 3.9,
+            "coarse_station_count": 69,
+            "fine_station_count": 128
+          },
+          {
+            "girder_index": 5,
+            "maximum_normalized_change": 0.11791026999931442,
+            "x_m": 4.7,
+            "coarse_station_count": 69,
+            "fine_station_count": 128
+          },
+          {
+            "girder_index": 6,
+            "maximum_normalized_change": 0.15266886128525478,
+            "x_m": 10.700000000000001,
+            "coarse_station_count": 69,
+            "fine_station_count": 128
+          },
+          {
+            "girder_index": 7,
+            "maximum_normalized_change": 0.2693776722170641,
+            "x_m": 7.699999999999999,
+            "coarse_station_count": 69,
+            "fine_station_count": 128
+          }
+        ]
+      },
+      "station_shape_criterion_met": false,
+      "relative_tolerance": 0.05,
+      "girder_envelope_criterion_met": true,
+      "grid_criterion_met": false,
+      "limitations": [
+        "Two-grid girder response sensitivity is not an independent proof of global convergence.",
+        "Station-shape checks linearly interpolate the coarse envelope between stations.",
+        "All-cases retention is not checked in this audit.",
+        "Design validity also requires project actions, code scope, details and independent review."
+      ]
+    }
+  },
+  "limitations": [
+    "Two-grid girder response sensitivity is not an independent proof of global convergence.",
+    "Station-shape checks linearly interpolate the coarse envelope between stations.",
+    "All-cases retention is not checked in this audit.",
+    "Design validity also requires project actions, code scope, details and independent review."
+  ]
+}

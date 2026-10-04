@@ -1,6 +1,6 @@
 # Desktop GUI implementation
 
-Updated: 29 September 2026
+Updated: 3 October 2026
 
 ## Current status
 
@@ -32,7 +32,18 @@ The current functional GUI provides:
 - stale-result invalidation after input edits, new/open and in-flight run changes;
 - calculation report preview and PDF export generated from the completed run
   snapshot, including a full input register and code/result provenance;
-- dedicated verification and ANN/reliability workspace placeholders.
+- a desktop ANN/reliability/RBDO workbench with editable random-variable rows,
+  LHS/validation/direct-MC sample controls and an LM1 baseline-step control;
+- JSON study-config load/save for the remaining stochastic-model and optimizer inputs;
+- background study execution with cooperative cancellation and live phase progress;
+- visible research evidence gates, an assumptions warning, a traceable study-sheet
+  preview and PDF export.
+
+The packaged research configuration is deliberately marked `assumptions_confirmed=false`.
+It can run as exploratory work and its output folder stores the exact study config,
+bridge project, LHS/train/validation/test CSV files, ANN model, numerical summary and
+SHA-256 hashes. A completed run does not close the research evidence gates; see
+[`ANN_RELIABILITY_RBDO_PIPELINE.md`](ANN_RELIABILITY_RBDO_PIPELINE.md).
 
 The application entry point is:
 
@@ -88,9 +99,8 @@ constraints must remain explicit rather than being invented by the interface.
 4. Add STAAD export/import and comparison views.
 5. Extend the existing PDF/report browser with detailed calculations and Excel output.
 6. Add project-level validation messages and richer input provenance fields.
-7. Add ANN/LHS/FORM/Monte-Carlo/RBDO controls after the final probabilistic study
-   basis is frozen.
-8. Build and smoke-test a real Windows x64 executable distribution.
+7. Build and smoke-test a real Windows x64 executable distribution with the
+   packaged research configuration present.
 
 A GUI result is a software calculation output, not approval of a real bridge or a
 replacement for project-specific engineering review.

@@ -51,6 +51,7 @@ from rc_single_span.gui.engine_adapter import (
 )
 from rc_single_span.gui.project_state import GuiProjectState
 from rc_single_span.gui.reporting import render_calculation_report
+from rc_single_span.gui.research_workspace import ResearchWorkspace
 from rc_single_span.gui.widgets import double_spin, form_page, int_spin
 from rc_single_span.verification.reference_runner import ReferenceRunResult
 
@@ -722,9 +723,10 @@ class BridgeMainWindow(QMainWindow):
             "Deterministic verification status\n\n"
             "• BS EN deterministic V1: GO within the documented software scope.\n"
             "• BS 5400 / BD 37 deterministic source tests pass within the documented "
-            "software scope. The default reference HA+HB grid fails the provisional "
-            "5% refinement criterion for torsion (7.412%); no traffic grid "
-            "convergence claim is made.\n"
+            "software scope. The support-anchored 15 m HA+HB audit changed the "
+            "maximum envelope by 6.809% default-to-half; the half-to-fine envelope "
+            "change was 1.894%, but station-shape changes were 26.510% and 26.938%. "
+            "The provisional 5% grid screen is not met; no convergence claim is made.\n"
             "• External STAAD evidence verifies the documented structural-response campaign; "
             "it is not approval of an individual bridge.\n\n"
             "Next GUI increments include STAAD comparison views, calculation-report browsing, "
@@ -734,21 +736,11 @@ class BridgeMainWindow(QMainWindow):
         self._tabs.addTab(page, "Verification")
 
     def _build_research_tab(self) -> None:
-        page = QWidget()
-        layout = QVBoxLayout(page)
-        text = QTextEdit()
-        text.setReadOnly(True)
-        text.setPlainText(
-            "ANN / Reliability / RBDO workspace\n\n"
-            "The research package already contains LHS sampling, ANN training, FORM, Monte "
-            "Carlo validation, dependence support and RBDO infrastructure. Controls will be "
-            "exposed here after the final probabilistic study basis is frozen.\n\n"
-            "Research outputs remain validation-pending until the probabilistic model, sample-size "
-            "convergence, surrogate performance near g=0, reliability cross-checks and final "
-            "optimum verification are documented."
+        self.research_workspace = ResearchWorkspace(
+            project_provider=lambda: self._read_state().build_project(),
+            parent=self,
         )
-        layout.addWidget(text)
-        self._tabs.addTab(page, "ANN / Reliability")
+        self._tabs.addTab(self.research_workspace, "ANN / Reliability")
 
     def _section_changed(self, index: int) -> None:
         self.section_stack.setCurrentIndex(index)

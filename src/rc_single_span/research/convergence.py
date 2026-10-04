@@ -5,6 +5,7 @@ from itertools import combinations
 
 import numpy as np
 
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.research.dataset import DatasetEvaluator, ReliabilityDataset, generate_dataset
 from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.sampling import RandomVariable
@@ -150,6 +151,7 @@ def replicated_sample_size_convergence(
     base_seed: int = 20261001,
     tolerance: float = 0.05,
     dependence: GaussianCopula | None = None,
+    control: AnalysisControl | None = None,
 ) -> ReplicatedSampleSizeResult:
     """Repeat independent randomized LHS at every size to expose seed sensitivity.
 
@@ -171,15 +173,24 @@ def replicated_sample_size_convergence(
     previous: tuple[TargetSampleStatistics, ...] | None = None
     for index, count in enumerate(sample_counts):
         seeds = tuple(base_seed + index * replications + offset for offset in range(replications))
-        statistics = tuple(
-            _statistics(
-                generate_dataset(
-                    evaluator, variables, count, seed=seed,
-                    invalid_policy="raise", dependence=dependence,
+        statistics_list = []
+        for replicate, seed in enumerate(seeds, start=1):
+            if control is not None:
+                control.report(
+                    f"Replicated LHS convergence N={count}, replicate {replicate}",
+                    0,
+                    count,
+                )
+            statistics_list.append(
+                _statistics(
+                    generate_dataset(
+                        evaluator, variables, count, seed=seed,
+                        invalid_policy="raise", dependence=dependence,
+                        control=control,
+                    )
                 )
             )
-            for seed in seeds
-        )
+        statistics = tuple(statistics_list)
         mean = _mean_statistics(statistics)
         within = max(_standardized_change(a, b) for a, b in combinations(statistics, 2))
         adjacent = None if previous is None else _standardized_change(previous, mean)
@@ -196,6 +207,7 @@ def sample_size_convergence(
     base_seed: int = 20260926,
     tolerance: float = 0.05,
     dependence: GaussianCopula | None = None,
+    control: AnalysisControl | None = None,
 ) -> SampleSizeConvergenceResult:
     """Audit whether direct LHS response statistics stabilise as N increases.
 
@@ -225,6 +237,7 @@ def sample_size_convergence(
             seed=seed,
             invalid_policy="raise",
             dependence=dependence,
+            control=control,
         )
         stats = _statistics(dataset)
         change = None if previous is None else _standardized_change(previous, stats)

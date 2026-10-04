@@ -1,3 +1,5 @@
+from itertools import pairwise
+
 import pytest
 
 from rc_single_span.codes.bs5400.traffic import (
@@ -16,6 +18,7 @@ from rc_single_span.traffic.bs5400 import (
     HALanePlacement,
     HASearchPlacement,
     HBSearchPlacement,
+    _kel_positions,
     build_ha_plan_loads,
     build_hb_plan_loads,
     common_bs5400_design_stations,
@@ -61,6 +64,26 @@ def test_reference_bd37_ha_values_are_preserved() -> None:
     assert lane.lane_factor == pytest.approx(0.959)
     assert lane.udl_kn_m == pytest.approx(52.5021079976)
     assert lane.kel_kn == pytest.approx(115.08)
+
+
+def test_ha_kel_search_grids_include_supports_and_nest_when_halved() -> None:
+    coarse = set(_kel_positions(15.0, 2.0))
+    half = set(_kel_positions(15.0, 1.0))
+    fine = set(_kel_positions(15.0, 0.5))
+
+    assert 0.0 in coarse and 15.0 in coarse
+    assert coarse <= half <= fine
+    assert min(b - a for a, b in zip(sorted(fine), sorted(fine)[1:])) >= 0.05
+
+
+def test_ha_kel_grid_avoids_sub_50mm_remainder_at_support() -> None:
+    positions = _kel_positions(15.0, 0.4999)
+
+    assert positions[0] == 0.0
+    assert positions[-1] == 15.0
+    assert min(b - a for a, b in pairwise(positions)) >= 0.05
+    with pytest.raises(ValueError, match="at least 0.05 m"):
+        _kel_positions(15.0, 0.049)
 
 
 def test_ha_plan_load_preserves_lane_udl_and_kel_resultant() -> None:

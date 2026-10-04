@@ -328,10 +328,12 @@ def run_gui_analysis(
                 "Required link steel is reported, but provided links are not an input or a pass check."
             ),
             (
-                "BS traffic placement-grid convergence is unverified for this run. On the 15 m "
-                "reference, halving the default HA+HB steps changed girder 5 torsion by 7.412%, "
-                "above the provisional 5% criterion. Refine and check the project grid before "
-                "relying on its traffic envelope."
+                "BS traffic placement-grid convergence is unverified for this run. In the "
+                "support-anchored 15 m reference audit, default-to-half changed the maximum "
+                "girder envelope by 6.809% (torsion, girder 5) and the station shape by 26.510% "
+                "(girder 7, x=7.2 m). Half-to-fine changed the envelope by 1.894%, but station "
+                "shape by 26.938% (girder 7, x=7.7 m). Check the project grid before relying "
+                "on its traffic envelope."
             ),
             (
                 "This run's BS steps (m): HA longitudinal "

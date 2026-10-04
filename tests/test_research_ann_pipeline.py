@@ -1,7 +1,10 @@
 from dataclasses import dataclass
+from threading import Event
 
 import numpy as np
+import pytest
 
+from rc_single_span.core.progress import AnalysisCancelled, AnalysisControl
 from rc_single_span.research.dataset import generate_dataset, split_dataset
 from rc_single_span.research.evaluator import LimitStateEvaluation
 from rc_single_span.research.sampling import RandomVariable
@@ -51,6 +54,30 @@ def test_dataset_split_and_numpy_ann_learn_multioutput_limit_states() -> None:
     prediction = model.predict(np.asarray([0.3, 1.2]))
     expected = np.asarray([2.0 * 0.3 - 0.5 * 1.2 + 1.0, -1.5 * 0.3 + 3.0 * 1.2 - 2.0])
     assert np.allclose(prediction, expected, atol=0.15)
+
+
+def test_dataset_generation_reports_progress_and_stops_cooperatively() -> None:
+    variables = (
+        RandomVariable("x1", "uniform", lower=-2.0, upper=2.0),
+        RandomVariable("x2", "uniform", lower=-1.0, upper=3.0),
+    )
+    cancelled = Event()
+    progress: list[tuple[str, int, int]] = []
+
+    def report(phase: str, completed: int, total: int) -> None:
+        progress.append((phase, completed, total))
+        cancelled.set()
+
+    with pytest.raises(AnalysisCancelled):
+        generate_dataset(
+            _SyntheticEvaluator(),
+            variables,
+            50,
+            seed=123,
+            control=AnalysisControl(report, cancelled.is_set),
+        )
+
+    assert progress == [("LHS limit-state evaluations", 1, 50)]
 
 
 def test_saved_ann_inference_is_identical_and_checks_feature_order(tmp_path) -> None:

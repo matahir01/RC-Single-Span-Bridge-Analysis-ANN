@@ -197,12 +197,30 @@ def common_bs5400_design_stations(
 def _kel_positions(span_m: float, step_m: float) -> tuple[float, ...]:
     if step_m <= 0.0:
         raise ValueError("HA KEL search step must be positive.")
-    edge = min(max(step_m / 100.0, 1.0e-4), 0.05)
-    values = [edge, span_m / 2.0, span_m - edge]
-    x = edge
-    while x <= span_m - edge + 1.0e-9:
+    minimum_interval = 0.05
+    if step_m < minimum_interval - 1.0e-12:
+        raise ValueError("HA KEL search step must be at least 0.05 m.")
+
+    # Anchor the search to the supports. This makes a halved grid a superset
+    # for the standard refinements and avoids the old step/100 offset, which
+    # generated 5 mm members on the 0.5 m search grid. Exact support placements
+    # are valid KEL positions and map to existing end stations.
+    values = [0.0, span_m]
+    x = step_m
+    while x < span_m - 1.0e-9:
         values.append(round(x, 12))
         x += step_m
+
+    # A KEL position too close to the end would introduce a poorly conditioned
+    # short member. Drop only that redundant last interior point; the exact
+    # support position remains in the grid.
+    values = sorted(_merge_coordinates(tuple(values)))
+    if len(values) > 2 and values[-1] - values[-2] < minimum_interval - 1.0e-9:
+        values.pop(-2)
+
+    midpoint = span_m / 2.0
+    if min(abs(midpoint - value) for value in values) >= minimum_interval - 1.0e-9:
+        values.append(midpoint)
     return _merge_coordinates(tuple(values))
 
 

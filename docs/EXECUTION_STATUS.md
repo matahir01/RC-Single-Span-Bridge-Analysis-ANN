@@ -367,25 +367,37 @@ package smoke ran the BS EN reference and a coarse BS route,
 saved/reopened both projects and produced both calculation PDFs. The new
 Windows packaged smoke has not yet completed.
 
-The follow-on combined BS search at HB longitudinal/transverse and HA KEL
-steps of **0.5 / 0.25 / 0.5 m** has **stopped at case 3** because the strict
-vertical-equilibrium check failed: -0.001828735 kN residual versus a
-0.001352612 kN tolerance. Its generator counted **93,480** cases versus
-27,060 at 1.0 / 0.5 / 1.0 m. A reproducible probe found 4,625 grid nodes,
-5,368 members and a 0.005 m minimum longitudinal segment; the entire
-optimized/general solver result was identical for the failing case. The
-probe JSON, code and decision are in
-`docs/BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md`. No second-grid envelope or
-convergence result exists. The default BS grid warning remains necessary.
+## 3 October 2026 continuation
 
-Exact next action: investigate a numerically conditioned and consistently
-nested KEL edge/grid construction while preserving the documented placement
-model, verify strict equilibrium on the first 32 and all subsequently solved
-cases, then rerun the 93,480-placement combined search and compare all seven
-girder/station responses against the 27,060-placement record. Benchmark any further speedup
-against the preserved exact-output legacy gate. Obtain defensible DL/LL and dependence
-inputs, physical shear-link data and a project deflection criterion; build
-tail-focused training and independent direct boundary validation before
-retrying FORM/RBDO within a validated design domain. Keep
-`assumptions_confirmed=false` until action/correlation/project criteria are
-verified; exploratory reliability results do not approve a bridge.
+The desktop ANN / Reliability tab now has editable random-variable inputs,
+sample-count controls, JSON configuration load/save, off-thread runs, cooperative
+cancellation, live progress, evidence gates and study-sheet PDF export. The
+packaged configuration is explicitly exploratory. A study saves its project,
+configuration, dataset splits, ANN model, summary and hashes. The default
+configuration and guide are documented in `docs/GUI_IMPLEMENTATION.md` and
+`docs/ANN_RELIABILITY_RBDO_PIPELINE.md`.
+
+The BS HA+HB KEL placement grid now starts at the supports, nests across the
+2.0 / 1.0 / 0.5 m refinements and avoids step-dependent sub-50 mm edge members.
+The complete 0.5 / 0.25 / 0.5 m search solved **91,200 placements in 2,127.7 s**
+with no strict-equilibrium failures. Default-to-half changed maximum girder
+response by **6.809%** (torsion, girder 5) and normalized station-moment shape
+by **26.510%** (girder 7 at 7.2 m). Half-to-fine changed the response envelope
+by 1.894%, but station shape by **26.938%** (girder 7 at 7.7 m). Therefore the
+support-anchored search is stable at the global-envelope level only on the
+second refinement; station-wise reinforcement zoning remains resolution
+sensitive, and the GUI continues to mark the BS grid unverified. Full settings,
+hashes and per-girder records are in `docs/BS_TRAFFIC_GRID_REFINEMENT_2026-10-03.md`.
+
+The 15 m LM1 reference remains at 0.6 m after its separate 4.088% accepted
+refinement. The ANN/reliability basis is still unconfirmed: the GUI defaults to
+exploratory mode and does not turn provisional priors, the CC2 scenario or an
+infeasible RBDO candidate into an accepted design result. Before relying on a
+research conclusion, obtain defensible action/dependence inputs, physical
+shear-link data and a project deflection criterion, then complete tail-focused
+sampling, direct boundary validation, FORM/Monte-Carlo review and a feasible
+directly checked RBDO candidate.
+
+Local validation for this continuation: **268 tests passed**, Ruff passed, and
+the wheel build included the packaged exploratory study configuration. A Windows
+executable rebuild and packaged-app smoke for this commit have not yet run.

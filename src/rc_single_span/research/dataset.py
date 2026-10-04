@@ -7,6 +7,7 @@ from typing import Protocol
 
 import numpy as np
 
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.evaluator import LimitStateEvaluation
 from rc_single_span.research.sampling import RandomVariable, latin_hypercube
@@ -125,6 +126,7 @@ def generate_dataset(
     seed: int | None = None,
     invalid_policy: str = "raise",
     dependence: GaussianCopula | None = None,
+    control: AnalysisControl | None = None,
 ) -> ReliabilityDataset:
     """Generate one LHS dataset from an explicit deterministic evaluator.
 
@@ -153,6 +155,8 @@ def generate_dataset(
     invalid = 0
 
     for row_index, sample in enumerate(samples.records()):
+        if control is not None:
+            control.report("LHS limit-state evaluations", row_index + 1, sample_count)
         result = evaluator.evaluate(sample)
         if not result.valid:
             invalid += 1

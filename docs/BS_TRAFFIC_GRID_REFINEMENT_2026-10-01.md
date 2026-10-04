@@ -1,5 +1,9 @@
 # BS 5400 reference traffic-grid refinement
 
+Historical record for the step-dependent KEL edge generator. The current
+support-anchored placement generator and matched three-grid comparison are in
+[the 3 October follow-up](BS_TRAFFIC_GRID_REFINEMENT_2026-10-03.md).
+
 The default GUI 15 m, seven-girder rectangular model, 45 HB units, and
 `retain_all_cases=false` were evaluated with the currently optimized engine.
 The default search records are from

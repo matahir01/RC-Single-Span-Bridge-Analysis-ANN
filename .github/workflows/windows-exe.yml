@@ -2,7 +2,7 @@ name: windows-exe
 
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/**"]
     paths:
       - "src/rc_single_span/**"
       - "packaging/**"

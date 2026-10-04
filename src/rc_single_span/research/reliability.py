@@ -8,6 +8,7 @@ from typing import Protocol
 import numpy as np
 from scipy.stats import norm
 
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.sampling import (
     RandomVariable,
@@ -102,6 +103,7 @@ def monte_carlo_surrogate_reliability(
     seed: int | None = None,
     confidence: float = 0.95,
     dependence: GaussianCopula | None = None,
+    control: AnalysisControl | None = None,
 ) -> MonteCarloResult:
     """Estimate Pf from Monte-Carlo samples evaluated by the ANN surrogate."""
 
@@ -112,6 +114,8 @@ def monte_carlo_surrogate_reliability(
         seed=seed,
         dependence=dependence,
     )
+    if control is not None:
+        control.report("ANN Monte Carlo predictions", sample_count, sample_count)
     predictions = np.asarray(model.predict(samples.values), dtype=float)
     if predictions.ndim != 2 or predictions.shape[0] != sample_count:
         raise ValueError("Surrogate batch prediction has an invalid shape.")
@@ -146,6 +150,7 @@ def form_hlrf(
     tolerance_g: float = 1.0e-5,
     gradient_step: float = 1.0e-4,
     dependence: GaussianCopula | None = None,
+    control: AnalysisControl | None = None,
 ) -> FORMResult:
     """First-order reliability method using the HLRF iteration.
 
@@ -187,6 +192,8 @@ def form_hlrf(
     iteration = 0
 
     for iteration in range(1, maximum_iterations + 1):
+        if control is not None:
+            control.report("FORM iterations", iteration, maximum_iterations)
         x = physical(u)
         g = float(limit_state(x))
         gradient = np.zeros(dimension, dtype=float)

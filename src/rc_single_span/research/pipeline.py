@@ -5,6 +5,7 @@ from typing import Literal
 
 import numpy as np
 
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.research.dataset import (
     DatasetEvaluator,
     DatasetSplit,
@@ -93,6 +94,7 @@ def run_research_pipeline(
     variables: tuple[RandomVariable, ...],
     *,
     config: ResearchPipelineConfig | None = None,
+    control: AnalysisControl | None = None,
 ) -> ResearchPipelineResult:
     """Generate LHS data, train ANN, then optionally run ANN-based reliability.
 
@@ -102,6 +104,8 @@ def run_research_pipeline(
     """
 
     current = config or ResearchPipelineConfig()
+    if control is not None:
+        control.report("Generating LHS dataset", 0, 1)
     dataset = generate_dataset(
         evaluator,
         variables,
@@ -109,6 +113,7 @@ def run_research_pipeline(
         seed=current.dataset_seed,
         invalid_policy="raise",
         dependence=current.dependence,
+        control=control,
     )
     split = split_dataset(
         dataset,
@@ -117,39 +122,41 @@ def run_research_pipeline(
         seed=current.split_seed,
     )
 
+    if control is not None:
+        control.report("Training ANN", 0, 1)
     if current.backend == "numpy":
-        model, history, metrics = train_numpy_ann(split, config=current.mlp)
+        model, history, metrics = train_numpy_ann(
+            split, config=current.mlp, control=control
+        )
     else:
         model, history, metrics = train_keras_ann(split, config=current.mlp)
 
-    form_results = (
-        {
-            target: form_surrogate_reliability(
+    form_results: dict[str, FORMResult] = {}
+    if current.run_form:
+        for index, target in enumerate(dataset.target_names):
+            if control is not None:
+                control.report("FORM reliability checks", index, len(dataset.target_names))
+            form_results[target] = form_surrogate_reliability(
                 model,
                 variables,
                 target,
                 dependence=current.dependence,
+                control=control,
             )
-            for target in dataset.target_names
-        }
-        if current.run_form
-        else {}
-    )
-    mc_results = (
-        {
-            target: monte_carlo_surrogate_reliability(
+    mc_results: dict[str, MonteCarloResult] = {}
+    if current.monte_carlo_samples > 0:
+        for index, target in enumerate(dataset.target_names):
+            if control is not None:
+                control.report("ANN Monte Carlo checks", index, len(dataset.target_names))
+            mc_results[target] = monte_carlo_surrogate_reliability(
                 model,
                 variables,
                 target,
                 current.monte_carlo_samples,
                 seed=current.reliability_seed + index,
                 dependence=current.dependence,
+                control=control,
             )
-            for index, target in enumerate(dataset.target_names)
-        }
-        if current.monte_carlo_samples > 0
-        else {}
-    )
     return ResearchPipelineResult(
         dataset=dataset,
         split=split,

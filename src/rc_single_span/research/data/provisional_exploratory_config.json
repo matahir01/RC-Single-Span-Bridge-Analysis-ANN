@@ -1,0 +1,365 @@
+{
+  "assumptions_confirmed": false,
+  "status_note": "EXPLORATORY ONLY: illustrative JCSS priors, hypothetical DL/LL multipliers, no observed joint traffic records, no adopted Nigerian National Annex, and a coarse 3.0 m LM1 baseline. Do not infer design or thesis acceptance.",
+  "target_reliability": {
+    "consequence_class": "CC2",
+    "reference_period_years": 50,
+    "status_note": "Thesis reference scenario only: EN 1990/JRC beta=3.8 for CC2 over 50 years. Report CC1 and CC3 sensitivity and do not treat this as a real-project classification."
+  },
+  "reference_run": {
+    "elastic_modulus_mpa": 34000.0,
+    "lm1_longitudinal_step_m": 3.0,
+    "retain_all_cases": false,
+    "lm1_udl_influence_surface": true,
+    "serviceability_factors": {
+      "psi1_traffic": 0.75,
+      "psi1_udl_traffic": 0.4,
+      "psi2_traffic": 0.0
+    }
+  },
+  "limit_state_model": {
+    "deflection_limit_mm": 50.0,
+    "gamma_c": 1.0,
+    "gamma_s": 1.0,
+    "alpha_cc": 1.0,
+    "cot_theta": 2.0,
+    "z_factor": 0.9,
+    "provided_asw_per_s_mm2_per_m": null
+  },
+  "random_variables": [
+    {
+      "name": "fck_mpa",
+      "family": "lognormal",
+      "mean": 52.24791574492453,
+      "cov": 0.10987396810017287,
+      "std": null,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "fyk_mpa",
+      "family": "normal",
+      "mean": 560.0,
+      "cov": null,
+      "std": 30.0,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "effective_depth_m",
+      "family": "normal",
+      "mean": 1.11,
+      "cov": null,
+      "std": 0.01,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "web_width_m",
+      "family": "normal",
+      "mean": 0.4012,
+      "cov": null,
+      "std": 0.0064,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "steel_area_mm2",
+      "family": "normal",
+      "mean": 12868.0,
+      "cov": 0.02,
+      "std": null,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "dead_load_factor",
+      "family": "normal",
+      "mean": 1.0,
+      "cov": 0.1,
+      "std": null,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "live_load_factor",
+      "family": "lognormal",
+      "mean": 1.0,
+      "cov": 0.15,
+      "std": null,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "moment_load_model_factor",
+      "family": "lognormal",
+      "mean": 1.0,
+      "cov": 0.1,
+      "std": null,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "shear_load_model_factor",
+      "family": "lognormal",
+      "mean": 1.0,
+      "cov": 0.1,
+      "std": null,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "flexure_resistance_model_factor",
+      "family": "lognormal",
+      "mean": 1.2,
+      "cov": 0.15,
+      "std": null,
+      "lower": null,
+      "upper": null
+    },
+    {
+      "name": "shear_resistance_model_factor",
+      "family": "lognormal",
+      "mean": 1.0,
+      "cov": 0.1,
+      "std": null,
+      "lower": null,
+      "upper": null
+    }
+  ],
+  "dependence": {
+    "enabled": false,
+    "status_note": "Identity is a placeholder only. Enable the Gaussian copula only after source-justified correlation coefficients are adopted. Model-uncertainty independence must also be justified.",
+    "names": [
+      "fck_mpa",
+      "fyk_mpa",
+      "effective_depth_m",
+      "web_width_m",
+      "steel_area_mm2",
+      "dead_load_factor",
+      "live_load_factor",
+      "moment_load_model_factor",
+      "shear_load_model_factor",
+      "flexure_resistance_model_factor",
+      "shear_resistance_model_factor"
+    ],
+    "correlation_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "pipeline": {
+    "sample_count": 4000,
+    "dataset_seed": 20260926,
+    "split_seed": 20260927,
+    "train_fraction": 0.7,
+    "validation_fraction": 0.15,
+    "backend": "numpy",
+    "run_form": true,
+    "surrogate_monte_carlo_samples": 10000,
+    "reliability_seed": 20260928,
+    "mlp": {
+      "hidden_layers": [
+        64,
+        64
+      ],
+      "learning_rate": 0.001,
+      "batch_size": 64,
+      "epochs": 250,
+      "patience": 30,
+      "seed": 42
+    }
+  },
+  "validation": {
+    "fresh_direct_samples": 250,
+    "direct_monte_carlo_samples": 10000,
+    "near_limit_state_fraction": 0.1,
+    "seed": 20260929
+  },
+  "rbdo": {
+    "enabled": true,
+    "maximum_iterations": 100,
+    "design_variables": [
+      {
+        "name": "steel_area_mm2",
+        "lower": 9000.0,
+        "upper": 15000.0,
+        "initial": 12868.0
+      }
+    ],
+    "reliability_constraints": [
+      {
+        "target_name": "g_flexure_knm",
+        "minimum_beta": 3.8
+      },
+      {
+        "target_name": "g_shear_kn",
+        "minimum_beta": 3.8
+      },
+      {
+        "target_name": "g_deflection_mm",
+        "minimum_beta": 3.8
+      }
+    ],
+    "objective_weights": {
+      "steel_area_mm2": 1.0
+    },
+    "direct_check_samples": 5000
+  },
+  "sample_size_convergence": {
+    "enabled": true,
+    "sample_counts": [
+      2000,
+      4000,
+      8000
+    ],
+    "base_seed": 20261001,
+    "tolerance": 0.05
+  },
+  "boundary_challenge": {
+    "enabled": true,
+    "iterations": 25,
+    "seed": 20261001
+  }
+}

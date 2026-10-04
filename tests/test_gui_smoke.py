@@ -21,5 +21,8 @@ def test_desktop_gui_builds_offscreen() -> None:
     assert window.design_results_table.columnCount() == 13
     assert window.bridge_schematic is not None
     assert window._read_state().build_project().geometry.girder_count == 7
+    assert window.research_workspace.sample_count.value() == 4000
+    assert "EXPLORATORY ONLY" in window.research_workspace.assumption_notice.text()
+    assert window.research_workspace.variables_table.rowCount() == 11
     window.close()
     app.processEvents()

@@ -173,9 +173,12 @@ def analysis_sheets(result, summary) -> str:
             f"= {n(suite.ha_hb.hb_longitudinal_step_m)} / "
             f"{n(suite.ha_hb.hb_transverse_step_m)} m, KEL step = "
             f"{n(suite.ha_hb.ha_kel_step_m)} m. "
-            "A project-specific grid convergence check is required. The default 15 m "
-            "reference HA+HB torsion changed 7.412% under half-step refinement, "
-            "above the provisional 5% criterion.", "Unverified grid"))
+            "Support-anchored 15 m reference audit: default-to-half changed the "
+            "maximum girder envelope by 6.809% (torsion, girder 5) and station shape "
+            "by 26.510% (girder 7, x=7.2 m). Half-to-fine changed the envelope by "
+            "1.894%, but station shape by 26.938% (girder 7, x=7.7 m). The 5% "
+            "grid screen is not met; check the project grid before relying on it.",
+            "Unverified grid"))
         for label, search in (("HA", suite.ha), ("HB", suite.hb), ("HA+HB", suite.ha_hb)):
             rows.append(row("BD 37/01", f"{label}: {search.evaluated_case_count:,} "
                             f"nominal placements, {len(search.cases)} retained cases. "

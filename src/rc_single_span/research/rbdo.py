@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.optimize import minimize
 
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.research.reliability import (
     FORMResult,
     SurrogatePredictor,
@@ -77,6 +78,7 @@ def optimize_surrogate_rbdo(
     maximum_iterations: int = 100,
     ftol: float = 1.0e-6,
     form_kwargs: dict[str, object] | None = None,
+    control: AnalysisControl | None = None,
 ) -> RBDOResult:
     """Reliability-based design optimization using ANN + FORM constraints.
 
@@ -107,7 +109,10 @@ def optimize_surrogate_rbdo(
         item.target_name: float(item.minimum_beta) for item in reliability_constraints
     }
     kwargs = dict(form_kwargs or {})
+    if control is not None:
+        kwargs.setdefault("control", control)
     cache: dict[tuple[float, ...], dict[str, FORMResult]] = {}
+    reliability_evaluations = 0
 
     def design_dict(vector: np.ndarray) -> dict[str, float]:
         return {
@@ -116,9 +121,17 @@ def optimize_surrogate_rbdo(
         }
 
     def reliability_for(vector: np.ndarray) -> dict[str, FORMResult]:
+        nonlocal reliability_evaluations
         key = tuple(round(float(value), 12) for value in vector)
         if key in cache:
             return cache[key]
+        reliability_evaluations += 1
+        if control is not None:
+            control.report(
+                "RBDO reliability evaluations",
+                reliability_evaluations,
+                max(1, maximum_iterations * (len(reliability_constraints) + 1)),
+            )
         design = design_dict(vector)
         variables = _variables_at_design(base_variables, design)
         results = {

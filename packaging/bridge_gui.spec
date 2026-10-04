@@ -8,7 +8,10 @@ a = Analysis(
     [str(project_root / "src/rc_single_span/gui/app.py")],
     pathex=[str(project_root / "src")],
     binaries=[],
-    datas=[],
+    datas=[(
+        str(project_root / "src/rc_single_span/research/data/provisional_exploratory_config.json"),
+        "rc_single_span/research/data",
+    )],
     hiddenimports=[],
     hookspath=[],
     excludes=["tensorflow"],

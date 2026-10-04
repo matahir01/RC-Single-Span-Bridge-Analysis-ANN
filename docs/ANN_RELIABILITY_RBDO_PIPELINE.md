@@ -1,6 +1,6 @@
 # ANN-assisted reliability and RBDO pipeline
 
-Date: 26 September 2026
+Date: 3 October 2026
 
 ## Status
 
@@ -20,6 +20,22 @@ This is **research infrastructure, not a closed research result**. The determini
 bridge-analysis/design software has its own verification record. The ANN,
 probabilistic model and RBDO study require a separate evidence trail before their
 numerical conclusions can be accepted in a thesis or paper.
+
+The desktop **ANN / Reliability** tab now exposes this pipeline as a study
+workbench. It edits the random-variable model, LHS and direct-validation counts,
+direct Monte-Carlo count and BS EN LM1 step; the complete JSON configuration
+also carries dependence, ANN, FORM, convergence and RBDO settings. A run uses
+the current bridge project, runs off the UI thread, reports phases and supports
+cooperative cancellation. Its output directory freezes the configuration and
+project, dataset and train/validation/test CSV files, ANN model, numerical
+summary and artifact hashes. The results can be previewed and exported as study
+sheets. These controls expose the software workflow; they do not certify the
+probability model or make exploratory results acceptable.
+
+The packaged configuration remains `assumptions_confirmed=false`. The GUI
+labels such a run **EXPLORATORY ONLY** and preserves the open evidence gates.
+Users can load a sourced configuration when the study basis is ready. See
+[`GUI_IMPLEMENTATION.md`](GUI_IMPLEMENTATION.md) for the desktop workflow.
 
 ## Deterministic-to-stochastic interface
 

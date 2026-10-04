@@ -7,6 +7,7 @@ import numpy as np
 from scipy.optimize import differential_evolution
 from scipy.stats import norm
 
+from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.research.dependence import GaussianCopula
 from rc_single_span.research.evaluator import LimitStateEvaluation
 from rc_single_span.research.reliability import SurrogatePredictor, _wilson_interval
@@ -66,6 +67,7 @@ def challenge_surrogate_at_direct_boundaries(
     marginal_tail: float = 0.001,
     iterations: int = 30,
     seed: int = 20261001,
+    control: AnalysisControl | None = None,
 ) -> tuple[BoundaryChallenge, ...]:
     """Find direct g=0 brackets, then test the ANN at independently found roots.
 
@@ -95,6 +97,7 @@ def challenge_surrogate_at_direct_boundaries(
         return value if np.isfinite(value) else None
 
     output: list[BoundaryChallenge] = []
+    objective_evaluations = 0
     for index, target_name in enumerate(evaluator.target_names):
         endpoints: list[tuple[np.ndarray, float]] = []
         for sign in (1.0, -1.0):
@@ -102,7 +105,16 @@ def challenge_surrogate_at_direct_boundaries(
                 probabilities: np.ndarray,
                 bound_name: str = target_name,
                 bound_sign: float = sign,
+                phase_name: str = target_name,
             ) -> float:
+                nonlocal objective_evaluations
+                objective_evaluations += 1
+                if control is not None:
+                    control.report(
+                        f"Direct boundary challenge: {phase_name}",
+                        objective_evaluations,
+                        30000,
+                    )
                 value = direct(physical(probabilities), bound_name)
                 return bound_sign * value if value is not None else 1.0e30
 
@@ -168,6 +180,7 @@ def direct_monte_carlo_reliability(
     confidence: float = 0.95,
     invalid_policy: str = "raise",
     dependence: GaussianCopula | None = None,
+    control: AnalysisControl | None = None,
 ) -> DirectMonteCarloResult:
     """Run Monte Carlo directly through the deterministic limit-state evaluator.
 
@@ -196,6 +209,8 @@ def direct_monte_carlo_reliability(
     valid = 0
     invalid = 0
     for row_index, sample in enumerate(samples.records()):
+        if control is not None and (row_index % 25 == 0 or row_index + 1 == sample_count):
+            control.report("Direct Monte Carlo", row_index + 1, sample_count)
         result = evaluator.evaluate(sample)
         if not result.valid:
             invalid += 1
@@ -237,6 +252,7 @@ def validate_surrogate_against_direct(
     seed: int | None = None,
     near_limit_state_fraction: float = 0.10,
     dependence: GaussianCopula | None = None,
+    control: AnalysisControl | None = None,
 ) -> SurrogateValidationResult:
     """Compare ANN outputs with fresh direct points, including near g=0 points.
 
@@ -262,7 +278,11 @@ def validate_surrogate_against_direct(
     feature_rows: list[tuple[float, ...]] = []
     direct_rows: list[tuple[float, ...]] = []
     invalid = 0
-    for sample in samples.records():
+    for row_index, sample in enumerate(samples.records()):
+        if control is not None and (
+            row_index % 25 == 0 or row_index + 1 == sample_count
+        ):
+            control.report("Fresh direct ANN validation", row_index + 1, sample_count)
         result = evaluator.evaluate(sample)
         if not result.valid:
             invalid += 1
