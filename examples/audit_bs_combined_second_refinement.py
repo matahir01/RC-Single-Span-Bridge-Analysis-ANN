@@ -17,7 +17,10 @@ from time import perf_counter
 
 from rc_single_span.core.progress import AnalysisControl
 from rc_single_span.gui.project_state import GuiProjectState
-from rc_single_span.traffic.bs5400 import _kel_positions
+from rc_single_span.traffic.bs5400 import (
+    _kel_positions,
+    common_bs5400_design_stations,
+)
 from rc_single_span.traffic.bs5400_combined import run_ha_hb_combined_grillage_search
 
 
@@ -30,17 +33,60 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def compare_station_shapes(coarse: dict, fine: dict) -> dict:
-    """Compare each coarse absolute moment envelope with a fine-grid shape.
+def _canonical_station_values(girder: dict) -> dict[float, float]:
+    """Collapse coordinates differing only by floating-point roundoff."""
+    values: dict[float, float] = {}
+    for station in girder["stations"]:
+        x_m = round(float(station["x_m"]), 9)
+        moment = abs(float(station["moment_knm"]["value"]))
+        values[x_m] = max(values.get(x_m, 0.0), moment)
+    return values
 
-    Coarse station values are linearly interpolated onto every fine station.
-    Changes are normalized by that girder's peak fine-grid envelope, avoiding
-    unstable pointwise ratios near zero moment.
+
+def compare_station_shapes(
+    coarse: dict,
+    fine: dict,
+    *,
+    evaluation_stations_m: tuple[float, ...] | list[float] | None = None,
+) -> dict:
+    """Compare absolute-moment envelopes at common physical evaluation stations.
+
+    When a fixed station list is supplied, both grids must contain every station
+    and the comparison is direct. The legacy fallback linearly interpolates the
+    coarse envelope onto the fine stations for old snapshots that predate fixed
+    design-station capture.
     """
     girder_changes = []
     for coarse_girder, fine_girder in zip(
         coarse["station_moments"], fine["station_moments"], strict=True,
     ):
+        if evaluation_stations_m is not None:
+            coarse_values = _canonical_station_values(coarse_girder)
+            fine_values = _canonical_station_values(fine_girder)
+            coordinates = tuple(round(float(value), 9) for value in evaluation_stations_m)
+            missing_coarse = [x for x in coordinates if x not in coarse_values]
+            missing_fine = [x for x in coordinates if x not in fine_values]
+            if missing_coarse or missing_fine:
+                raise ValueError(
+                    "A fixed station comparison requires every requested station "
+                    "in both captured grids."
+                )
+            scale = max((fine_values[x] for x in coordinates), default=0.0)
+            changes = [
+                (abs(coarse_values[x] - fine_values[x]) / max(scale, 1.0e-9), x)
+                for x in coordinates
+            ]
+            maximum, worst_x = max(changes, default=(0.0, 0.0))
+            girder_changes.append({
+                "girder_index": fine_girder["girder_index"],
+                "maximum_normalized_change": maximum,
+                "x_m": worst_x,
+                "evaluation_station_count": len(coordinates),
+                "coarse_station_count": len(coarse_girder["stations"]),
+                "fine_station_count": len(fine_girder["stations"]),
+            })
+            continue
+
         coarse_stations = coarse_girder["stations"]
         fine_stations = fine_girder["stations"]
         coarse_x = [float(item["x_m"]) for item in coarse_stations]
@@ -74,7 +120,11 @@ def compare_station_shapes(coarse: dict, fine: dict) -> dict:
     worst = max(girder_changes, key=lambda item: item["maximum_normalized_change"])
     return {
         "normalization": "per-girder peak fine-grid absolute moment envelope",
-        "interpolation": "piecewise linear coarse envelope evaluated at every fine station",
+        "sampling": (
+            "direct values at identical requested design stations; no interpolation"
+            if evaluation_stations_m is not None
+            else "legacy piecewise-linear coarse interpolation at every fine station"
+        ),
         "maximum_normalized_change": worst["maximum_normalized_change"],
         "girder_index": worst["girder_index"],
         "x_m": worst["x_m"],
@@ -88,6 +138,7 @@ def capture(
     hb_longitudinal_step_m: float,
     hb_transverse_step_m: float,
     ha_kel_step_m: float,
+    design_station_step_m: float = 0.5,
 ) -> None:
     start = perf_counter()
     reported: dict[str, int] = {}
@@ -107,12 +158,22 @@ def capture(
         "hb_transverse_step_m": hb_transverse_step_m,
         "ha_kel_step_m": ha_kel_step_m,
     }
+    project = GuiProjectState().build_project()
+    design_stations = common_bs5400_design_stations(
+        project,
+        step_m=design_station_step_m,
+    )
     search = run_ha_hb_combined_grillage_search(
-        GuiProjectState().build_project(), retain_all_cases=False,
-        control=AnalysisControl(progress), **settings,
+        project,
+        retain_all_cases=False,
+        design_stations_m=design_stations,
+        control=AnalysisControl(progress),
+        **settings,
     )
     record = {
         "settings": settings,
+        "design_station_step_m": design_station_step_m,
+        "design_stations_m": design_stations,
         "elapsed_s": perf_counter() - start,
         "evaluated_case_count": search.evaluated_case_count,
         "girders": [asdict(item) for item in search.girders],
@@ -167,7 +228,23 @@ def compare(coarse_path: Path, fine_path: Path, tolerance: float) -> dict:
         for name in step_names
     ) and float(coarse["settings"]["units"]) == float(fine["settings"]["units"])
     exhaustive = coarse_exhaustive and fine_exhaustive
-    station_shape = compare_station_shapes(coarse, fine)
+    coarse_design_stations = coarse_record.get("design_stations_m")
+    fine_design_stations = fine.get("design_stations_m")
+    if (coarse_design_stations is None) != (fine_design_stations is None):
+        raise ValueError("Both snapshots must use the same fixed design-station audit.")
+    if coarse_design_stations is not None and fine_design_stations is not None:
+        coarse_keys = tuple(round(float(value), 9) for value in coarse_design_stations)
+        fine_keys = tuple(round(float(value), 9) for value in fine_design_stations)
+        if coarse_keys != fine_keys:
+            raise ValueError("The compared snapshots use different design stations.")
+        evaluation_stations = coarse_keys
+    else:
+        evaluation_stations = None
+    station_shape = compare_station_shapes(
+        coarse,
+        fine,
+        evaluation_stations_m=evaluation_stations,
+    )
     return {
         "coarse_snapshot_sha256": sha256(coarse_path),
         "fine_snapshot_sha256": sha256(fine_path),
@@ -210,6 +287,12 @@ def main() -> None:
     parser.add_argument("--run-half", action="store_true")
     parser.add_argument("--run", action="store_true",
                         help="run the finer 0.5 m / 0.25 m / 0.5 m grid")
+    parser.add_argument(
+        "--station-step",
+        type=float,
+        default=0.5,
+        help="fixed common design-station spacing used in every captured grid",
+    )
     parser.add_argument("--default", type=Path, default=Path(
         "docs/benchmarks/bs_traffic_anchored_default_grid_2026-10-03.json.gz"))
     parser.add_argument("--half", type=Path, default=Path(
@@ -222,13 +305,16 @@ def main() -> None:
     args = parser.parse_args()
     if args.run_default:
         capture(args.default, hb_longitudinal_step_m=2.0,
-                hb_transverse_step_m=1.0, ha_kel_step_m=2.0)
+                hb_transverse_step_m=1.0, ha_kel_step_m=2.0,
+                design_station_step_m=args.station_step)
     if args.run_half:
         capture(args.half, hb_longitudinal_step_m=1.0,
-                hb_transverse_step_m=0.5, ha_kel_step_m=1.0)
+                hb_transverse_step_m=0.5, ha_kel_step_m=1.0,
+                design_station_step_m=args.station_step)
     if args.run:
         capture(args.fine, hb_longitudinal_step_m=0.5,
-                hb_transverse_step_m=0.25, ha_kel_step_m=0.5)
+                hb_transverse_step_m=0.25, ha_kel_step_m=0.5,
+                design_station_step_m=args.station_step)
     if any((args.run_default, args.run_half, args.run)) and not all(
         path.exists() for path in (args.default, args.half, args.fine)
     ):

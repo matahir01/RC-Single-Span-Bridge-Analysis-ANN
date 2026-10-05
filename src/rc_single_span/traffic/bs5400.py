@@ -440,23 +440,33 @@ def _update_station_moment_governing(
     case_id: int,
     current: tuple[tuple[object, ...], ...],
 ) -> None:
+    def station_key(x_m: float) -> float:
+        # Different HB axle-spacing grids can construct the same physical
+        # station through slightly different floating-point sums. Canonicalize
+        # before accumulating the cross-case envelope so one station is not
+        # reported twice with different values.
+        return round(float(x_m), 9)
+
     if not governing:
         for girder in current:
             if not girder:
                 continue
             first = girder[0]
+            stations: dict[float, GoverningComponent] = {}
+            for item in girder:
+                key = station_key(item.x_m)
+                existing = stations.get(key)
+                if existing is None or item.moment_knm > existing.value:
+                    stations[key] = GoverningComponent(
+                        item.moment_knm,
+                        case_id,
+                        item.member_id,
+                    )
             governing.append(
                 {
                     "girder_index": first.girder_index,
                     "y_m": first.y_m,
-                    "stations": {
-                        item.x_m: GoverningComponent(
-                            item.moment_knm,
-                            case_id,
-                            item.member_id,
-                        )
-                        for item in girder
-                    },
+                    "stations": stations,
                 }
             )
         return
@@ -468,9 +478,10 @@ def _update_station_moment_governing(
         stations = row["stations"]
         assert isinstance(stations, dict)
         for item in girder:
-            existing = stations.get(item.x_m)
+            key = station_key(item.x_m)
+            existing = stations.get(key)
             if existing is None or item.moment_knm > existing.value:
-                stations[item.x_m] = GoverningComponent(
+                stations[key] = GoverningComponent(
                     item.moment_knm,
                     case_id,
                     item.member_id,

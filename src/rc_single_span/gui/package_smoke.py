@@ -8,6 +8,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rc_single_span.gui.engine_adapter import GuiCodeProfile, run_gui_analysis
+from rc_single_span.gui.research_workspace import (
+    ResearchWorkspace,
+    render_research_report,
+)
+from rc_single_span.research.study import run_research_study
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -16,7 +21,7 @@ if TYPE_CHECKING:
 
 
 def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir: str) -> int:
-    """Open Qt, save/reopen the 15 m reference, analyse it and export a PDF."""
+    """Exercise the packaged desktop analysis and research workflows."""
 
     target = Path(output_dir)
     target.mkdir(parents=True, exist_ok=True)
@@ -111,6 +116,71 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
         window.write_report_pdf(bs_pdf_path)
         assert bs_pdf_path.read_bytes().startswith(b"%PDF-")
         assert bs_pdf_path.stat().st_size > 50000
+
+        # Run a small, explicitly exploratory study through the packaged GUI
+        # configuration. This exercises its resource file, baseline analysis,
+        # LHS, ANN training, direct validation, Monte Carlo, saved artifacts and
+        # study-sheet PDF. Smoke-study numbers are not research evidence.
+        research = window.research_workspace
+        assert isinstance(research, ResearchWorkspace)
+        assert research.sample_count.value() == 4000
+        research_config = research._read_config()
+        research_config["reference_run"]["lm1_longitudinal_step_m"] = 3.0
+        research_config["pipeline"].update({
+            "sample_count": 100,
+            "run_form": False,
+            "surrogate_monte_carlo_samples": 30,
+            "mlp": {
+                "hidden_layers": [8],
+                "learning_rate": 0.001,
+                "batch_size": 16,
+                "epochs": 10,
+                "patience": 4,
+                "seed": 42,
+            },
+        })
+        research_config["validation"].update({
+            "fresh_direct_samples": 10,
+            "direct_monte_carlo_samples": 30,
+            "near_limit_state_fraction": 0.1,
+            "seed": 20261005,
+        })
+        research_config["boundary_challenge"]["enabled"] = False
+        research_config["rbdo"]["enabled"] = False
+        research_config["sample_size_convergence"]["enabled"] = False
+        research_output = target / "research-study"
+        research_summary = run_research_study(
+            state.build_project(),
+            research_config,
+            research_output,
+            exploratory=True,
+        )
+        assert str(research_summary["status"]).startswith("EXPLORATORY ONLY")
+        assert research_summary["dataset_rows"] == 100
+        assert len(research_summary["held_out_test_metrics"]["target_names"]) == 3
+        assert research_summary["fresh_direct_validation"]["sample_count"] == 10
+        for filename in (
+            "study_config.json", "bridge_project.json", "dataset.csv", "train.csv",
+            "validation.csv", "test.csv", "ann_model.npz", "summary.json",
+        ):
+            assert (research_output / filename).is_file(), filename
+
+        research_report = render_research_report(research_summary)
+        research.result_view.setHtml(research_report)
+        research_pdf_path = target / "research_study_sheets.pdf"
+        from PySide6.QtGui import QPageSize, QTextDocument
+        from PySide6.QtPrintSupport import QPrinter
+
+        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+        printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
+        printer.setOutputFileName(str(research_pdf_path))
+        printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+        document = QTextDocument()
+        document.setHtml(research_report)
+        document.print_(printer)
+        assert research_pdf_path.read_bytes().startswith(b"%PDF-")
+        assert research_pdf_path.stat().st_size > 10000
+
         (target / "smoke_result.json").write_text(
             json.dumps(
                 {
@@ -126,6 +196,14 @@ def run_package_smoke(window_factory: Callable[[], BridgeMainWindow], output_dir
                     "bs_combined_placements": bs_result.bs_traffic.ha_hb.evaluated_case_count,
                     "bs_retained_placements": len(bs_result.bs_traffic.ha_hb.cases),
                     "bs_pdf_bytes": bs_pdf_path.stat().st_size,
+                    "research_tab": "present",
+                    "research_status": research_summary["status"],
+                    "research_dataset_rows": research_summary["dataset_rows"],
+                    "research_ann_targets": len(
+                        research_summary["held_out_test_metrics"]["target_names"]
+                    ),
+                    "research_artifact_files": len(research_summary["artifact_sha256"]),
+                    "research_pdf_bytes": research_pdf_path.stat().st_size,
                 },
                 indent=2,
             ),

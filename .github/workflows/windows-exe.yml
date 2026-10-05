@@ -65,6 +65,16 @@ jobs:
           if ([System.Text.Encoding]::ASCII.GetString($bsPdf, 0, 5) -ne '%PDF-') {
             throw 'BS calculation report invalid'
           }
+          if ($result.research_tab -ne 'present' -or $result.research_status -notlike 'EXPLORATORY ONLY*' -or $result.research_dataset_rows -ne 100 -or $result.research_ann_targets -ne 3) {
+            throw 'Packaged ANN/reliability study workflow did not complete'
+          }
+          if (-not (Test-Path 'package-smoke/research-study/ann_model.npz') -or -not (Test-Path 'package-smoke/research-study/summary.json')) {
+            throw 'Packaged research artifacts were not written'
+          }
+          $researchPdf = [System.IO.File]::ReadAllBytes((Join-Path $outputDir 'research_study_sheets.pdf'))
+          if ([System.Text.Encoding]::ASCII.GetString($researchPdf, 0, 5) -ne '%PDF-') {
+            throw 'Research study-sheet PDF invalid'
+          }
       - name: Create release ZIP
         shell: pwsh
         run: |
