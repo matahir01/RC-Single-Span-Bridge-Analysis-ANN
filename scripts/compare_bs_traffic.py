@@ -26,13 +26,6 @@ def main() -> None:
     old["config"].setdefault("evaluate_all_case_combined_deflection", True)
     new["config"].setdefault("evaluate_all_case_combined_deflection", True)
 
-    # The support-anchored HA placement grid is an intentional algorithm
-    # change, so its old/new envelope is covered by the separate matched-grid
-    # audit rather than compared to a pre-optimization search on another grid.
-    # Keep the regression strict for HB, HA+HB, combinations and all metadata.
-    old["traffic"].pop("ha", None)
-    new["traffic"].pop("ha", None)
-
     def canonicalize_station_rows(record: dict[str, Any]) -> None:
         for search in record["traffic"].values():
             station_girders = search.get("stations", [])
@@ -50,18 +43,6 @@ def main() -> None:
     canonicalize_station_rows(old)
     canonicalize_station_rows(new)
 
-    def without_case_ids(value: Any) -> Any:
-        if isinstance(value, dict):
-            return {
-                key: without_case_ids(item)
-                for key, item in value.items()
-                if key != "case_id"
-            }
-        if isinstance(value, list):
-            return [without_case_ids(item) for item in value]
-        return value
-
-    old, new = without_case_ids(old), without_case_ids(new)
     def first_difference(left: Any, right: Any, path: str = "$") -> str | None:
         if isinstance(left, dict) and isinstance(right, dict):
             if left.keys() != right.keys():

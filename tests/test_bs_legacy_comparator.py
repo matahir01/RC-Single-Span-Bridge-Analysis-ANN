@@ -1,4 +1,4 @@
-"""The changed HA grid is audited separately from unchanged traffic routes."""
+"""The pre-optimization traffic comparator remains an exact output gate."""
 
 import json
 import subprocess
@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 
-def test_bs_legacy_comparator_accepts_historical_default_but_rejects_changed_effects(
+def test_bs_legacy_comparator_rejects_changed_search_or_combination_effects(
     tmp_path: Path,
 ) -> None:
     script = Path(__file__).parents[1] / "scripts" / "compare_bs_traffic.py"
@@ -35,14 +35,10 @@ def test_bs_legacy_comparator_accepts_historical_default_but_rejects_changed_eff
             capture_output=True, text=True, check=False,
         )
 
-    # HA candidate semantics deliberately changed and are validated by the
-    # fixed-station grid audit. The remaining routes and combinations remain
-    # under exact old/new regression comparison.
+    assert compare(current).returncode == 0
     assert compare({**current, "traffic": {
-        "ha": {"moment_knm": 43.0},
-        "hb": {"moment_knm": 12.0},
-        "ha_hb": {"moment_knm": 54.0},
-    }}).returncode == 0
+        **current["traffic"], "ha": {"moment_knm": 43.0},
+    }}).returncode != 0
     assert compare({**current, "traffic": {
         **current["traffic"], "hb": {"moment_knm": 13.0},
     }}).returncode != 0

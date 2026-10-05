@@ -2,7 +2,11 @@ from pathlib import Path
 from runpy import run_path
 from types import SimpleNamespace
 
-from rc_single_span.traffic.bs5400 import _update_station_moment_governing
+from rc_single_span.traffic.bs5400 import (
+    _kel_positions,
+    _merge_coordinates,
+    _update_station_moment_governing,
+)
 
 
 def test_default_reference_bs_grid_does_not_pass_halved_grid_check() -> None:
@@ -22,6 +26,23 @@ def test_default_reference_bs_grid_does_not_pass_halved_grid_check() -> None:
     torsion = combined["component_changes"]["torsion_knm"]
     assert torsion["girder_index"] == 5
     assert 0.07 < torsion["maximum_relative_change"] < 0.08
+
+
+def test_legacy_benchmark_grid_alignment_matches_current_kel_rule() -> None:
+    repository = Path(__file__).resolve().parents[1]
+    align = run_path(
+        str(repository / "scripts" / "benchmark_bs_traffic.py")
+    )["_support_anchored_kel_positions"]
+
+    for span_m, step_m in (
+        (15.0, 2.0), (15.0, 1.0), (15.0, 0.5), (15.0, 0.25),
+        (12.3, 0.7), (0.4, 0.05),
+    ):
+        assert align(
+            span_m,
+            step_m,
+            merge_coordinates=_merge_coordinates,
+        ) == _kel_positions(span_m, step_m)
 
 
 def test_station_shape_audit_interpolates_coarse_envelope_at_fine_stations() -> None:
