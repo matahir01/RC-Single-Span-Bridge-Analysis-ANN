@@ -408,3 +408,52 @@ expires 2 January 2027. Outer ZIP SHA-256:
 `c1ec7369cb9873f5c820abbf17bd94cc36280227805e663c747e6030681d0f4c`; inner
 distribution ZIP SHA-256:
 `5F5A5865912EB0E7C9DCCA1FCFE3F0D5104AF1C0BFF9C1672E441035FCC89A12`.
+## 5 October 2026 continuation
+
+The updated desktop app and fixed-station BS audit are published on
+[`codex/bridge-research-grid-2026-10-03`](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/tree/codex/bridge-research-grid-2026-10-03).
+Application source commit
+[`7c64ec4`](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/commit/7c64ec4787d8690a39eb3a9e0ee771e9298ccf2b)
+updates the GUI warning with the matched-station results and exercises the
+exploratory ANN study in the packaged Windows smoke. Commit
+[`adb48fa`](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/commit/adb48fa30dc5bcc6796f605253097f070e89a74d)
+aligns the pre-optimization solver comparison to the current support-anchored
+HA KEL positions while leaving its full response, station, case and combination
+comparison strict.
+
+The [5 October fixed design-station audit](BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md)
+uses identical direct values at 31 stations spaced 0.5 m. It finds 4.889%
+maximum girder-envelope change and 6.714% fixed-station moment-shape change
+(default to half), then 1.250% and 3.513% (half to fine). The first comparison
+fails the provisional 5% station-shape screen. The previous 26.510% and
+26.938% station figures used different station sets and coarse interpolation;
+they are historical and superseded. The reference BS grid remains unverified.
+
+Linux [test run 37282464073](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37282464073)
+passed Ruff and all **271 tests**. The same-runner LM1 comparison matched
+governing cases, IDs, loads, combinations and design, at 9.08x faster. The BS
+pre-optimization comparison matched all captured outputs after applying the
+current KEL placement rule to the legacy solver: 2.78 s versus 1.39 s. The
+separate fixed-station audit remains the gate for the physical placement-grid
+sensitivity.
+
+Windows [build and smoke run 37281543795](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37281543795)
+passed the source GUI tests, Windows x64 executable build, packaged BS EN and
+BS 5400 workflows, project save/reopen, calculation PDFs, and an explicitly
+exploratory ANN/reliability study with saved model, dataset and study PDF. Its
+[Windows x64 artifact](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37281543795/artifacts/11332164160)
+expires 3 January 2027. The uploaded Actions ZIP SHA-256 is
+`4c9a9f92e3d1396b923ffccea08957709b32f45b646c925921b9c72b9074899d`;
+the inner distribution ZIP SHA-256 is
+`D2FB758120AD6494423EAB4016A79FC67F322AD5E51EA3D1927054E974463E4D`.
+Download the artifact, extract its outer ZIP, then extract
+`RCBridgeAnalyzer-Windows-x64.zip` and run `RCBridgeAnalyzer.exe` from the
+full extracted folder. The latest branch commit after the app build changes
+only the Linux benchmark gate; the packaged application source is commit
+`7c64ec4`.
+
+The research workbench remains **EXPLORATORY ONLY**. Closing that evidence gate
+still requires project-approved action and dependence inputs, the installed
+shear-link schedule, the serviceability deflection criterion and code/authority
+basis, followed by stable tail validation and a feasible RBDO result checked
+directly in the deterministic engine.
