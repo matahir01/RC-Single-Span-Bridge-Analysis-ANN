@@ -53,9 +53,10 @@ default-to-half comparison changes girder 5 torsion by **4.889%** and the
 moment shape at identical 0.5 m design stations by **6.714%**; half-to-fine
 changes the response envelope by **1.250%** and station shape by **3.513%**.
 The first comparison still fails the provisional 5% station-shape screen, so the
-GUI and calculation report mark the grid **unverified**. The fixed-station
-audit supersedes the mismatched-station shape figures in the earlier report; see
-[the October 5 audit](docs/BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md).
+GUI and calculation report mark the grid **unverified**. The October 5 audit
+reruns all three grids with the same 0.5 m design-station set and supersedes the
+earlier numerical comparison figures; see
+[the fixed-station audit](docs/BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md).
 The desktop Analysis tab exposes separate HA, HB and HA+HB placement steps;
 the saved project and calculation sheets record the chosen values. The
 documented half-step settings are available for an explicit sensitivity run,

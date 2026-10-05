@@ -1,11 +1,12 @@
 # BS 5400 HA+HB fixed design-station audit
 
-Updated: 5 October 2026. This matched-station audit supersedes the station-shape
-figures in the [3 October placement-grid audit](BS_TRAFFIC_GRID_REFINEMENT_2026-10-03.md).
-The earlier 26.510% and 26.938% figures compared different station sets and
-interpolated the coarse envelope. The audit below samples the same 31 requested
-design stations, every 0.5 m from 0 to 15 m, directly in all three searches.
-No interpolation is used.
+Updated: 5 October 2026. This matched-station audit supersedes the numerical
+comparisons in the [3 October placement-grid audit](BS_TRAFFIC_GRID_REFINEMENT_2026-10-03.md).
+The earlier 26.510% and 26.938% station-shape figures compared different
+station sets and interpolated the coarse envelope. The new captures use one
+shared 0.5 m design-station mesh for all three grids. The audit below samples
+the same 31 requested stations, from 0 to 15 m, directly in every search. No
+interpolation is used.
 
 ## Reference model and search
 

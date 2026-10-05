@@ -5,12 +5,12 @@ in the [1 October audit](BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md) for the
 current placement generator. The older measurements remain historical; their
 step-dependent KEL edge coordinates are not comparable with the new search.
 
-**The station-shape measurements in this historical 3 October audit are
-superseded by the matched fixed-design-station audit from 5 October.** Its
-26.510% and 26.938% values used different station sets and coarse interpolation;
-the corrected direct comparisons are reported in
-[BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md](BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md).
-Use that audit for current GUI/report sensitivity figures.
+**All numerical comparisons in this historical 3 October audit are superseded
+by the 5 October fixed-design-station audit.** The older 26.510% and 26.938%
+station-shape values used different station sets and coarse interpolation; the
+new captures also apply one shared 0.5 m design-station mesh to all three grids.
+Use [BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md](BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md)
+for current GUI/report sensitivity figures.
 
 ## Placement-grid change
 
@@ -51,15 +51,16 @@ snapshots and [hash-backed comparison](benchmarks/bs_traffic_grid_refinement_202
 record the per-girder envelopes, station moments, settings, retained cases,
 exhaustiveness and hashes.
 
-## Decision
+## Historical decision and current disposition
 
 The support-anchored 0.5 m search resolved the previous case-3 equilibrium
-failure: all **91,200** placements passed the existing strict gate. It does
-not establish grid convergence. Default-to-half exceeds the provisional 5%
-envelope screen, and both pairings exceed the 5% station-shape screen. The GUI
-and calculation report therefore continue to mark BS traffic grids
-**unverified**. Do not use these results to justify reinforcement zoning or a
-project design without further refinement and independent review.
+failure: all **91,200** placements passed the existing strict gate. That result
+did not establish grid convergence. The response and station-shape percentages
+in this report are historical; the 5 October audit is the current comparison.
+Its default-to-half fixed-station shape change exceeds the provisional 5%
+screen, so the GUI and calculation report continue to mark BS traffic grids
+**unverified**. Do not use either audit alone to justify reinforcement zoning
+or a project design without further refinement and independent review.
 
 The [32-case equilibrium probe](benchmarks/bs_dense_equilibrium_probe_2026-10-03.json)
 also passed before the full run. Reproduce the exhaustive snapshots and audit

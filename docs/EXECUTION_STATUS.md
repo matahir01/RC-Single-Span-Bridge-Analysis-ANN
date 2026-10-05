@@ -425,9 +425,7 @@ The [5 October fixed design-station audit](BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-
 uses identical direct values at 31 stations spaced 0.5 m. It finds 4.889%
 maximum girder-envelope change and 6.714% fixed-station moment-shape change
 (default to half), then 1.250% and 3.513% (half to fine). The first comparison
-fails the provisional 5% station-shape screen. The previous 26.510% and
-26.938% station figures used different station sets and coarse interpolation;
-they are historical and superseded. The reference BS grid remains unverified.
+fails the provisional 5% station-shape screen. The earlier 6.809% and 1.894% envelope values and 26.510% and 26.938% station-shape values are historical and superseded by these 5 October captures using the shared mesh. The station-shape figures also used different station sets and coarse interpolation. The reference BS grid remains unverified.
 
 Linux [test run 37282464073](https://github.com/matahir01/RC-Single-Span-Bridge-Analysis-ANN/actions/runs/37282464073)
 passed Ruff and all **271 tests**. The same-runner LM1 comparison matched
