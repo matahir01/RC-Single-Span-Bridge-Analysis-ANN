@@ -32,14 +32,15 @@ def main() -> None:
     # those physical results independently of search provenance.
     old_ha = old["traffic"]["ha"]
     new_ha = new["traffic"]["ha"]
-    old_ha.pop("evaluated_case_count")
-    new_ha.pop("evaluated_case_count")
-    old_ha.pop("retained_case_ids")
-    new_ha.pop("retained_case_ids")
+    old_ha.pop("evaluated_case_count", None)
+    new_ha.pop("evaluated_case_count", None)
+    old_ha.pop("retained_case_ids", None)
+    new_ha.pop("retained_case_ids", None)
 
     def canonicalize_station_rows(record: dict[str, Any]) -> None:
         for search in record["traffic"].values():
-            for girder in search["stations"]:
+            station_girders = search.get("stations", [])
+            for girder in station_girders:
                 values: dict[float, float] = {}
                 for station in girder["stations"]:
                     x_m = round(float(station["x_m"]), 9)
