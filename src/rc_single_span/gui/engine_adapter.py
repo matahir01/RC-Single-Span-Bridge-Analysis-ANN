@@ -329,11 +329,13 @@ def run_gui_analysis(
             ),
             (
                 "BS traffic placement-grid convergence is unverified for this run. In the "
-                "support-anchored 15 m reference audit, default-to-half changed the maximum "
-                "girder envelope by 6.809% (torsion, girder 5) and the station shape by 26.510% "
-                "(girder 7, x=7.2 m). Half-to-fine changed the envelope by 1.894%, but station "
-                "shape by 26.938% (girder 7, x=7.7 m). Check the project grid before relying "
-                "on its traffic envelope."
+                "matched 15 m reference audit, default-to-half changed the maximum girder "
+                "response by 4.889% (torsion, girder 5) and moment shape at identical 0.5 m "
+                "design stations by 6.714% (girder 2, x=13.0 m), so the provisional 5% "
+                "station-shape screen fails. Half-to-fine changed the envelope by 1.250% and "
+                "station shape by 3.513% (girder 4, x=13.5 m). A second-refinement pass is not "
+                "a global convergence proof; check the project grid before relying on its "
+                "traffic envelope."
             ),
             (
                 "This run's BS steps (m): HA longitudinal "

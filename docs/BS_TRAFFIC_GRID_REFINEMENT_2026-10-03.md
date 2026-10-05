@@ -5,6 +5,13 @@ in the [1 October audit](BS_TRAFFIC_GRID_REFINEMENT_2026-10-01.md) for the
 current placement generator. The older measurements remain historical; their
 step-dependent KEL edge coordinates are not comparable with the new search.
 
+**The station-shape measurements in this historical 3 October audit are
+superseded by the matched fixed-design-station audit from 5 October.** Its
+26.510% and 26.938% values used different station sets and coarse interpolation;
+the corrected direct comparisons are reported in
+[BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md](BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md).
+Use that audit for current GUI/report sensitivity figures.
+
 ## Placement-grid change
 
 HA KEL positions now start at the supports and advance from `x = 0` by the

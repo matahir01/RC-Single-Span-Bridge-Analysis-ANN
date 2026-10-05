@@ -1,4 +1,4 @@
-"""New runner metadata must not disable the old/new BS numeric gate."""
+"""The changed HA grid is audited separately from unchanged traffic routes."""
 
 import json
 import subprocess
@@ -13,8 +13,12 @@ def test_bs_legacy_comparator_accepts_historical_default_but_rejects_changed_eff
     old = {
         "elapsed_s": 10.0,
         "config": {"retain_all_cases": False},
-        "traffic": {"ha": {"moment_knm": 42.0}},
-        "combinations": [],
+        "traffic": {
+            "ha": {"moment_knm": 42.0},
+            "hb": {"moment_knm": 12.0},
+            "ha_hb": {"moment_knm": 54.0},
+        },
+        "combinations": [{"moment_knm": 65.0}],
     }
     current = {
         **old,
@@ -31,8 +35,18 @@ def test_bs_legacy_comparator_accepts_historical_default_but_rejects_changed_eff
             capture_output=True, text=True, check=False,
         )
 
-    assert compare(current).returncode == 0
-    assert compare({**current, "traffic": {"ha": {"moment_knm": 43.0}}}).returncode != 0
+    # HA candidate semantics deliberately changed and are validated by the
+    # fixed-station grid audit. The remaining routes and combinations remain
+    # under exact old/new regression comparison.
+    assert compare({**current, "traffic": {
+        "ha": {"moment_knm": 43.0},
+        "hb": {"moment_knm": 12.0},
+        "ha_hb": {"moment_knm": 54.0},
+    }}).returncode == 0
+    assert compare({**current, "traffic": {
+        **current["traffic"], "hb": {"moment_knm": 13.0},
+    }}).returncode != 0
+    assert compare({**current, "combinations": [{"moment_knm": 66.0}]}).returncode != 0
     assert compare({**current, "config": {
         **current["config"], "evaluate_all_case_combined_deflection": False,
     }}).returncode != 0

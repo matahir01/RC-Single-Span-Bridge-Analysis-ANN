@@ -49,10 +49,13 @@ is therefore not a recommendation to select it for a new project: the adopted
 project/authority basis must explicitly require the legacy route.
 The support-anchored desktop HA+HB search now completes its full fine grid
 without equilibrium failures, but the reference grid is still unverified. The
-default-to-half comparison changes girder 5 torsion by **6.809%** and the
-station-moment shape by **26.510%**; half-to-fine envelopes change by **1.894%**,
-but station shape changes by **26.938%**. The GUI and calculation report flag
-this; see [the updated BS grid audit](docs/BS_TRAFFIC_GRID_REFINEMENT_2026-10-03.md).
+default-to-half comparison changes girder 5 torsion by **4.889%** and the
+moment shape at identical 0.5 m design stations by **6.714%**; half-to-fine
+changes the response envelope by **1.250%** and station shape by **3.513%**.
+The first comparison still fails the provisional 5% station-shape screen, so the
+GUI and calculation report mark the grid **unverified**. The fixed-station
+audit supersedes the mismatched-station shape figures in the earlier report; see
+[the October 5 audit](docs/BS_TRAFFIC_DESIGN_STATION_AUDIT_2026-10-05.md).
 The desktop Analysis tab exposes separate HA, HB and HA+HB placement steps;
 the saved project and calculation sheets record the chosen values. The
 documented half-step settings are available for an explicit sensitivity run,

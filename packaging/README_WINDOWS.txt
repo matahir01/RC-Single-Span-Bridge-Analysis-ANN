@@ -17,10 +17,12 @@ RC Single-Span Bridge Analysis — Windows x64
    Save/Open use JSON project files; reopening requires a fresh analysis run.
 7. The BS 5400 / BD 37 legacy route has separate editable HA, HB and HA+HB
    placement steps in Analysis. Save/Open retains the exact steps. The default
-   and documented half-step values are shown beside these controls.
-   Its 15 m reference default HA+HB grid changed 7.412% in one torsion response
-   when halved, exceeding the provisional 5% check. The app flags this in the
-   results and report; a finer single run is not a convergence certificate.
+   and documented half-step values are shown beside these controls. In the
+   matched 15 m fixed-station audit, default-to-half changed the girder envelope
+   by 4.889% and the station-moment shape by 6.714%; the 5% station-shape
+   screen fails. Half-to-fine changed them by 1.250% and 3.513%. The app flags
+   the grid as unverified; see the October 5 audit in the repository. A finer
+   single run is not a convergence certificate.
 8. "Web limit" PASS checks maximum web resistance only. The report calculates
    required shear links, but no provided-link schedule is entered or checked;
    it does not assert complete shear reinforcement adequacy.
@@ -28,6 +30,11 @@ RC Single-Span Bridge Analysis — Windows x64
    not run the much more expensive combined permanent+traffic deflection search.
    Choose the separate BS 5400 combined-deflection box only when that
    all-case check is required. Its progress and Cancel are shown in Analysis.
+10. ANN / Reliability opens the study workbench for sampling, ANN fitting,
+    direct validation and reliability analysis. Packaged priors are explicitly
+    EXPLORATORY ONLY. A completed run saves its project, configuration, dataset
+    splits, model, summary and review PDF; those outputs do not close the
+    research evidence gates or establish a thesis result.
 
 The reference starts at a 15 m span and seven rectangular girders. BS EN is
 the initial route; BS 5400 / BD 37 is selected separately in Traffic.

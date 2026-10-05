@@ -332,7 +332,7 @@ def main() -> None:
         },
         "limitations": [
             "Two-grid girder response sensitivity is not an independent proof of global convergence.",
-            "Station-shape checks linearly interpolate the coarse envelope between stations.",
+            "Station-shape checks do not bound changes between their evaluation locations.",
             "All-cases retention is not checked in this audit.",
             "Design validity also requires project actions, code scope, details and independent review.",
         ],
